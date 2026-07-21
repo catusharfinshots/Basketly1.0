@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, Search, Sparkles, Link2, CheckCircle2 } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, Sparkles, Link2, CheckCircle2, LineChart } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useBroker } from '../context/BrokerContext';
+import OrderTicket from './OrderTicket';
 
 const navItems = [
   {
@@ -38,6 +39,7 @@ const navItems = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [ticketOpen, setTicketOpen] = useState(false);
   const navigate = useNavigate();
   const { connections } = useBroker();
   const kiteConnected = !!connections.kite;
@@ -96,6 +98,11 @@ export default function Navbar() {
             className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${kiteConnected ? 'border-[#12B76A] text-[#12B76A] bg-[#DCFCE7]/50' : 'border-[#E8E1F0] text-[#1A1030] hover:border-[#6C2BD9] hover:text-[#6C2BD9]'}`}>
             {kiteConnected ? <><CheckCircle2 className="h-3.5 w-3.5" /> {connections.kite.profile?.user_shortname || 'Connected'}</> : <><Link2 className="h-3.5 w-3.5" /> Connect broker</>}
           </Link>
+          {kiteConnected && (
+            <button onClick={() => setTicketOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#12B76A] px-3 py-2 text-xs font-semibold text-white hover:bg-[#059669] transition-colors">
+              <LineChart className="h-3.5 w-3.5" /> Trade
+            </button>
+          )}
           <Link to="/login" className="btn-ghost">Login</Link>
           <Link to="/explore/smallcases" className="btn-primary">Start investing</Link>
         </div>
@@ -120,6 +127,7 @@ export default function Navbar() {
           </div>
         </div>
       )}
+      <OrderTicket open={ticketOpen} onOpenChange={setTicketOpen} />
     </header>
   );
 }

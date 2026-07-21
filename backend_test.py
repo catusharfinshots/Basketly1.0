@@ -216,6 +216,252 @@ def test_kite_disconnect():
         return False
 
 
+def test_kite_place_order_not_connected():
+    """Test 7: POST /api/broker/kite/order with valid body but unconnected user"""
+    print("\n" + "="*80)
+    print("TEST 7: POST /api/broker/kite/order (unconnected user)")
+    print("="*80)
+    
+    try:
+        payload = {
+            "user_id": "notconnected_user_abc",
+            "exchange": "NSE",
+            "tradingsymbol": "RELIANCE",
+            "transaction_type": "BUY",
+            "quantity": 1,
+            "order_type": "MARKET",
+            "product": "CNC",
+            "variety": "regular",
+            "validity": "DAY"
+        }
+        response = requests.post(
+            f"{API_BASE}/broker/kite/order",
+            json=payload,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 401:
+            print(f"❌ FAILED: Expected status code 401, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        if data.get("detail") != "Not connected":
+            print(f"❌ FAILED: Expected detail='Not connected', got: {data.get('detail')}")
+            return False
+        
+        print("✅ PASSED: Returns 401 with detail='Not connected'")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_kite_place_order_missing_fields():
+    """Test 8: POST /api/broker/kite/order with missing required fields (pydantic validation)"""
+    print("\n" + "="*80)
+    print("TEST 8: POST /api/broker/kite/order (missing required fields)")
+    print("="*80)
+    
+    try:
+        payload = {
+            "user_id": "x",
+            "exchange": "NSE"
+            # Missing: tradingsymbol, transaction_type, quantity
+        }
+        response = requests.post(
+            f"{API_BASE}/broker/kite/order",
+            json=payload,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 422:
+            print(f"❌ FAILED: Expected status code 422 (Unprocessable Entity), got {response.status_code}")
+            return False
+        
+        print("✅ PASSED: Returns 422 for missing required fields")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_kite_place_order_zero_quantity():
+    """Test 9: POST /api/broker/kite/order with quantity=0"""
+    print("\n" + "="*80)
+    print("TEST 9: POST /api/broker/kite/order (quantity=0)")
+    print("="*80)
+    
+    try:
+        payload = {
+            "user_id": "notconnected_user_abc",
+            "exchange": "NSE",
+            "tradingsymbol": "RELIANCE",
+            "transaction_type": "BUY",
+            "quantity": 0,  # Invalid: must be > 0
+            "order_type": "MARKET",
+            "product": "CNC",
+            "variety": "regular",
+            "validity": "DAY"
+        }
+        response = requests.post(
+            f"{API_BASE}/broker/kite/order",
+            json=payload,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 422:
+            print(f"❌ FAILED: Expected status code 422 (pydantic gt=0 validation), got {response.status_code}")
+            return False
+        
+        print("✅ PASSED: Returns 422 for quantity=0")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_kite_orders_not_connected():
+    """Test 10: GET /api/broker/kite/orders?user_id=notconnected_user_abc"""
+    print("\n" + "="*80)
+    print("TEST 10: GET /api/broker/kite/orders (unconnected user)")
+    print("="*80)
+    
+    try:
+        response = requests.get(
+            f"{API_BASE}/broker/kite/orders",
+            params={"user_id": "notconnected_user_abc"},
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 401:
+            print(f"❌ FAILED: Expected status code 401, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        if data.get("detail") != "Not connected":
+            print(f"❌ FAILED: Expected detail='Not connected', got: {data.get('detail')}")
+            return False
+        
+        print("✅ PASSED: Returns 401 with detail='Not connected'")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_kite_cancel_order_not_connected():
+    """Test 11: POST /api/broker/kite/order/cancel (unconnected user)"""
+    print("\n" + "="*80)
+    print("TEST 11: POST /api/broker/kite/order/cancel (unconnected user)")
+    print("="*80)
+    
+    try:
+        payload = {
+            "user_id": "notconnected_user_abc",
+            "order_id": "12345",
+            "variety": "regular"
+        }
+        response = requests.post(
+            f"{API_BASE}/broker/kite/order/cancel",
+            json=payload,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 401:
+            print(f"❌ FAILED: Expected status code 401, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        if data.get("detail") != "Not connected":
+            print(f"❌ FAILED: Expected detail='Not connected', got: {data.get('detail')}")
+            return False
+        
+        print("✅ PASSED: Returns 401 with detail='Not connected'")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_kite_ltp_not_connected():
+    """Test 12: GET /api/broker/kite/ltp (unconnected user)"""
+    print("\n" + "="*80)
+    print("TEST 12: GET /api/broker/kite/ltp (unconnected user)")
+    print("="*80)
+    
+    try:
+        response = requests.get(
+            f"{API_BASE}/broker/kite/ltp",
+            params={"user_id": "notconnected_user_abc", "symbols": "NSE:RELIANCE"},
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 401:
+            print(f"❌ FAILED: Expected status code 401, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        if data.get("detail") != "Not connected":
+            print(f"❌ FAILED: Expected detail='Not connected', got: {data.get('detail')}")
+            return False
+        
+        print("✅ PASSED: Returns 401 with detail='Not connected'")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_kite_quote_not_connected():
+    """Test 13: GET /api/broker/kite/quote (unconnected user)"""
+    print("\n" + "="*80)
+    print("TEST 13: GET /api/broker/kite/quote (unconnected user)")
+    print("="*80)
+    
+    try:
+        response = requests.get(
+            f"{API_BASE}/broker/kite/quote",
+            params={"user_id": "notconnected_user_abc", "symbols": "NSE:RELIANCE"},
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 401:
+            print(f"❌ FAILED: Expected status code 401, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        if data.get("detail") != "Not connected":
+            print(f"❌ FAILED: Expected detail='Not connected', got: {data.get('detail')}")
+            return False
+        
+        print("✅ PASSED: Returns 401 with detail='Not connected'")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
 def main():
     """Run all backend tests"""
     print("\n" + "="*80)
@@ -231,6 +477,13 @@ def main():
         ("Kite holdings endpoint (not connected)", test_kite_holdings_not_connected),
         ("Kite margins endpoint (not connected)", test_kite_margins_not_connected),
         ("Kite disconnect endpoint", test_kite_disconnect),
+        ("Kite place_order endpoint (unconnected user)", test_kite_place_order_not_connected),
+        ("Kite place_order endpoint (missing fields)", test_kite_place_order_missing_fields),
+        ("Kite place_order endpoint (quantity=0)", test_kite_place_order_zero_quantity),
+        ("Kite orders endpoint (unconnected user)", test_kite_orders_not_connected),
+        ("Kite cancel_order endpoint (unconnected user)", test_kite_cancel_order_not_connected),
+        ("Kite ltp endpoint (unconnected user)", test_kite_ltp_not_connected),
+        ("Kite quote endpoint (unconnected user)", test_kite_quote_not_connected),
     ]
     
     results = []

@@ -41,6 +41,28 @@ class DisconnectRequest(BaseModel):
     user_id: str
 
 
+class PlaceOrderRequest(BaseModel):
+    user_id: str
+    exchange: str = "NSE"                     # NSE / BSE / NFO / BFO / MCX
+    tradingsymbol: str                        # e.g. RELIANCE, INFY
+    transaction_type: str                     # BUY / SELL
+    quantity: int = Field(..., gt=0)
+    order_type: str = "MARKET"                # MARKET / LIMIT / SL / SL-M
+    product: str = "CNC"                      # CNC / MIS / NRML
+    variety: str = "regular"                  # regular / amo / co / iceberg
+    validity: str = "DAY"                     # DAY / IOC
+    price: Optional[float] = None
+    trigger_price: Optional[float] = None
+    disclosed_quantity: Optional[int] = None
+    tag: Optional[str] = "basketly"
+
+
+class CancelOrderRequest(BaseModel):
+    user_id: str
+    order_id: str
+    variety: str = "regular"
+
+
 def _kite_client(access_token: Optional[str] = None) -> "KiteConnect":
     if KiteConnect is None:
         raise HTTPException(status_code=500, detail="kiteconnect library not installed")
@@ -162,5 +184,113 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
         except Exception as e:
             logger.exception("Kite profile error")
             raise HTTPException(status_code=400, detail=f"Kite profile failed: {e}")
+
+    @router.get("/ltp")
+    async def ltp(user_id: str = Query(...), symbols: str = Query(..., description="Comma-separated, e.g. NSE:RELIANCE,NSE:INFY")):
+        conn = await _get_conn(user_id)
+        if not conn:
+            raise HTTPException(status_code=401, detail="Not connected")
+        try:
+            k = _kite_client(conn["access_token"])
+            symbol_list = [s.strip() for s in symbols.split(",") if s.strip()]
+            data = k.ltp(symbol_list)
+            return {"ltp": data}
+        except Exception as e:
+            logger.exception("Kite LTP error")
+            raise HTTPException(status_code=400, detail=f"Kite LTP failed: {e}")
+
+    @router.get("/quote")
+    async def quote(user_id: str = Query(...), symbols: str = Query(...)):
+        conn = await _get_conn(user_id)
+        if not conn:
+            raise HTTPException(status_code=401, detail="Not connected")
+        try:
+            k = _kite_client(conn["access_token"])
+            symbol_list = [s.strip() for s in symbols.split(",") if s.strip()]
+            data = k.quote(symbol_list)
+            return {"quote": data}
+        except Exception as e:
+            logger.exception("Kite quote error")
+            raise HTTPException(status_code=400, detail=f"Kite quote failed: {e}")
+
+    @router.post("/order")
+    async def place_order(payload: PlaceOrderRequest):
+        conn = await _get_conn(payload.user_id)
+        if not conn:
+            raise HTTPException(status_code=401, detail="Not connected")
+        k = _kite_client(conn["access_token"])
+        # Basic validation
+        txn = payload.transaction_type.upper()
+        if txn not in ("BUY", "SELL"):
+            raise HTTPException(status_code=400, detail="transaction_type must be BUY or SELL")
+        order_type = payload.order_type.upper()
+        if order_type not in ("MARKET", "LIMIT", "SL", "SL-M"):
+            raise HTTPException(status_code=400, detail="Invalid order_type")
+        if order_type in ("LIMIT", "SL") and not payload.price:
+            raise HTTPException(status_code=400, detail=f"'price' is required for {order_type} orders")
+        if order_type in ("SL", "SL-M") and not payload.trigger_price:
+            raise HTTPException(status_code=400, detail=f"'trigger_price' is required for {order_type} orders")
+
+        kwargs = dict(
+            variety=payload.variety,
+            exchange=payload.exchange.upper(),
+            tradingsymbol=payload.tradingsymbol.upper(),
+            transaction_type=txn,
+            quantity=int(payload.quantity),
+            order_type=order_type,
+            product=payload.product.upper(),
+            validity=payload.validity.upper(),
+            tag=(payload.tag or "basketly")[:20],
+        )
+        if payload.price is not None:
+            kwargs["price"] = float(payload.price)
+        if payload.trigger_price is not None:
+            kwargs["trigger_price"] = float(payload.trigger_price)
+        if payload.disclosed_quantity is not None:
+            kwargs["disclosed_quantity"] = int(payload.disclosed_quantity)
+
+        try:
+            order_id = k.place_order(**kwargs)
+        except Exception as e:
+            logger.exception("Kite place_order failed")
+            raise HTTPException(status_code=400, detail=f"Kite order failed: {e}")
+
+        # Persist a lightweight record of the placed order
+        record = {
+            "user_id": payload.user_id,
+            "broker": "kite",
+            "order_id": order_id,
+            "request": kwargs,
+            "placed_at": datetime.utcnow(),
+        }
+        await db.broker_orders.insert_one(record)
+
+        return {"ok": True, "order_id": order_id}
+
+    @router.get("/orders")
+    async def orders(user_id: str = Query(...)):
+        conn = await _get_conn(user_id)
+        if not conn:
+            raise HTTPException(status_code=401, detail="Not connected")
+        try:
+            k = _kite_client(conn["access_token"])
+            data = k.orders()
+        except Exception as e:
+            logger.exception("Kite orders error")
+            raise HTTPException(status_code=400, detail=f"Kite orders failed: {e}")
+        return {"orders": data}
+
+    @router.post("/order/cancel")
+    async def cancel_order(payload: CancelOrderRequest):
+        conn = await _get_conn(payload.user_id)
+        if not conn:
+            raise HTTPException(status_code=401, detail="Not connected")
+        try:
+            k = _kite_client(conn["access_token"])
+            k.cancel_order(variety=payload.variety, order_id=payload.order_id)
+        except Exception as e:
+            logger.exception("Kite cancel_order failed")
+            raise HTTPException(status_code=400, detail=f"Kite cancel failed: {e}")
+        return {"ok": True}
 
     return router
