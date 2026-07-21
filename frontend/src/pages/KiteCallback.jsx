@@ -15,6 +15,8 @@ export default function KiteCallback() {
   useEffect(() => {
     const status = params.get('status');
     const requestToken = params.get('request_token');
+    const kiteError = params.get('message') || params.get('error');
+    const kiteErrorType = params.get('error_type');
     const userId = getStoredUserId();
 
     const notifyParent = (payload) => {
@@ -27,13 +29,17 @@ export default function KiteCallback() {
 
     if (status !== 'success' || !requestToken) {
       setState('error');
-      setDetail('Kite returned status: ' + (status || 'unknown'));
-      notifyParent({ status: 'error', detail: status });
+      let msg = kiteError || 'Kite did not return a request token.';
+      if (kiteError && /not enabled/i.test(kiteError)) {
+        msg = 'This Zerodha account is not enabled for the Kite Connect app. The app owner needs to add this user in developers.kite.trade → your app → "Add users", or subscribe to Kite Connect.';
+      }
+      setDetail(msg + (kiteErrorType ? ` (${kiteErrorType})` : ''));
+      notifyParent({ status: 'error', detail: msg });
       return;
     }
     if (!userId) {
       setState('error');
-      setDetail('No session found. Please open this from the Basketly window.');
+      setDetail('No Basketly session found. Please open this from the Basketly window.');
       return;
     }
 

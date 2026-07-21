@@ -34,12 +34,23 @@ export default function BrokerConnectPage() {
       }
       toast.info('Complete login on Kite in the popup window.');
       // fallback: poll for close and refresh status
+      let messageReceived = false;
+      const msgHandler = (e) => {
+        if (e?.data?.source === 'basketly-kite-callback') messageReceived = true;
+      };
+      window.addEventListener('message', msgHandler);
       const interval = setInterval(async () => {
         if (popup.closed) {
           clearInterval(interval);
+          window.removeEventListener('message', msgHandler);
           const status = await refreshKite();
           if (status && status.connected) {
             toast.success('Zerodha connected', { description: status.profile?.user_name });
+          } else if (!messageReceived) {
+            toast.error('Kite login was not completed', {
+              description: 'If Kite showed "user not enabled", see the Common issues section below.',
+              duration: 8000,
+            });
           }
         }
       }, 800);
@@ -136,6 +147,29 @@ export default function BrokerConnectPage() {
           <li>Our server exchanges that token for an <code>access_token</code> using the app secret and stores it securely.</li>
           <li>Your holdings & margins are pulled live into your dashboard. You can disconnect anytime.</li>
         </ol>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-[#FDE68A] bg-[#FFFAEB] p-6 text-sm">
+        <div className="font-semibold text-[#78350F]">Common issues</div>
+        <div className="mt-3 space-y-3 text-[#78350F]">
+          <div>
+            <div className="font-semibold">&ldquo;The user is not enabled for the app.&rdquo;</div>
+            <div className="mt-1 text-[#7C5A00]">
+              Kite Connect apps on the free tier only allow the Zerodha account that <span className="font-semibold">created the app</span> to log in.
+              To let other Zerodha users connect, the app owner must go to{' '}
+              <a href="https://developers.kite.trade/apps" target="_blank" rel="noreferrer" className="underline font-semibold">developers.kite.trade → your app</a>{' '}
+              and either <span className="font-semibold">add the user&apos;s Zerodha Client ID under &ldquo;Add users&rdquo;</span>, or subscribe to Kite Connect (₹2,000/month) so any Zerodha user can log in.
+            </div>
+          </div>
+          <div>
+            <div className="font-semibold">Kite showed a raw JSON error page</div>
+            <div className="mt-1 text-[#7C5A00]">This happens when Kite refuses to redirect back — usually because the redirect URL on the app doesn&apos;t exactly match this callback: <code className="bg-white/60 rounded px-1">https://fund-builder-5.preview.emergentagent.com/broker/kite/callback</code>. Update it in your app settings.</div>
+          </div>
+          <div>
+            <div className="font-semibold">Popup was blocked</div>
+            <div className="mt-1 text-[#7C5A00]">Allow popups for this site in your browser address bar and click Connect again.</div>
+          </div>
+        </div>
       </div>
     </div>
   );
