@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, Search, Sparkles } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, Sparkles, Link2, CheckCircle2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { useBroker } from '../context/BrokerContext';
 
 const navItems = [
   {
@@ -38,6 +39,8 @@ const navItems = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { connections } = useBroker();
+  const kiteConnected = !!connections.kite;
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#E8E1F0] bg-white/85 backdrop-blur-md">
@@ -89,6 +92,10 @@ export default function Navbar() {
           <button className="h-9 w-9 grid place-items-center rounded-full hover:bg-[#F7F4FB]" onClick={() => navigate('/explore/smallcases')} aria-label="Search">
             <Search className="h-4 w-4 text-[#1A1030]" />
           </button>
+          <Link to="/brokers/connect"
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${kiteConnected ? 'border-[#12B76A] text-[#12B76A] bg-[#DCFCE7]/50' : 'border-[#E8E1F0] text-[#1A1030] hover:border-[#6C2BD9] hover:text-[#6C2BD9]'}`}>
+            {kiteConnected ? <><CheckCircle2 className="h-3.5 w-3.5" /> {connections.kite.profile?.user_shortname || 'Connected'}</> : <><Link2 className="h-3.5 w-3.5" /> Connect broker</>}
+          </Link>
           <Link to="/login" className="btn-ghost">Login</Link>
           <Link to="/explore/smallcases" className="btn-primary">Start investing</Link>
         </div>

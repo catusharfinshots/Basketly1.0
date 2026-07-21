@@ -66,6 +66,10 @@ async def get_status_checks():
     
     return status_checks
 
+# Broker (Zerodha Kite Connect) routes
+from broker_kite import build_router as build_kite_router  # noqa: E402
+api_router.include_router(build_kite_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

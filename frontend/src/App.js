@@ -22,11 +22,15 @@ import BusinessPage from './pages/BusinessPage';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
 import NotFound from './pages/NotFound';
+import BrokerConnectPage from './pages/BrokerConnectPage';
+import KiteCallback from './pages/KiteCallback';
 import { PortfolioProvider } from './context/PortfolioContext';
+import { BrokerProvider } from './context/BrokerContext';
 
 function App() {
   return (
     <div className="App">
+      <BrokerProvider>
       <PortfolioProvider>
         <BrowserRouter>
           <Routes>
@@ -50,12 +54,15 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/business" element={<BusinessPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/brokers/connect" element={<BrokerConnectPage />} />
             </Route>
+            <Route path="/broker/kite/callback" element={<KiteCallback />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </PortfolioProvider>
+      </BrokerProvider>
       <Toaster position="top-right" richColors closeButton />
     </div>
   );
