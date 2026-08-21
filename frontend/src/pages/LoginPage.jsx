@@ -45,7 +45,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="surface p-8 shadow-[0_30px_60px_-30px_rgba(37,99,235,0.35)]">
+        <div className="surface p-8 shadow-[0_30px_60px_-30px_rgba(108,43,217,0.35)]">
           <h2 className="text-lg font-semibold">Log in</h2>
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
@@ -57,7 +57,7 @@ export default function LoginPage() {
               <Input required type="password" value={password} onChange={(e)=>setPassword(e.target.value)} className="h-11 mt-1.5" placeholder="••••••••" />
             </div>
             <button disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Log in</button>
-            <div className="text-sm text-center text-[#64748B]">New to Basketly? <Link to="/signup" className="font-semibold text-[#2563EB]">Create an account</Link></div>
+            <div className="text-sm text-center text-[#64748B]">New to Basketly? <Link to="/signup" className="font-semibold text-[#6C2BD9]">Create an account</Link></div>
           </form>
         </div>
       </div>

@@ -58,10 +58,10 @@ export default function Footer() {
               Money at work — expert-managed model portfolios, AIFs and advisory, invested from your own broker account. Demo build — simulated data, not financial advice.
             </p>
             <div className="mt-5 flex items-center gap-3 text-[#64748B]">
-              <a href="#" aria-label="Twitter" className="hover:text-[#2563EB]"><Twitter className="h-4 w-4" /></a>
-              <a href="#" aria-label="LinkedIn" className="hover:text-[#2563EB]"><Linkedin className="h-4 w-4" /></a>
-              <a href="#" aria-label="Instagram" className="hover:text-[#2563EB]"><Instagram className="h-4 w-4" /></a>
-              <a href="#" aria-label="YouTube" className="hover:text-[#2563EB]"><Youtube className="h-4 w-4" /></a>
+              <a href="#" aria-label="Twitter" className="hover:text-[#6C2BD9]"><Twitter className="h-4 w-4" /></a>
+              <a href="#" aria-label="LinkedIn" className="hover:text-[#6C2BD9]"><Linkedin className="h-4 w-4" /></a>
+              <a href="#" aria-label="Instagram" className="hover:text-[#6C2BD9]"><Instagram className="h-4 w-4" /></a>
+              <a href="#" aria-label="YouTube" className="hover:text-[#6C2BD9]"><Youtube className="h-4 w-4" /></a>
             </div>
           </div>
 
@@ -81,7 +81,7 @@ export default function Footer() {
           <p className="text-xs text-[#64748B] max-w-3xl">
             Investments in securities are subject to market risks. Read all scheme related documents carefully before investing. Past performance is not indicative of future returns. Basketly is a demo build — no real trades are placed.
           </p>
-          <Link to="/admin" className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]">Platform owner login →</Link>
+          <Link to="/admin" className="text-xs font-semibold text-[#6C2BD9] hover:text-[#5320A8]">Platform owner login →</Link>
         </div>
       </div>
     </footer>

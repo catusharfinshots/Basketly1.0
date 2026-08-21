@@ -60,7 +60,7 @@ export default function ModelPortfolioDetail() {
       {/* Header band */}
       <section className="grad-hero border-b border-[#E6E8F0]">
         <div className="container-x pt-6 pb-8">
-          <button onClick={() => navigate('/model-portfolios')} className="inline-flex items-center gap-1.5 text-sm text-[#64748B] hover:text-[#2563EB]">
+          <button onClick={() => navigate('/model-portfolios')} className="inline-flex items-center gap-1.5 text-sm text-[#64748B] hover:text-[#6C2BD9]">
             <ArrowLeft className="h-4 w-4" /> All model portfolios
           </button>
 
@@ -71,7 +71,7 @@ export default function ModelPortfolioDetail() {
               </span>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{basket.name}</h1>
-                <button onClick={() => navigate(`/manager/${basket.managerId}`)} className="mt-1 text-sm text-[#64748B] hover:text-[#2563EB]">by {manager?.name}</button>
+                <button onClick={() => navigate(`/manager/${basket.managerId}`)} className="mt-1 text-sm text-[#64748B] hover:text-[#6C2BD9]">by {manager?.name}</button>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="chip"><Layers className="h-3.5 w-3.5" /> {basket.strategy.replace('-', ' ')}</span>
                   <span className="chip"><ShieldCheck className="h-3.5 w-3.5" /> {basket.risk} volatility</span>
@@ -105,7 +105,7 @@ export default function ModelPortfolioDetail() {
           <div className="mt-8 border-b border-[#E6E8F0] flex gap-6">
             {TABS.map((t) => (
               <button key={t} onClick={() => setTab(t)}
-                className={`pb-3 text-sm font-semibold border-b-2 -mb-px transition-colors ${tab === t ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-[#64748B] hover:text-[#0F1729]'}`}>
+                className={`pb-3 text-sm font-semibold border-b-2 -mb-px transition-colors ${tab === t ? 'border-[#6C2BD9] text-[#6C2BD9]' : 'border-transparent text-[#64748B] hover:text-[#0F1729]'}`}>
                 {t}
               </button>
             ))}
@@ -119,19 +119,19 @@ export default function ModelPortfolioDetail() {
                   <p className="mt-2 text-[15px] text-[#475569] leading-relaxed">{basket.methodology}</p>
                 </div>
                 <div className="grid sm:grid-cols-3 gap-3">
-                  <Link to="/learn" className="surface p-4 hover:border-[#C7D2FE] transition-all group">
-                    <BookOpen className="h-5 w-5 text-[#2563EB]" />
-                    <div className="mt-3 text-sm font-semibold group-hover:text-[#2563EB]">Blog</div>
+                  <Link to="/learn" className="surface p-4 hover:border-[#D8C7F1] transition-all group">
+                    <BookOpen className="h-5 w-5 text-[#6C2BD9]" />
+                    <div className="mt-3 text-sm font-semibold group-hover:text-[#6C2BD9]">Blog</div>
                     <div className="text-xs text-[#64748B]">Read more about {basket.name}</div>
                   </Link>
-                  <button onClick={() => setMethodOpen(true)} className="surface p-4 text-left hover:border-[#C7D2FE] transition-all group">
-                    <FlaskConical className="h-5 w-5 text-[#2563EB]" />
-                    <div className="mt-3 text-sm font-semibold group-hover:text-[#2563EB]">Methodology</div>
+                  <button onClick={() => setMethodOpen(true)} className="surface p-4 text-left hover:border-[#D8C7F1] transition-all group">
+                    <FlaskConical className="h-5 w-5 text-[#6C2BD9]" />
+                    <div className="mt-3 text-sm font-semibold group-hover:text-[#6C2BD9]">Methodology</div>
                     <div className="text-xs text-[#64748B]">How this portfolio was created</div>
                   </button>
-                  <a href="#" onClick={(e) => { e.preventDefault(); toast.info('Factsheet PDF is a demo placeholder.'); }} className="surface p-4 hover:border-[#C7D2FE] transition-all group">
-                    <FileText className="h-5 w-5 text-[#2563EB]" />
-                    <div className="mt-3 text-sm font-semibold group-hover:text-[#2563EB]">Factsheet</div>
+                  <a href="#" onClick={(e) => { e.preventDefault(); toast.info('Factsheet PDF is a demo placeholder.'); }} className="surface p-4 hover:border-[#D8C7F1] transition-all group">
+                    <FileText className="h-5 w-5 text-[#6C2BD9]" />
+                    <div className="mt-3 text-sm font-semibold group-hover:text-[#6C2BD9]">Factsheet</div>
                     <div className="text-xs text-[#64748B]">Download key points</div>
                   </a>
                 </div>
@@ -176,11 +176,11 @@ export default function ModelPortfolioDetail() {
             {tab === 'Methodology' && (
               <div className="space-y-6">
                 <div className="surface p-5">
-                  <h3 className="text-base font-semibold flex items-center gap-2"><FlaskConical className="h-4 w-4 text-[#2563EB]" /> How this portfolio is built</h3>
+                  <h3 className="text-base font-semibold flex items-center gap-2"><FlaskConical className="h-4 w-4 text-[#6C2BD9]" /> How this portfolio is built</h3>
                   <p className="mt-2 text-[15px] text-[#475569] leading-relaxed">{basket.methodology}</p>
                 </div>
                 <div className="surface p-5">
-                  <h3 className="text-base font-semibold flex items-center gap-2"><Repeat className="h-4 w-4 text-[#2563EB]" /> Rebalance</h3>
+                  <h3 className="text-base font-semibold flex items-center gap-2"><Repeat className="h-4 w-4 text-[#6C2BD9]" /> Rebalance</h3>
                   <p className="mt-2 text-[15px] text-[#475569]">Reviewed and rebalanced <b>{basket.rebalanceFreq.toLowerCase()}</b> by {manager?.name}. Last rebalanced on {new Date(basket.lastRebalancedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}.</p>
                 </div>
               </div>
@@ -202,7 +202,7 @@ export default function ModelPortfolioDetail() {
                   </div>
                 </div>
                 <p className="mt-3 text-sm text-[#475569] max-w-xl">{manager?.description} {manager?.philosophy}.</p>
-                <Link to={`/manager/${basket.managerId}`} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8]">
+                <Link to={`/manager/${basket.managerId}`} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#6C2BD9] hover:text-[#5320A8]">
                   View manager <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -221,13 +221,13 @@ export default function ModelPortfolioDetail() {
             <button onClick={onInvest} className="btn-invest w-full mt-5">Invest now</button>
             <button
               onClick={() => { toggleWatch(basket.id); toast.success(watched ? 'Removed from watchlist' : 'Added to watchlist'); }}
-              className={`w-full mt-3 inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition-colors ${watched ? 'border-[#2563EB] text-[#2563EB] bg-[#F5F8FF]' : 'border-[#E6E8F0] text-[#0F1729] hover:border-[#2563EB] hover:text-[#2563EB]'}`}>
-              <Heart className={`h-4 w-4 ${watched ? 'fill-[#2563EB]' : ''}`} /> {watched ? 'In watchlist' : 'Add to watchlist'}
+              className={`w-full mt-3 inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition-colors ${watched ? 'border-[#6C2BD9] text-[#6C2BD9] bg-[#F7F4FB]' : 'border-[#E6E8F0] text-[#0F1729] hover:border-[#6C2BD9] hover:text-[#6C2BD9]'}`}>
+              <Heart className={`h-4 w-4 ${watched ? 'fill-[#6C2BD9]' : ''}`} /> {watched ? 'In watchlist' : 'Add to watchlist'}
             </button>
 
             <div className="mt-5 pt-5 border-t border-[#EEF1F6] space-y-2 text-xs text-[#64748B]">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#12B76A]" /> Stocks stay in your own demat account</div>
-              <div className="flex items-center gap-2"><Repeat className="h-4 w-4 text-[#2563EB]" /> {basket.rebalanceFreq} rebalancing</div>
+              <div className="flex items-center gap-2"><Repeat className="h-4 w-4 text-[#6C2BD9]" /> {basket.rebalanceFreq} rebalancing</div>
               <div className="flex items-center gap-2"><Layers className="h-4 w-4 text-[#6C2BD9]" /> {basket.constituents.length} constituents</div>
             </div>
           </div>

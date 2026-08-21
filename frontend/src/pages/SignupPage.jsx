@@ -47,7 +47,7 @@ export default function SignupPage() {
           </ul>
         </div>
 
-        <div className="surface p-8 shadow-[0_30px_60px_-30px_rgba(37,99,235,0.35)]">
+        <div className="surface p-8 shadow-[0_30px_60px_-30px_rgba(108,43,217,0.35)]">
           <h2 className="text-lg font-semibold">Create account</h2>
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
@@ -63,7 +63,7 @@ export default function SignupPage() {
               <Input required type="password" minLength={6} value={password} onChange={(e)=>setPassword(e.target.value)} className="h-11 mt-1.5" placeholder="At least 6 characters" />
             </div>
             <button disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Create account</button>
-            <div className="text-sm text-center text-[#64748B]">Already have an account? <Link to="/login" className="font-semibold text-[#2563EB]">Log in</Link></div>
+            <div className="text-sm text-center text-[#64748B]">Already have an account? <Link to="/login" className="font-semibold text-[#6C2BD9]">Log in</Link></div>
           </form>
         </div>
       </div>

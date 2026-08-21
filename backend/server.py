@@ -74,6 +74,10 @@ api_router.include_router(build_kite_router(db))
 from auth import build_router as build_auth_router, seed_users  # noqa: E402
 api_router.include_router(build_auth_router(db))
 
+# Lead capture (AIF / Advisory) routes
+from leads import build_router as build_leads_router  # noqa: E402
+api_router.include_router(build_leads_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

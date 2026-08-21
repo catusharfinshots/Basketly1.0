@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs, trustStats as seedStats } from '../mock';
-import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut } from 'lucide-react';
+import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -16,8 +17,11 @@ const NAV = [
   { key: 'fds', label: 'Fixed deposits', icon: Landmark },
   { key: 'testimonials', label: 'Testimonials', icon: MessageSquare },
   { key: 'faqs', label: 'FAQ', icon: HelpCircle },
+  { key: 'leads', label: 'Leads', icon: Inbox },
   { key: 'settings', label: 'Site settings', icon: Settings },
 ];
+
+const LEADS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function Row({ children }) {
   return <div className="flex items-center gap-3 py-3 border-b border-[#F1E7FE] last:border-0">{children}</div>;
@@ -46,6 +50,23 @@ export default function AdminPage() {
   const [funds, setFunds] = useState(seedMF);
   const [testimonials, setTestimonials] = useState(seedT);
   const [faqs, setFaqs] = useState(seedFaqs);
+
+  const [leads, setLeads] = useState([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const fetchLeads = async () => {
+    setLeadsLoading(true);
+    try {
+      const { data } = await axios.get(`${LEADS_API}/leads`);
+      setLeads(data.leads || []);
+    } catch {
+      toast.error('Could not load leads');
+    } finally {
+      setLeadsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (tab === 'leads') fetchLeads();
+  }, [tab]);
 
   const markDirty = () => setDirty(true);
 
@@ -137,6 +158,44 @@ export default function AdminPage() {
                     </div>
                   </section>
                 </>
+              )}
+
+              {tab === 'leads' && (
+                <section className="surface p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-semibold">Leads</div>
+                      <div className="text-xs text-[#6B6480]">People who registered interest via the AIF &amp; Advisory pages.</div>
+                    </div>
+                    <button onClick={fetchLeads} className="btn-outline">Refresh</button>
+                  </div>
+                  {leadsLoading ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">Loading leads…</div>
+                  ) : leads.length === 0 ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">No leads yet. Submit the form on the AIF or Advisory page to see it here.</div>
+                  ) : (
+                    <div className="mt-4 overflow-hidden rounded-xl border border-[#E8E1F0]">
+                      <table className="w-full text-sm">
+                        <thead className="bg-[#F7F4FB] text-[#6B6480]"><tr className="text-left">
+                          <th className="px-4 py-3 font-medium">Type</th>
+                          <th className="px-4 py-3 font-medium">Email</th>
+                          <th className="px-4 py-3 font-medium">Plan</th>
+                          <th className="px-4 py-3 font-medium">Received</th>
+                        </tr></thead>
+                        <tbody>
+                          {leads.map((l) => (
+                            <tr key={l.id} className="border-t border-[#F1E7FE]">
+                              <td className="px-4 py-3"><span className={l.type === 'aif' ? 'chip-brand' : 'chip-accent'}>{l.type.toUpperCase()}</span></td>
+                              <td className="px-4 py-3 font-medium text-[#1A1030]">{l.email}</td>
+                              <td className="px-4 py-3 text-[#6B6480]">{l.plan || '—'}</td>
+                              <td className="px-4 py-3 text-[#6B6480]">{new Date(l.created_at).toLocaleString('en-IN')}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
               )}
 
               {tab === 'baskets' && (

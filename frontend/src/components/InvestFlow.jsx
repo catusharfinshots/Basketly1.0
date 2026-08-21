@@ -90,7 +90,7 @@ export default function InvestFlow({ open, onOpenChange, basket, onViewInvestmen
         {step === 'broker' && (
           <div className="p-6">
             <div className="flex items-center gap-2 text-[#0F1729]">
-              <ShieldCheck className="h-5 w-5 text-[#2563EB]" />
+              <ShieldCheck className="h-5 w-5 text-[#6C2BD9]" />
               <h3 className="text-base font-semibold">Connect Zerodha to invest</h3>
             </div>
             <ul className="mt-4 space-y-2 text-sm text-[#334155]">
@@ -102,7 +102,7 @@ export default function InvestFlow({ open, onOpenChange, basket, onViewInvestmen
               className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF5722] px-5 py-3 text-sm font-semibold text-white hover:bg-[#F4511E] disabled:opacity-60">
               {connecting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Continue with Zerodha
             </button>
-            <button onClick={() => setStep('type')} className="mt-3 w-full text-xs font-semibold text-[#64748B] hover:text-[#2563EB]">
+            <button onClick={() => setStep('type')} className="mt-3 w-full text-xs font-semibold text-[#64748B] hover:text-[#6C2BD9]">
               Continue in demo mode (skip broker)
             </button>
           </div>
@@ -118,11 +118,11 @@ export default function InvestFlow({ open, onOpenChange, basket, onViewInvestmen
                 { key: 'onetime', title: 'One-time', desc: 'Invest lump sum amount once' },
               ].map((o) => (
                 <button key={o.key} onClick={() => setOrderType(o.key)}
-                  className={`text-left rounded-xl border p-4 transition-all ${orderType === o.key ? 'border-[#2563EB] ring-1 ring-[#2563EB] bg-[#F5F8FF]' : 'border-[#E6E8F0] hover:border-[#C7D2FE]'}`}>
+                  className={`text-left rounded-xl border p-4 transition-all ${orderType === o.key ? 'border-[#6C2BD9] ring-1 ring-[#6C2BD9] bg-[#F7F4FB]' : 'border-[#E6E8F0] hover:border-[#D8C7F1]'}`}>
                   <div className="flex items-center justify-between">
-                    <div className={`text-sm font-semibold ${orderType === o.key ? 'text-[#2563EB]' : 'text-[#0F1729]'}`}>{o.title}</div>
-                    <span className={`h-4 w-4 rounded-full border grid place-items-center ${orderType === o.key ? 'border-[#2563EB]' : 'border-[#CBD5E1]'}`}>
-                      {orderType === o.key && <span className="h-2 w-2 rounded-full bg-[#2563EB]" />}
+                    <div className={`text-sm font-semibold ${orderType === o.key ? 'text-[#6C2BD9]' : 'text-[#0F1729]'}`}>{o.title}</div>
+                    <span className={`h-4 w-4 rounded-full border grid place-items-center ${orderType === o.key ? 'border-[#6C2BD9]' : 'border-[#CBD5E1]'}`}>
+                      {orderType === o.key && <span className="h-2 w-2 rounded-full bg-[#6C2BD9]" />}
                     </span>
                   </div>
                   <div className="mt-1 text-xs text-[#64748B]">{o.desc}</div>

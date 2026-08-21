@@ -17,14 +17,14 @@ function PortfolioCard({ b }) {
   const mgr = getManager(b.managerId);
   return (
     <Link to={`/model-portfolios/${b.id}`}
-      className="group surface p-5 hover:shadow-[0_16px_40px_-24px_rgba(37,99,235,0.35)] hover:border-[#C7D2FE] transition-all block">
+      className="group surface p-5 hover:shadow-[0_16px_40px_-24px_rgba(108,43,217,0.35)] hover:border-[#D8C7F1] transition-all block">
       <div className="flex items-start gap-3">
         <span className="h-11 w-11 shrink-0 rounded-xl grad-card text-white grid place-items-center text-sm font-bold">
           {b.name.slice(0, 2).toUpperCase()}
         </span>
         <div className="min-w-0">
           <div className="text-xs text-[#64748B]">by {mgr?.name}</div>
-          <h3 className="text-[16px] font-semibold text-[#0F1729] leading-snug group-hover:text-[#2563EB]">{b.name}</h3>
+          <h3 className="text-[16px] font-semibold text-[#0F1729] leading-snug group-hover:text-[#6C2BD9]">{b.name}</h3>
         </div>
       </div>
       <p className="mt-3 text-sm text-[#64748B] line-clamp-2 min-h-[40px]">{b.subtitle}</p>
@@ -70,7 +70,7 @@ export default function ModelPortfolios() {
         <div className="container-x py-14">
           <div className="eyebrow">Model Portfolios</div>
           <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight">
-            Invest in ideas, <span className="text-[#2563EB]">not just stocks</span>
+            Invest in ideas, <span className="text-[#6C2BD9]">not just stocks</span>
           </h1>
           <p className="mt-4 text-lg text-[#64748B] max-w-2xl">
             Curated baskets of stocks & ETFs, built and rebalanced by SEBI-registered managers. Buy the whole idea in one click.
@@ -79,7 +79,7 @@ export default function ModelPortfolios() {
           <div className="mt-6 max-w-md relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search model portfolios…"
-              className="w-full rounded-full border border-[#E6E8F0] bg-white pl-10 pr-4 py-3 text-sm outline-none focus:border-[#2563EB]" />
+              className="w-full rounded-full border border-[#E6E8F0] bg-white pl-10 pr-4 py-3 text-sm outline-none focus:border-[#6C2BD9]" />
           </div>
         </div>
       </section>
@@ -90,7 +90,7 @@ export default function ModelPortfolios() {
           {FILTERS.map((f) => (
             <button key={f.key}
               onClick={() => setParams(f.key === 'all' ? {} : { filter: f.key })}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${active === f.key ? 'bg-[#2563EB] text-white' : 'bg-white border border-[#E6E8F0] text-[#334155] hover:border-[#2563EB] hover:text-[#2563EB]'}`}>
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${active === f.key ? 'bg-[#6C2BD9] text-white' : 'bg-white border border-[#E6E8F0] text-[#334155] hover:border-[#6C2BD9] hover:text-[#6C2BD9]'}`}>
               {f.label}
             </button>
           ))}

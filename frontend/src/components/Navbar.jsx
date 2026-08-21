@@ -42,7 +42,7 @@ export default function Navbar() {
         <nav className="hidden lg:flex items-center gap-1">
           {navItems.map((item) => (
             <NavLink key={item.label} to={item.to}
-              className={({ isActive }) => `btn-ghost ${isActive ? 'text-[#2563EB]' : ''}`}>
+              className={({ isActive }) => `btn-ghost ${isActive ? 'text-[#6C2BD9]' : ''}`}>
               {item.label}
             </NavLink>
           ))}
@@ -50,7 +50,7 @@ export default function Navbar() {
 
         <div className="hidden lg:flex items-center gap-2">
           <Link to="/brokers/connect"
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${kiteConnected ? 'border-[#12B76A] text-[#0E9F5E] bg-[#DCFCE7]/50' : 'border-[#E6E8F0] text-[#334155] hover:border-[#2563EB] hover:text-[#2563EB]'}`}>
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${kiteConnected ? 'border-[#12B76A] text-[#0E9F5E] bg-[#DCFCE7]/50' : 'border-[#E6E8F0] text-[#334155] hover:border-[#6C2BD9] hover:text-[#6C2BD9]'}`}>
             {kiteConnected ? <><CheckCircle2 className="h-3.5 w-3.5" /> {connections.kite.profile?.user_shortname || 'Connected'}</> : <><Link2 className="h-3.5 w-3.5" /> Connect broker</>}
           </Link>
           {kiteConnected && (
@@ -62,7 +62,7 @@ export default function Navbar() {
           {isAuthed ? (
             <Popover>
               <PopoverTrigger asChild>
-                <button className="inline-flex items-center gap-2 rounded-full border border-[#E6E8F0] pl-1 pr-3 py-1 hover:border-[#2563EB] transition-colors">
+                <button className="inline-flex items-center gap-2 rounded-full border border-[#E6E8F0] pl-1 pr-3 py-1 hover:border-[#6C2BD9] transition-colors">
                   <span className="h-7 w-7 rounded-full grad-card text-white grid place-items-center text-xs font-bold">
                     {(user?.name || user?.email || 'U').slice(0, 1).toUpperCase()}
                   </span>
