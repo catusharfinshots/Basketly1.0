@@ -8,7 +8,6 @@ export default function Home() {
       {/* HERO */}
       <section className="hero">
         <div className="container hero-inner">
-          <div className="eyebrow">Model Portfolios · AIF · Advisory</div>
           <h1>Challenging <span className="accent">volatility</span></h1>
           <p className="lead">Money at work — expert-managed model portfolios, alternative investment funds and SEBI-registered advisory, all in one place.</p>
           <div className="hero-cta">
