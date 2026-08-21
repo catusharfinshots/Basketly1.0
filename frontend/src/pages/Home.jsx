@@ -63,11 +63,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BAND */}
-      <section className="band">
-        <div className="container"><h2>Everything for your money, <span className="accent">at one place</span></h2></div>
-      </section>
-
       {/* HOW IT WORKS */}
       <section id="how">
         <div className="hiw-head">
