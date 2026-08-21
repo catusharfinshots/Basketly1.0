@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
 
 import Layout from './components/Layout';
@@ -38,6 +38,16 @@ function RedirectDetail() {
   return <Navigate to={`/model-portfolios/${id}`} replace />;
 }
 
+// Reset scroll position to the top on every route change (fixes detail pages
+// opening mid-page when navigating from a long page like Home).
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <div className="App">
@@ -45,6 +55,7 @@ function App() {
       <BrokerProvider>
       <PortfolioProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route element={<Layout />}> 
               <Route path="/" element={<Home />} />

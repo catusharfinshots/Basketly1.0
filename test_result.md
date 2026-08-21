@@ -278,6 +278,20 @@ backend:
           comment: "✅ TESTED: GET /api/auth/me - (1) Without Authorization header returns 401 with detail 'Not authenticated'. (2) With valid Bearer token from login returns 200 with user object where user.email='demo@basketly.in'. (3) With invalid/garbage token returns 401 with detail 'Invalid authentication token'. All validations passed."
 
 frontend:
+  - task: "ScrollToTop component - fix scroll position bug on route changes"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Bug reported: When user scrolls down a long page (e.g. Home) and clicks a Model Portfolio card/link, the destination detail page opened already scrolled down (mid-page) instead of starting at the top. Fixed by adding ScrollToTop component in App.js that uses useLocation() to detect pathname changes and calls window.scrollTo(0, 0) on every route change."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: All 6 scroll-to-top scenarios PASSED. (1) Home → Portfolio Detail: scrollY = 0px after scrolling from 4761px. (2) Listing → Portfolio Detail: scrollY = 0px after scrolling from 1060px. (3) Detail → Listing (back link): scrollY = 0px after scrolling from 379px. (4) Home → Model Portfolios (navbar): scrollY = 0px after scrolling from 1000px. (5) Model Portfolios → AIF (navbar): scrollY = 0px after scrolling from 800px. (6) AIF → Advisory (navbar): scrollY = 0px after scrolling from 525px. All route changes correctly reset scroll position to top (window.scrollY = 0) and page headers are visible. Bug is FIXED."
   - task: "Broker connect page renders with new Common issues section"
     implemented: true
     working: true
@@ -327,7 +341,7 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 4
+  test_sequence: 5
   run_ui: false
 
 test_plan:
@@ -398,4 +412,19 @@ agent_communication:
         10. ✅ GET /api/auth/me (invalid token) - Returns 401 with detail "Invalid authentication token"
         
         All authentication endpoints are working correctly. Seeded users (demo@basketly.in/Password123 and admin@basketly.in/Admin@123) are created successfully on startup. JWT token generation and validation working properly. All validation rules (email format, password length, duplicate detection) functioning as expected.
+    - agent: "testing"
+      message: |
+        ✅ SCROLL-TO-TOP BUG FIX VERIFIED (6/6 tests passed)
+        
+        Tested ScrollToTop component fix in /app/frontend/src/App.js for the reported bug where detail pages opened mid-page after scrolling on long pages.
+        
+        All scenarios PASSED:
+        1. ✅ Home → Portfolio Detail: scrollY = 0px (scrolled from 4761px to 0px)
+        2. ✅ Listing → Portfolio Detail: scrollY = 0px (scrolled from 1060px to 0px)
+        3. ✅ Detail → Listing (back link): scrollY = 0px (scrolled from 379px to 0px)
+        4. ✅ Home → Model Portfolios (navbar): scrollY = 0px (scrolled from 1000px to 0px)
+        5. ✅ Model Portfolios → AIF (navbar): scrollY = 0px (scrolled from 800px to 0px)
+        6. ✅ AIF → Advisory (navbar): scrollY = 0px (scrolled from 525px to 0px)
+        
+        The ScrollToTop component correctly resets window.scrollY to 0 on every route change, and page headers/top content are visible. The reported bug is FIXED.
 
