@@ -3,6 +3,16 @@ import { Link } from 'react-router-dom';
 import './Home.css';
 
 export default function Home() {
+  const phoneList = [
+    { ic: '▤', bg: 'grad', to: 'momentum-movers', nm: 'Momentum Movers', sub: '12 stocks', ret: '+31.2%' },
+    { ic: '🌐', bg: '#12B79A', to: 'all-weather', nm: 'All Weather Portfolio', sub: '4 ETFs', ret: '+18.4%' },
+    { ic: '◆', bg: '#2E90FA', to: 'banking-leaders', nm: 'Banking Leaders', sub: '8 stocks', ret: '+19.6%' },
+    { ic: '☀', bg: '#F79009', to: 'green-energy', nm: 'Green Energy Rising', sub: '9 stocks', ret: '+22.1%' },
+    { ic: '◑', bg: '#7A5AF8', to: 'tech-titans', nm: 'Tech Titans', sub: '9 stocks', ret: '+26.7%' },
+    { ic: '◈', bg: '#1A1030', to: 'dividend-aristocrats', nm: 'Dividend Aristocrats', sub: '10 stocks', ret: '+14.9%' },
+    { ic: '▲', bg: 'grad', to: 'smart-beta-quality', nm: 'Smart Beta Quality', sub: 'Factor tilt', ret: '+21.0%' },
+    { ic: '⛰', bg: '#EE46BC', to: 'consumption-story', nm: 'India Consumption', sub: '14 stocks', ret: '+17.3%' },
+  ];
   return (
     <div className="bk-home">
       {/* HERO */}
@@ -23,16 +33,29 @@ export default function Home() {
             <div className="pedestal l"></div><div className="pedestal r"></div>
             <div className="coin l">₹</div><div className="coin r">₹</div>
             <div className="h-phone"><div className="h-screen">
-              <div className="tag">MODEL PORTFOLIO</div>
-              <div className="logo-c grad">✦</div>
-              <h4>All Weather Portfolio</h4>
-              <div className="st">Steady multi-asset mix</div>
-              <div className="ret">3Y CAGR · +18.4%</div>
-              <div className="pill">Low risk · Rebalanced quarterly</div>
-              <div className="rows">
-                <div className="rw"><span>Nifty BeES</span><b>34%</b></div><div className="h-bar"><i style={{ width: '34%' }}></i></div>
-                <div className="rw"><span>Liquid BeES</span><b>28%</b></div><div className="h-bar"><i style={{ width: '28%' }}></i></div>
-                <div className="rw"><span>Gold BeES</span><b>22%</b></div><div className="h-bar"><i style={{ width: '22%' }}></i></div>
+              <div className="h-top">
+                <span className="mp"><span className="lg grad">✦</span> Model portfolios</span>
+                <span style={{ fontSize: 9, color: 'var(--muted)' }}>Explore</span>
+              </div>
+              <div className="h-chips">
+                <span className="h-chip">Filters</span>
+                <span className="h-chip">Under 5K</span>
+                <span className="h-chip">Low volatility</span>
+                <span className="h-chip">Free access</span>
+              </div>
+              <div className="h-list">
+                <div className="h-track">
+                  {[...phoneList, ...phoneList].map((p, i) => (
+                    <div className="h-item" key={i}>
+                      <span className={`h-ic ${p.bg === 'grad' ? 'grad' : ''}`} style={p.bg === 'grad' ? undefined : { background: p.bg }}>{p.ic}</span>
+                      <span>
+                        <div className="h-nm">{p.nm}</div>
+                        <div className="h-sub">{p.sub}</div>
+                      </span>
+                      <span className="h-ret">{p.ret}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div></div>
             <div className="grass"></div>

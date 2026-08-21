@@ -41,7 +41,20 @@
 .bk-home .coin{position:absolute;height:64px;width:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#C9BEE6);box-shadow:0 6px 16px rgba(83,32,168,.25);display:grid;place-items:center;color:var(--brand);font-weight:800;font-size:22px}
 .bk-home .coin.l{left:11%;bottom:150px} .bk-home .coin.r{right:11%;bottom:120px;height:52px;width:52px;font-size:18px}
 .bk-home .h-phone{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:230px;height:330px;background:#0E0722;border-radius:34px;padding:10px;box-shadow:0 30px 60px rgba(26,16,48,.28)}
-.bk-home .h-screen{width:100%;height:100%;background:linear-gradient(180deg,#F3EEFC,#fff);border-radius:26px;padding:16px;overflow:hidden}
+.bk-home .h-screen{width:100%;height:100%;background:linear-gradient(180deg,#F3EEFC,#fff);border-radius:26px;padding:14px;overflow:hidden;display:flex;flex-direction:column}
+.bk-home .h-top{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:800;color:var(--ink)}
+.bk-home .h-top .mp{display:flex;align-items:center;gap:6px}
+.bk-home .h-top .lg{height:18px;width:18px;border-radius:6px;display:grid;place-items:center;color:#fff;font-size:10px}
+.bk-home .h-chips{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.bk-home .h-chip{font-size:8px;font-weight:700;padding:3px 7px;border-radius:999px;background:var(--brand-soft);color:var(--brand-ink)}
+.bk-home .h-list{position:relative;flex:1;overflow:hidden;margin-top:10px;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12%,#000 86%,transparent);mask-image:linear-gradient(180deg,transparent,#000 12%,#000 86%,transparent)}
+.bk-home .h-track{display:flex;flex-direction:column;gap:8px;animation:hscroll 14s linear infinite;will-change:transform}
+.bk-home .h-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.bk-home .h-ic{height:26px;width:26px;border-radius:8px;flex:none;display:grid;place-items:center;color:#fff;font-size:12px}
+.bk-home .h-nm{font-size:10px;font-weight:700;color:var(--ink);line-height:1.15}
+.bk-home .h-sub{font-size:8px;color:var(--muted)}
+.bk-home .h-ret{margin-left:auto;font-size:9px;font-weight:800;color:var(--green)}
+@keyframes hscroll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
 .bk-home .h-screen .tag{font-size:9px;letter-spacing:.12em;color:var(--muted-2);font-weight:700;text-align:center}
 .bk-home .h-screen .logo-c{height:52px;width:52px;border-radius:14px;margin:12px auto 8px;display:grid;place-items:center;color:#fff;font-size:22px}
 .bk-home .h-screen h4{margin:0;text-align:center;font-size:15px}
