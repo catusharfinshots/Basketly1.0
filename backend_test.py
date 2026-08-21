@@ -8,7 +8,7 @@ import json
 import sys
 
 # Backend base URL from frontend/.env
-BACKEND_URL = "https://fund-builder-5.preview.emergentagent.com"
+BACKEND_URL = "https://ui-redesign-130.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_kite_login_url():
