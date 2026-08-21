@@ -49,6 +49,31 @@ def create_token(user: dict) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
 
 
+def decode_token(token: str) -> dict:
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Session expired, please log in again")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+
+def build_current_user_dep(db, required_roles=None):
+    """Return a FastAPI dependency that resolves the Bearer user, optionally
+    enforcing that the user's role is in required_roles."""
+    async def dep(authorization: Optional[str] = Header(None)) -> dict:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        payload = decode_token(authorization.split(" ", 1)[1].strip())
+        user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        if required_roles and user.get("role") not in required_roles:
+            raise HTTPException(status_code=403, detail="You do not have access to this resource")
+        return user
+    return dep
+
+
 def public_user(user: dict) -> dict:
     return {
         "id": user["id"],

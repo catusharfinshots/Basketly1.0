@@ -1,8 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import './Home.css';
 
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const DEFAULTS = {
+  hero: {
+    headline: 'Challenging',
+    highlight: 'volatility',
+    sub: 'Money at work — expert-managed model portfolios, alternative investment funds and SEBI-registered advisory, all in one place.',
+    primaryCta: 'Get started',
+    secondaryCta: 'Explore portfolios',
+  },
+  stats: { rating: '4.6/5', investors: '1 lakh+', managed: '₹100 Cr+' },
+  trust: [
+    { title: 'No new accounts', text: 'Hold your stocks & ETFs in your existing demat account — no separate account needed.' },
+    { title: 'Invest without lock-ins', text: 'Exit your investments whenever you like. Model portfolios can be liquidated anytime.' },
+    { title: 'Secure by design', text: 'Financial-grade security with encryption in transit and at rest, built for trust.' },
+    { title: 'Regulated products only', text: 'Products & services regulated by SEBI & RBI, from licensed providers & platforms.' },
+  ],
+  testimonials: [
+    { name: 'Saurabh', tag: 'Reviewed on Play Store', quote: 'One of the best finance products in recent times. The UI is clean and investing is effortless.' },
+    { name: 'Nithin', tag: 'Posted on X', quote: 'The best investment-tech experience I’ve used in India today. Genuinely well built.' },
+    { name: 'Asma', tag: 'Reviewed on Play Store', quote: 'Best app for investing with multiple choices of portfolios and clear methodology.' },
+    { name: 'Tanmay', tag: 'Posted on X', quote: 'Fallen in love with Basketly — such a smooth, smooth product from end to end.' },
+    { name: 'Ravi', tag: 'Reviewed on Play Store', quote: 'A smart app blending tech and finance — I can track and invest in one place.' },
+    { name: 'Jonathan', tag: 'Reviewed on App Store', quote: 'Excellent platform for beginners, especially those who don’t have time to analyse.' },
+  ],
+};
+
+const TRUST_ICONS = ['✓', '🔓', '🔐', '🏛'];
+const AV_COLORS = ['grad', '#7A5AF8', '#2E90FA', '#12B79A', '#F79009', '#EE46BC'];
+
 export default function Home() {
+  const [c, setC] = useState(DEFAULTS);
+  useEffect(() => {
+    let active = true;
+    axios.get(`${API}/content`).then(({ data }) => {
+      if (active && data) setC({ ...DEFAULTS, ...data });
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
   const phoneList = [
     { ic: '▤', bg: 'grad', to: 'momentum-movers', nm: 'Momentum Movers', sub: '12 stocks', ret: '+31.2%' },
     { ic: '🌐', bg: '#12B79A', to: 'all-weather', nm: 'All Weather Portfolio', sub: '4 ETFs', ret: '+18.4%' },
@@ -18,16 +58,16 @@ export default function Home() {
       {/* HERO */}
       <section className="hero">
         <div className="container hero-inner">
-          <h1>Challenging <span className="accent">volatility</span></h1>
-          <p className="lead">Money at work — expert-managed model portfolios, alternative investment funds and SEBI-registered advisory, all in one place.</p>
+          <h1>{c.hero.headline} <span className="accent">{c.hero.highlight}</span></h1>
+          <p className="lead">{c.hero.sub}</p>
           <div className="hero-cta">
-            <Link to="/signup" className="btn btn-primary">Get started →</Link>
-            <Link to="/model-portfolios" className="btn btn-outline">▢ Explore portfolios</Link>
+            <Link to="/signup" className="btn btn-primary">{c.hero.primaryCta} →</Link>
+            <Link to="/model-portfolios" className="btn btn-outline">▢ {c.hero.secondaryCta}</Link>
           </div>
           <div className="ratings">
-            <span>Rated <b>4.6/5</b></span>
-            <span><b>1 lakh+</b> investors</span>
-            <span><b>₹100 Cr+</b> managed</span>
+            <span>Rated <b>{c.stats.rating}</b></span>
+            <span><b>{c.stats.investors}</b> investors</span>
+            <span><b>{c.stats.managed}</b> managed</span>
           </div>
           <div className="stage">
             <div className="pedestal l"></div><div className="pedestal r"></div>
@@ -236,10 +276,9 @@ export default function Home() {
           <div className="head"><div className="e">Your money deserves the best</div><h2>Trust built at every step</h2></div>
           <div className="shield">🛡</div>
           <div className="trust-grid">
-            <div className="tc"><h4>✓ No new accounts</h4><p>Hold your stocks &amp; ETFs in your existing demat account — no separate account needed.</p></div>
-            <div className="tc"><h4>🔓 Invest without lock-ins</h4><p>Exit your investments whenever you like. Model portfolios can be liquidated anytime.</p></div>
-            <div className="tc"><h4>🔐 Secure by design</h4><p>Financial-grade security with encryption in transit and at rest, built for trust.</p></div>
-            <div className="tc"><h4>🏛 Regulated products only</h4><p>Products &amp; services regulated by SEBI &amp; RBI, from licensed providers &amp; platforms.</p></div>
+            {c.trust.map((t, i) => (
+              <div className="tc" key={i}><h4>{TRUST_ICONS[i] || '✓'} {t.title}</h4><p>{t.text}</p></div>
+            ))}
           </div>
         </div>
       </section>
@@ -250,12 +289,18 @@ export default function Home() {
           <div className="eyebrow">Award-winning customer experience</div>
           <h2>Loved by investors</h2>
           <div className="tscroll">
-            <div className="tcard"><p>“One of the best finance products in recent times. The UI is clean and investing is effortless.”</p><div className="who"><span className="av grad">S</span><span><div className="nm">Saurabh</div><div className="rl">Reviewed on Play Store</div></span></div></div>
-            <div className="tcard"><p>“The best investment-tech experience I’ve used in India today. Genuinely well built.”</p><div className="who"><span className="av" style={{ background: '#7A5AF8' }}>N</span><span><div className="nm">Nithin</div><div className="rl">Posted on X</div></span></div></div>
-            <div className="tcard"><p>“Best app for investing with multiple choices of portfolios and clear methodology.”</p><div className="who"><span className="av" style={{ background: '#2E90FA' }}>A</span><span><div className="nm">Asma</div><div className="rl">Reviewed on Play Store</div></span></div></div>
-            <div className="tcard"><p>“Fallen in love with Basketly — such a smooth, smooth product from end to end.”</p><div className="who"><span className="av" style={{ background: '#12B79A' }}>T</span><span><div className="nm">Tanmay</div><div className="rl">Posted on X</div></span></div></div>
-            <div className="tcard"><p>“A smart app blending tech and finance — I can track and invest in one place.”</p><div className="who"><span className="av" style={{ background: '#F79009' }}>R</span><span><div className="nm">Ravi</div><div className="rl">Reviewed on Play Store</div></span></div></div>
-            <div className="tcard"><p>“Excellent platform for beginners, especially those who don’t have time to analyse.”</p><div className="who"><span className="av" style={{ background: '#EE46BC' }}>J</span><span><div className="nm">Jonathan</div><div className="rl">Reviewed on App Store</div></span></div></div>
+            {c.testimonials.map((t, i) => {
+              const color = AV_COLORS[i % AV_COLORS.length];
+              return (
+                <div className="tcard" key={i}>
+                  <p>“{t.quote}”</p>
+                  <div className="who">
+                    <span className={`av ${color === 'grad' ? 'grad' : ''}`} style={color === 'grad' ? undefined : { background: color }}>{(t.name || '?').slice(0, 1)}</span>
+                    <span><div className="nm">{t.name}</div><div className="rl">{t.tag}</div></span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

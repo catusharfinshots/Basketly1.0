@@ -78,6 +78,10 @@ api_router.include_router(build_auth_router(db))
 from leads import build_router as build_leads_router  # noqa: E402
 api_router.include_router(build_leads_router(db))
 
+# Editable website content routes
+from content import build_router as build_content_router  # noqa: E402
+api_router.include_router(build_content_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs, trustStats as seedStats } from '../mock';
+import { useAuth } from '../context/AuthContext';
+import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
 import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -23,6 +24,25 @@ const NAV = [
 
 const LEADS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const CONTENT_DEFAULTS = {
+  hero: { headline: 'Challenging', highlight: 'volatility', sub: 'Money at work — expert-managed model portfolios, alternative investment funds and SEBI-registered advisory, all in one place.', primaryCta: 'Get started', secondaryCta: 'Explore portfolios' },
+  stats: { rating: '4.6/5', investors: '1 lakh+', managed: '₹100 Cr+' },
+  trust: [
+    { title: 'No new accounts', text: 'Hold your stocks & ETFs in your existing demat account — no separate account needed.' },
+    { title: 'Invest without lock-ins', text: 'Exit your investments whenever you like.' },
+    { title: 'Secure by design', text: 'Financial-grade security with encryption in transit and at rest.' },
+    { title: 'Regulated products only', text: 'Products & services regulated by SEBI & RBI.' },
+  ],
+  testimonials: [
+    { name: 'Saurabh', tag: 'Reviewed on Play Store', quote: 'One of the best finance products in recent times.' },
+    { name: 'Nithin', tag: 'Posted on X', quote: 'The best investment-tech experience I’ve used in India today.' },
+    { name: 'Asma', tag: 'Reviewed on Play Store', quote: 'Best app for investing with multiple choices of portfolios.' },
+    { name: 'Tanmay', tag: 'Posted on X', quote: 'Fallen in love with Basketly — such a smooth product.' },
+    { name: 'Ravi', tag: 'Reviewed on Play Store', quote: 'A smart app blending tech and finance.' },
+    { name: 'Jonathan', tag: 'Reviewed on App Store', quote: 'Excellent platform for beginners.' },
+  ],
+};
+
 function Row({ children }) {
   return <div className="flex items-center gap-3 py-3 border-b border-[#F1E7FE] last:border-0">{children}</div>;
 }
@@ -42,8 +62,11 @@ export default function AdminPage() {
   const [tab, setTab] = useState('home');
   const [dirty, setDirty] = useState(false);
 
-  const [hero, setHero] = useState({ brand: 'Basketly', headline: 'Invest in ideas, *not just stocks.*', sub: 'Buy expert-built baskets of stocks and ETFs around a single theme.' });
-  const [stats, setStats] = useState(seedStats);
+  const { user, token, isAuthed, loading: authLoading, logout } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = user?.role === 'admin';
+
+  const [content, setContent] = useState(CONTENT_DEFAULTS);
   const [baskets, setBaskets] = useState(seedBaskets);
   const [managers, setManagers] = useState(seedManagers);
   const [collections, setCollections] = useState(seedCollections);
@@ -68,16 +91,61 @@ export default function AdminPage() {
     if (tab === 'leads') fetchLeads();
   }, [tab]);
 
-  const markDirty = () => setDirty(true);
+  useEffect(() => {
+    axios.get(`${LEADS_API}/content`).then(({ data }) => {
+      if (data) setContent({ ...CONTENT_DEFAULTS, ...data });
+    }).catch(() => {});
+  }, []);
 
-  const publish = () => {
-    toast.success('Published', { description: 'Changes are now live on the site.' });
-    setDirty(false);
+  const markDirty = () => setDirty(true);
+  const patchContent = (section, value) => { setContent((c) => ({ ...c, [section]: value })); markDirty(); };
+
+  const publish = async () => {
+    try {
+      await axios.put(`${LEADS_API}/content`, {
+        hero: content.hero, stats: content.stats, trust: content.trust, testimonials: content.testimonials,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Published', { description: 'Home page content is now live on the site.' });
+      setDirty(false);
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Could not publish. Are you logged in as an admin?');
+    }
   };
-  const discard = () => {
+  const discard = async () => {
+    try {
+      const { data } = await axios.get(`${LEADS_API}/content`);
+      setContent({ ...CONTENT_DEFAULTS, ...data });
+    } catch { /* noop */ }
     toast.info('Changes discarded');
     setDirty(false);
   };
+
+  if (authLoading) {
+    return <div className="min-h-screen grid place-items-center text-[#6B6480]">Loading console…</div>;
+  }
+  if (!isAuthed) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-[#F7F4FB] p-6">
+        <div className="surface p-8 text-center max-w-sm">
+          <span className="h-12 w-12 mx-auto rounded-xl grad-card text-white grid place-items-center"><Sparkles className="h-5 w-5" /></span>
+          <h1 className="mt-4 text-xl font-bold">Owner console</h1>
+          <p className="mt-2 text-sm text-[#6B6480]">Please log in with an admin account to manage the site.</p>
+          <button onClick={() => navigate('/login?next=/admin')} className="btn-primary mt-5 w-full">Log in</button>
+        </div>
+      </div>
+    );
+  }
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-[#F7F4FB] p-6">
+        <div className="surface p-8 text-center max-w-sm">
+          <h1 className="text-xl font-bold">Research analyst console</h1>
+          <p className="mt-2 text-sm text-[#6B6480]">Hi {user.name}. Your listings console (profile, portfolios &amp; factsheets) is coming up in the next phase.</p>
+          <button onClick={() => { logout(); navigate('/'); }} className="btn-outline mt-5 w-full">Sign out</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F4FB]">
@@ -93,7 +161,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-2">
             <Link to="/" className="btn-ghost inline-flex items-center gap-1 text-xs"><ExternalLink className="h-3.5 w-3.5" /> View site</Link>
-            <Link to="/" className="btn-ghost inline-flex items-center gap-1 text-xs"><LogOut className="h-3.5 w-3.5" /> Sign out</Link>
+            <button onClick={() => { logout(); navigate('/'); }} className="btn-ghost inline-flex items-center gap-1 text-xs"><LogOut className="h-3.5 w-3.5" /> Sign out</button>
           </div>
         </div>
       </header>
@@ -126,38 +194,61 @@ export default function AdminPage() {
 
             <div className="mt-8 space-y-6">
               {tab === 'home' && (
-                <>
+                <div className="space-y-6">
                   <section className="surface p-6">
-                    <div className="text-sm font-semibold">Hero & branding</div>
-                    <div className="text-xs text-[#6B6480]">Top of the homepage.</div>
+                    <div className="text-sm font-semibold">Hero</div>
+                    <div className="text-xs text-[#6B6480]">The top of the homepage.</div>
                     <div className="mt-4 grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Brand name</Label>
-                        <Input value={hero.brand} onChange={(e)=>{setHero({...hero, brand: e.target.value}); markDirty();}} className="mt-1.5 h-10" />
-                      </div>
-                      <div>
-                        <Label>Headline (wrap highlight in *asterisks*)</Label>
-                        <Input value={hero.headline} onChange={(e)=>{setHero({...hero, headline: e.target.value}); markDirty();}} className="mt-1.5 h-10" />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label>Sub-headline</Label>
-                        <Textarea value={hero.sub} onChange={(e)=>{setHero({...hero, sub: e.target.value}); markDirty();}} className="mt-1.5" />
-                      </div>
+                      <div><Label>Headline</Label><Input value={content.hero.headline} onChange={(e)=>patchContent('hero',{...content.hero, headline:e.target.value})} className="mt-1.5 h-10" /></div>
+                      <div><Label>Highlighted word</Label><Input value={content.hero.highlight} onChange={(e)=>patchContent('hero',{...content.hero, highlight:e.target.value})} className="mt-1.5 h-10" /></div>
+                      <div className="md:col-span-2"><Label>Sub-headline</Label><Textarea value={content.hero.sub} onChange={(e)=>patchContent('hero',{...content.hero, sub:e.target.value})} className="mt-1.5" /></div>
+                      <div><Label>Primary button</Label><Input value={content.hero.primaryCta} onChange={(e)=>patchContent('hero',{...content.hero, primaryCta:e.target.value})} className="mt-1.5 h-10" /></div>
+                      <div><Label>Secondary button</Label><Input value={content.hero.secondaryCta} onChange={(e)=>patchContent('hero',{...content.hero, secondaryCta:e.target.value})} className="mt-1.5 h-10" /></div>
                     </div>
                   </section>
+
                   <section className="surface p-6">
-                    <div className="text-sm font-semibold">Trust stats</div>
-                    <div className="text-xs text-[#6B6480]">The four numbers on the purple band.</div>
-                    <div className="mt-4 grid md:grid-cols-2 gap-4">
-                      {stats.map((s, i) => (
-                        <div key={i} className="grid grid-cols-2 gap-3">
-                          <Input value={s.value} onChange={(e)=>{const c=[...stats]; c[i]={...c[i], value: e.target.value}; setStats(c); markDirty();}} className="h-10" />
-                          <Input value={s.label} onChange={(e)=>{const c=[...stats]; c[i]={...c[i], label: e.target.value}; setStats(c); markDirty();}} className="h-10" />
+                    <div className="text-sm font-semibold">Rating stats</div>
+                    <div className="text-xs text-[#6B6480]">Shown just under the hero buttons.</div>
+                    <div className="mt-4 grid md:grid-cols-3 gap-4">
+                      <div><Label>Rating</Label><Input value={content.stats.rating} onChange={(e)=>patchContent('stats',{...content.stats, rating:e.target.value})} className="mt-1.5 h-10" /></div>
+                      <div><Label>Investors</Label><Input value={content.stats.investors} onChange={(e)=>patchContent('stats',{...content.stats, investors:e.target.value})} className="mt-1.5 h-10" /></div>
+                      <div><Label>Managed</Label><Input value={content.stats.managed} onChange={(e)=>patchContent('stats',{...content.stats, managed:e.target.value})} className="mt-1.5 h-10" /></div>
+                    </div>
+                  </section>
+
+                  <section className="surface p-6">
+                    <div className="text-sm font-semibold">Trust points</div>
+                    <div className="text-xs text-[#6B6480]">The four cards in the dark “Trust” section.</div>
+                    <div className="mt-4 space-y-3">
+                      {content.trust.map((t, i) => (
+                        <div key={i} className="grid md:grid-cols-[1fr_2fr] gap-3">
+                          <Input value={t.title} onChange={(e)=>{const a=[...content.trust]; a[i]={...a[i], title:e.target.value}; patchContent('trust', a);}} className="h-10" placeholder="Title" />
+                          <Input value={t.text} onChange={(e)=>{const a=[...content.trust]; a[i]={...a[i], text:e.target.value}; patchContent('trust', a);}} className="h-10" placeholder="Description" />
                         </div>
                       ))}
                     </div>
                   </section>
-                </>
+
+                  <section className="surface p-6">
+                    <div className="flex items-center justify-between">
+                      <div><div className="text-sm font-semibold">Testimonials</div><div className="text-xs text-[#6B6480]">The “Loved by investors” cards.</div></div>
+                      <button onClick={()=>patchContent('testimonials',[...content.testimonials,{name:'New reviewer', tag:'', quote:''}])} className="btn-outline"><Plus className="h-4 w-4" /> Add</button>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {content.testimonials.map((t, i) => (
+                        <div key={i} className="flex items-start gap-3 border-b border-[#F1E7FE] pb-3 last:border-0">
+                          <div className="flex-1 grid md:grid-cols-2 gap-3">
+                            <Input value={t.name} onChange={(e)=>{const a=[...content.testimonials]; a[i]={...a[i], name:e.target.value}; patchContent('testimonials', a);}} className="h-9" placeholder="Name" />
+                            <Input value={t.tag} onChange={(e)=>{const a=[...content.testimonials]; a[i]={...a[i], tag:e.target.value}; patchContent('testimonials', a);}} className="h-9" placeholder="Source (e.g. Posted on X)" />
+                            <Textarea value={t.quote} onChange={(e)=>{const a=[...content.testimonials]; a[i]={...a[i], quote:e.target.value}; patchContent('testimonials', a);}} className="md:col-span-2" placeholder="Quote" />
+                          </div>
+                          <button onClick={()=>patchContent('testimonials', content.testimonials.filter((_,j)=>j!==i))} className="h-8 w-8 grid place-items-center rounded-lg text-[#F04438] hover:bg-[#FEF3F2]"><Trash2 className="h-4 w-4" /></button>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
               )}
 
               {tab === 'leads' && (

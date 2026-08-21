@@ -276,6 +276,20 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: GET /api/auth/me - (1) Without Authorization header returns 401 with detail 'Not authenticated'. (2) With valid Bearer token from login returns 200 with user object where user.email='demo@basketly.in'. (3) With invalid/garbage token returns 401 with detail 'Invalid authentication token'. All validations passed."
+  - task: "Site-content endpoints (GET and PUT /api/content)"
+    implemented: true
+    working: true
+    file: "/app/backend/content.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/content (PUBLIC, no auth) returns site content with hero, stats, trust, testimonials. PUT /api/content requires admin role - returns 401 without auth, 403 for non-admin users, 200 for admin with updated content persisted to MongoDB."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: All 6 site-content endpoint tests PASSED. (1) GET /api/content (public) returns 200 with hero (headline, highlight, sub, primaryCta, secondaryCta), stats (rating, investors, managed), trust array, testimonials array. (2) PUT /api/content without Authorization header returns 401 with detail 'Not authenticated'. (3) PUT /api/content with investor token (demo@basketly.in) returns 403 with detail 'You do not have access to this resource' (only admins allowed). (4) Login as admin (admin@basketly.in/Admin@123) and PUT /api/content with new stats {rating:'4.9/5', investors:'5 lakh+', managed:'₹500 Cr+'} returns 200 with JSON reflecting new stats. (5) GET /api/content again returns 200 with updated stats persisted (rating 4.9/5, investors 5 lakh+, managed ₹500 Cr+). (6) PUT /api/content as admin to restore defaults {rating:'4.6/5', investors:'1 lakh+', managed:'₹100 Cr+'} returns 200 with JSON reflecting restored defaults. All authentication, authorization, persistence, and data validation working correctly."
 
 frontend:
   - task: "ScrollToTop component - fix scroll position bug on route changes"
@@ -355,7 +369,7 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 5
+  test_sequence: 6
   run_ui: false
 
 test_plan:
@@ -455,4 +469,34 @@ agent_communication:
         5. ✅ "Largecap MF Picks" (Mutual Fund Portfolio) → Navigated to /mutual-funds
         
         All portfolio rows in the Model Portfolio section are now properly implemented as clickable anchor links that navigate to their respective detail pages. The bug is FIXED.
+    - agent: "testing"
+      message: |
+        ✅ ALL SITE-CONTENT ENDPOINT TESTS PASSED (6/6)
+        
+        Tested NEW site-content endpoints in /app/backend/content.py (mounted under /api/content):
+        
+        1. ✅ GET /api/content (PUBLIC, no auth) → Returns 200 with complete site content:
+           - hero object: {headline, highlight, sub, primaryCta, secondaryCta}
+           - stats object: {rating: "4.6/5", investors: "1 lakh+", managed: "₹100 Cr+"}
+           - trust array: 4 items with {title, text}
+           - testimonials array: 6 items with {name, tag, quote}
+        
+        2. ✅ PUT /api/content WITHOUT Authorization header → Returns 401 with detail "Not authenticated"
+        
+        3. ✅ PUT /api/content WITH INVESTOR token (demo@basketly.in/Password123) → Returns 403 with detail "You do not have access to this resource" (only admins allowed)
+        
+        4. ✅ Login as ADMIN (admin@basketly.in/Admin@123) and PUT /api/content with new stats:
+           - Payload: {"stats": {"rating": "4.9/5", "investors": "5 lakh+", "managed": "₹500 Cr+"}}
+           - Returns 200 with JSON reflecting new stats
+        
+        5. ✅ GET /api/content again (public) → Returns 200 with updated stats persisted:
+           - rating: "4.9/5", investors: "5 lakh+", managed: "₹500 Cr+"
+           - Proves MongoDB persistence working correctly
+        
+        6. ✅ PUT /api/content as admin to restore defaults:
+           - Payload: {"stats": {"rating": "4.6/5", "investors": "1 lakh+", "managed": "₹100 Cr+"}}
+           - Returns 200 with JSON reflecting restored defaults
+           - Public site now shows original values
+        
+        All authentication (401 for no auth), authorization (403 for non-admin), data persistence (MongoDB updates), and content retrieval working correctly. The site-content management feature is fully functional.
 

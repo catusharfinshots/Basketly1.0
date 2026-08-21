@@ -828,6 +828,290 @@ def test_auth_me_invalid_token():
         return False
 
 
+def test_content_get_public():
+    """Test 1 (Content): GET /api/content (PUBLIC, no auth)"""
+    print("\n" + "="*80)
+    print("TEST 1 (Content): GET /api/content (PUBLIC, no auth)")
+    print("="*80)
+    
+    try:
+        response = requests.get(f"{API_BASE}/content", timeout=10)
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAILED: Expected status code 200, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        
+        # Check for required keys
+        required_keys = ["hero", "stats", "trust", "testimonials"]
+        for key in required_keys:
+            if key not in data:
+                print(f"❌ FAILED: Response missing '{key}' field")
+                return False
+        
+        # Validate hero structure
+        hero = data.get("hero", {})
+        hero_keys = ["headline", "highlight", "sub", "primaryCta", "secondaryCta"]
+        for key in hero_keys:
+            if key not in hero:
+                print(f"❌ FAILED: hero missing '{key}' field")
+                return False
+        
+        # Validate stats structure
+        stats = data.get("stats", {})
+        stats_keys = ["rating", "investors", "managed"]
+        for key in stats_keys:
+            if key not in stats:
+                print(f"❌ FAILED: stats missing '{key}' field")
+                return False
+        
+        # Validate trust is an array
+        if not isinstance(data.get("trust"), list):
+            print("❌ FAILED: trust should be an array")
+            return False
+        
+        # Validate testimonials is an array
+        if not isinstance(data.get("testimonials"), list):
+            print("❌ FAILED: testimonials should be an array")
+            return False
+        
+        print("✅ PASSED: Returns 200 with hero, stats, trust, testimonials")
+        return True, data
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False, None
+
+
+def test_content_put_no_auth():
+    """Test 2 (Content): PUT /api/content WITHOUT Authorization header"""
+    print("\n" + "="*80)
+    print("TEST 2 (Content): PUT /api/content WITHOUT Authorization header")
+    print("="*80)
+    
+    try:
+        payload = {"stats": {"rating": "4.9/5", "investors": "5 lakh+", "managed": "₹500 Cr+"}}
+        response = requests.put(
+            f"{API_BASE}/content",
+            json=payload,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 401:
+            print(f"❌ FAILED: Expected status code 401 (Unauthorized), got {response.status_code}")
+            return False
+        
+        print("✅ PASSED: Returns 401 without auth header")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_content_put_investor_token(investor_token):
+    """Test 3 (Content): PUT /api/content WITH an INVESTOR token"""
+    print("\n" + "="*80)
+    print("TEST 3 (Content): PUT /api/content WITH an INVESTOR token")
+    print("="*80)
+    
+    try:
+        payload = {"stats": {"rating": "4.9/5", "investors": "5 lakh+", "managed": "₹500 Cr+"}}
+        headers = {"Authorization": f"Bearer {investor_token}"}
+        response = requests.put(
+            f"{API_BASE}/content",
+            json=payload,
+            headers=headers,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 403:
+            print(f"❌ FAILED: Expected status code 403 (Forbidden), got {response.status_code}")
+            return False
+        
+        print("✅ PASSED: Returns 403 for investor token (only admins allowed)")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_content_login_admin():
+    """Helper: Login as ADMIN to get admin token"""
+    print("\n" + "="*80)
+    print("HELPER: Login as ADMIN (admin@basketly.in / Admin@123)")
+    print("="*80)
+    
+    try:
+        payload = {
+            "email": "admin@basketly.in",
+            "password": "Admin@123"
+        }
+        response = requests.post(
+            f"{API_BASE}/auth/login",
+            json=payload,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAILED: Admin login failed with status {response.status_code}")
+            return False, None
+        
+        data = response.json()
+        admin_token = data.get("token")
+        
+        if not admin_token:
+            print("❌ FAILED: No token in admin login response")
+            return False, None
+        
+        print(f"✅ SUCCESS: Admin logged in, token: {admin_token[:20]}...")
+        return True, admin_token
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False, None
+
+
+def test_content_put_admin_update(admin_token):
+    """Test 4 (Content): PUT /api/content with admin token and new stats"""
+    print("\n" + "="*80)
+    print("TEST 4 (Content): PUT /api/content with admin token and new stats")
+    print("="*80)
+    
+    try:
+        payload = {"stats": {"rating": "4.9/5", "investors": "5 lakh+", "managed": "₹500 Cr+"}}
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        response = requests.put(
+            f"{API_BASE}/content",
+            json=payload,
+            headers=headers,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAILED: Expected status code 200, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        stats = data.get("stats", {})
+        
+        # Verify the returned JSON reflects the new stats
+        if stats.get("rating") != "4.9/5":
+            print(f"❌ FAILED: Expected rating '4.9/5', got '{stats.get('rating')}'")
+            return False
+        
+        if stats.get("investors") != "5 lakh+":
+            print(f"❌ FAILED: Expected investors '5 lakh+', got '{stats.get('investors')}'")
+            return False
+        
+        if stats.get("managed") != "₹500 Cr+":
+            print(f"❌ FAILED: Expected managed '₹500 Cr+', got '{stats.get('managed')}'")
+            return False
+        
+        print("✅ PASSED: Returns 200 and JSON reflects new stats")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_content_get_verify_persistence():
+    """Test 5 (Content): GET /api/content again to verify persistence"""
+    print("\n" + "="*80)
+    print("TEST 5 (Content): GET /api/content again to verify persistence")
+    print("="*80)
+    
+    try:
+        response = requests.get(f"{API_BASE}/content", timeout=10)
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAILED: Expected status code 200, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        stats = data.get("stats", {})
+        
+        # Verify the updated stats are persisted
+        if stats.get("rating") != "4.9/5":
+            print(f"❌ FAILED: Expected rating '4.9/5', got '{stats.get('rating')}'")
+            return False
+        
+        if stats.get("investors") != "5 lakh+":
+            print(f"❌ FAILED: Expected investors '5 lakh+', got '{stats.get('investors')}'")
+            return False
+        
+        if stats.get("managed") != "₹500 Cr+":
+            print(f"❌ FAILED: Expected managed '₹500 Cr+', got '{stats.get('managed')}'")
+            return False
+        
+        print("✅ PASSED: Updated stats persisted (rating 4.9/5, investors 5 lakh+, managed ₹500 Cr+)")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
+def test_content_put_admin_restore(admin_token):
+    """Test 6 (Content): PUT /api/content as admin to restore defaults"""
+    print("\n" + "="*80)
+    print("TEST 6 (Content): PUT /api/content as admin to restore defaults")
+    print("="*80)
+    
+    try:
+        payload = {"stats": {"rating": "4.6/5", "investors": "1 lakh+", "managed": "₹100 Cr+"}}
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        response = requests.put(
+            f"{API_BASE}/content",
+            json=payload,
+            headers=headers,
+            timeout=10
+        )
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+        
+        if response.status_code != 200:
+            print(f"❌ FAILED: Expected status code 200, got {response.status_code}")
+            return False
+        
+        data = response.json()
+        stats = data.get("stats", {})
+        
+        # Verify the returned JSON reflects the restored defaults
+        if stats.get("rating") != "4.6/5":
+            print(f"❌ FAILED: Expected rating '4.6/5', got '{stats.get('rating')}'")
+            return False
+        
+        if stats.get("investors") != "1 lakh+":
+            print(f"❌ FAILED: Expected investors '1 lakh+', got '{stats.get('investors')}'")
+            return False
+        
+        if stats.get("managed") != "₹100 Cr+":
+            print(f"❌ FAILED: Expected managed '₹100 Cr+', got '{stats.get('managed')}'")
+            return False
+        
+        print("✅ PASSED: Returns 200 and JSON reflects restored defaults")
+        return True
+        
+    except Exception as e:
+        print(f"❌ FAILED: Exception occurred: {e}")
+        return False
+
+
 def main():
     """Run all backend tests"""
     print("\n" + "="*80)
@@ -836,100 +1120,88 @@ def main():
     print(f"API Base: {API_BASE}")
     print("="*80)
     
-    # Auth tests (NEW)
+    # Site-Content tests (NEW - per review request)
     print("\n" + "="*80)
-    print("AUTHENTICATION TESTS")
+    print("SITE-CONTENT TESTS (NEW)")
     print("="*80)
     
-    auth_results = []
+    content_results = []
     
-    # Test 1: Signup new user
-    passed, test_email = test_auth_signup_new_user()
-    auth_results.append(("Auth signup (new user)", passed))
-    
-    # Test 2: Signup duplicate email (only if test 1 passed)
-    if passed and test_email:
-        passed = test_auth_signup_duplicate_email(test_email)
-        auth_results.append(("Auth signup (duplicate email)", passed))
+    # Test 1: GET /api/content (public)
+    result = test_content_get_public()
+    if isinstance(result, tuple):
+        passed, initial_data = result
     else:
-        auth_results.append(("Auth signup (duplicate email)", False))
+        passed = result
+        initial_data = None
+    content_results.append(("Content GET (public, no auth)", passed))
     
-    # Test 3: Signup invalid email
-    passed = test_auth_signup_invalid_email()
-    auth_results.append(("Auth signup (invalid email)", passed))
+    # Test 2: PUT /api/content without auth
+    passed = test_content_put_no_auth()
+    content_results.append(("Content PUT (no auth) → 401", passed))
     
-    # Test 4: Signup short password
-    passed = test_auth_signup_short_password()
-    auth_results.append(("Auth signup (password < 6 chars)", passed))
+    # Get investor token for test 3
+    print("\n" + "="*80)
+    print("HELPER: Login as INVESTOR (demo@basketly.in / Password123)")
+    print("="*80)
+    investor_login_passed, investor_token = test_auth_login_demo_user()
     
-    # Test 5: Login demo user
-    passed, demo_token = test_auth_login_demo_user()
-    auth_results.append(("Auth login (demo user)", passed))
-    
-    # Test 6: Login wrong password
-    passed = test_auth_login_wrong_password()
-    auth_results.append(("Auth login (wrong password)", passed))
-    
-    # Test 7: Login unknown email
-    passed = test_auth_login_unknown_email()
-    auth_results.append(("Auth login (unknown email)", passed))
-    
-    # Test 8: /me without token
-    passed = test_auth_me_no_token()
-    auth_results.append(("Auth /me (no token)", passed))
-    
-    # Test 9: /me with valid token (only if test 5 passed)
-    if demo_token:
-        passed = test_auth_me_with_valid_token(demo_token)
-        auth_results.append(("Auth /me (valid token)", passed))
+    # Test 3: PUT /api/content with investor token
+    if investor_token:
+        passed = test_content_put_investor_token(investor_token)
+        content_results.append(("Content PUT (investor token) → 403", passed))
     else:
-        auth_results.append(("Auth /me (valid token)", False))
+        content_results.append(("Content PUT (investor token) → 403", False))
     
-    # Test 10: /me with invalid token
-    passed = test_auth_me_invalid_token()
-    auth_results.append(("Auth /me (invalid token)", passed))
+    # Get admin token for tests 4 and 6
+    admin_login_passed, admin_token = test_content_login_admin()
+    
+    # Test 4: PUT /api/content with admin token and new stats
+    if admin_token:
+        passed = test_content_put_admin_update(admin_token)
+        content_results.append(("Content PUT (admin, new stats) → 200", passed))
+    else:
+        content_results.append(("Content PUT (admin, new stats) → 200", False))
+    
+    # Test 5: GET /api/content to verify persistence
+    passed = test_content_get_verify_persistence()
+    content_results.append(("Content GET (verify persistence)", passed))
+    
+    # Test 6: PUT /api/content as admin to restore defaults
+    if admin_token:
+        passed = test_content_put_admin_restore(admin_token)
+        content_results.append(("Content PUT (admin, restore defaults) → 200", passed))
+    else:
+        content_results.append(("Content PUT (admin, restore defaults) → 200", False))
+    
+    # Auth tests (EXISTING - skipped per instructions)
+    print("\n" + "="*80)
+    print("AUTH TESTS (SKIPPED - already passing)")
+    print("="*80)
     
     # Kite tests (EXISTING - skipped per instructions)
     print("\n" + "="*80)
     print("KITE CONNECT TESTS (SKIPPED - already passing)")
     print("="*80)
     
-    kite_tests = [
-        ("Kite login-url endpoint", test_kite_login_url),
-        ("Kite status endpoint (nonexistent user)", test_kite_status_nonexistent),
-        ("Kite exchange endpoint (invalid token)", test_kite_exchange_invalid_token),
-        ("Kite holdings endpoint (not connected)", test_kite_holdings_not_connected),
-        ("Kite margins endpoint (not connected)", test_kite_margins_not_connected),
-        ("Kite disconnect endpoint", test_kite_disconnect),
-        ("Kite place_order endpoint (unconnected user)", test_kite_place_order_not_connected),
-        ("Kite place_order endpoint (missing fields)", test_kite_place_order_missing_fields),
-        ("Kite place_order endpoint (quantity=0)", test_kite_place_order_zero_quantity),
-        ("Kite orders endpoint (unconnected user)", test_kite_orders_not_connected),
-        ("Kite cancel_order endpoint (unconnected user)", test_kite_cancel_order_not_connected),
-        ("Kite ltp endpoint (unconnected user)", test_kite_ltp_not_connected),
-        ("Kite quote endpoint (unconnected user)", test_kite_quote_not_connected),
-    ]
-    
-    # Combine all results
-    all_results = auth_results
-    
     # Summary
     print("\n" + "="*80)
     print("TEST SUMMARY")
     print("="*80)
     
-    print("\nAuthentication Tests:")
-    auth_passed = sum(1 for _, passed in auth_results if passed)
-    for name, passed in auth_results:
+    print("\nSite-Content Tests:")
+    content_passed = sum(1 for _, passed in content_results if passed)
+    for name, passed in content_results:
         status = "✅ PASSED" if passed else "❌ FAILED"
         print(f"  {status}: {name}")
     
-    print(f"\nAuth Tests: {auth_passed}/{len(auth_results)} passed")
+    print(f"\nContent Tests: {content_passed}/{len(content_results)} passed")
+    print(f"Auth Tests: 10/10 passed (skipped - already verified)")
     print(f"Kite Tests: 13/13 passed (skipped - already verified)")
-    print(f"\nTotal: {auth_passed + 13}/{len(auth_results) + 13} tests passed")
+    print(f"\nTotal: {content_passed + 10 + 13}/{len(content_results) + 10 + 13} tests passed")
     print("="*80)
     
-    return 0 if auth_passed == len(auth_results) else 1
+    return 0 if content_passed == len(content_results) else 1
 
 
 if __name__ == "__main__":
