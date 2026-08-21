@@ -1,263 +1,177 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Lock, TrendingUp, Repeat, LayoutGrid, ChevronRight } from 'lucide-react';
-import { baskets, brokers, trustStats, strategies, testimonials, faqs, learnPosts, collections } from '../mock';
-import BasketCard, { Sparkline } from '../components/BasketCard';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../components/ui/accordion';
-import * as Icons from 'lucide-react';
+import { baskets, getManager } from '../mock';
+import {
+  ArrowRight, Star, ShieldCheck, Lock, Repeat, TrendingUp, Layers, Briefcase, Compass,
+  CheckCircle2, Landmark,
+} from 'lucide-react';
 
-function Icon({ name, className }) {
-  const C = Icons[name] || Icons.Circle;
-  return <C className={className} />;
+const RATING = 'Rated 4.6/5 · 1 lakh+ investors · ₹100 Cr+ managed';
+
+const offerings = [
+  { icon: Layers, title: 'Model Portfolio', text: 'Curated baskets of stocks & ETFs that rebalance with the market.', to: '/model-portfolios', cta: 'Explore portfolios' },
+  { icon: Briefcase, title: 'Alternative Investment Fund', text: 'Diversify beyond listed equity with professionally-managed AIFs.', to: '/aif', cta: 'Learn about AIF' },
+  { icon: Compass, title: 'Advisory', text: 'Buy / Sell / Hold insights in seconds, tailored to your holdings.', to: '/advisory', cta: 'See advisory' },
+];
+
+const trust = [
+  { icon: ShieldCheck, title: 'No new accounts', text: 'Invest from your existing broker — no new demat needed.' },
+  { icon: Lock, title: 'No lock-ins', text: 'Exit part or all of any portfolio whenever you like.' },
+  { icon: CheckCircle2, title: 'Secure', text: 'Your shares stay in your own demat account, always.' },
+  { icon: Landmark, title: 'Regulated', text: 'Portfolios built by SEBI-registered research analysts.' },
+];
+
+const testimonials = [
+  { name: 'Ananya R.', tag: 'Investor, 2 yrs', quote: 'I finally stopped guessing which stocks to buy. Picked a portfolio, connected my broker, done.' },
+  { name: 'Vikram S.', tag: 'Investor, 4 yrs', quote: 'The rebalancing nudges are gold. One tap and my portfolio stays aligned to the strategy.' },
+  { name: 'Meera K.', tag: 'Investor, 1 yr', quote: 'Everything is transparent — every holding and fee is right there before I commit a rupee.' },
+  { name: 'Rahul T.', tag: 'Investor, 3 yrs', quote: 'The AIF and advisory options mean I can keep everything for my money in one place.' },
+  { name: 'Sneha P.', tag: 'Investor, 1 yr', quote: 'SIP into a whole model portfolio was so simple. The order review made it feel safe.' },
+  { name: 'Arjun M.', tag: 'Investor, 5 yrs', quote: 'Money genuinely at work. My portfolios are managed by real research analysts.' },
+];
+
+function FeaturedCard({ b }) {
+  const mgr = getManager(b.managerId);
+  return (
+    <Link to={`/model-portfolios/${b.id}`} className="group surface p-5 hover:shadow-[0_16px_40px_-24px_rgba(37,99,235,0.35)] hover:border-[#C7D2FE] transition-all block">
+      <div className="flex items-center gap-3">
+        <span className="h-10 w-10 rounded-xl grad-card text-white grid place-items-center text-sm font-bold">{b.name.slice(0,2).toUpperCase()}</span>
+        <div className="min-w-0">
+          <div className="text-xs text-[#64748B]">by {mgr?.name}</div>
+          <div className="text-sm font-semibold text-[#0F1729] truncate group-hover:text-[#2563EB]">{b.name}</div>
+        </div>
+      </div>
+      <div className="mt-4 flex items-center justify-between">
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-[#64748B] font-semibold">3Y Return</div>
+          <div className="num text-lg font-bold text-[#0E9F5E] flex items-center gap-1"><TrendingUp className="h-4 w-4" /> {b.returns.y3.toFixed(1)}%</div>
+        </div>
+        <div className="text-right">
+          <div className="text-[11px] uppercase tracking-wider text-[#64748B] font-semibold">Min.</div>
+          <div className="num text-lg font-bold text-[#0F1729]">₹{b.minAmount.toLocaleString('en-IN')}</div>
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 export default function Home() {
   const featured = baskets.slice(0, 6);
-  const heroBasket = baskets[0];
-
   return (
     <div>
       {/* HERO */}
       <section className="grad-hero relative overflow-hidden">
         <div className="absolute inset-0 noise-overlay opacity-40 pointer-events-none" />
-        <div className="container-x pt-14 pb-16 lg:pt-20 lg:pb-24">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/70 border border-[#E8E1F0] px-3 py-1 text-xs font-semibold text-[#5320A8] backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#6C2BD9] animate-pulse" />
-            Demo build · simulated data
+        <div className="container-x pt-16 pb-20 lg:pt-24 lg:pb-28 relative">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white border border-[#E6E8F0] px-3 py-1 text-xs font-semibold text-[#2563EB]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] animate-pulse" /> Demo build · simulated data
           </div>
-          <div className="mt-6 grid lg:grid-cols-12 gap-10 items-center">
-            <div className="lg:col-span-7">
-              <h1 className="font-[Space_Grotesk] text-[42px] sm:text-[56px] lg:text-[68px] font-bold leading-[1.02] tracking-tight">
-                Invest in ideas,{' '}
-                <span className="bg-gradient-to-r from-[#6C2BD9] via-[#B15CFF] to-[#E23FA0] bg-clip-text text-transparent italic">not just stocks.</span>
-              </h1>
-              <p className="mt-5 text-lg text-[#6B6480] max-w-xl leading-relaxed">
-                Buy expert-built baskets of stocks and ETFs around a single theme — in one click, from your own broker account. Transparent, low-cost, and yours to manage.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Link to="/explore/smallcases" className="btn-primary px-6 py-3">
-                  Explore baskets <ArrowRight className="h-4 w-4" />
-                </Link>
-                <a href="#how-it-works" className="btn-outline px-6 py-3">See how it works</a>
-              </div>
-              <div className="mt-6 inline-flex items-center gap-2 text-sm text-[#6B6480]">
-                <Lock className="h-4 w-4 text-[#12B76A]" />
-                Your stocks stay in your own demat account
-              </div>
-            </div>
-
-            {/* Hero basket card */}
-            <div className="lg:col-span-5">
-              <div className="relative">
-                <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-[#B15CFF]/30 to-[#E23FA0]/20 blur-2xl" />
-                <div className="relative surface p-6 shadow-[0_30px_60px_-30px_rgba(76,29,149,0.35)]">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl grad-card text-white grid place-items-center font-bold text-sm">AW</div>
-                      <div>
-                        <div className="text-xs text-[#6B6480]">All Weather</div>
-                        <div className="font-semibold text-[#1A1030]">{heroBasket.name}</div>
-                      </div>
-                    </div>
-                    <span className="chip-brand">Featured</span>
-                  </div>
-
-                  <div className="mt-4">
-                    <Sparkline seed={7} positive />
-                  </div>
-                  <div className="mt-3 flex items-baseline gap-2">
-                    <div className="num text-3xl font-bold text-[#12B76A]">+18.4%</div>
-                    <div className="text-xs text-[#6B6480] font-medium">3Y CAGR</div>
-                  </div>
-
-                  <div className="mt-5 space-y-2">
-                    {heroBasket.constituents.map((c) => (
-                      <div key={c.symbol} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-lg bg-[#F1E7FE] text-[#5320A8] grid place-items-center text-[10px] font-bold">{c.symbol.slice(0,2)}</div>
-                          <span className="font-medium text-[#1A1030]">{c.name}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="h-1.5 w-20 rounded-full bg-[#F1E7FE] overflow-hidden">
-                            <div className="h-full grad-card" style={{ width: `${c.weight * 2.5}%` }} />
-                          </div>
-                          <span className="num font-semibold text-[#1A1030] w-9 text-right">{c.weight}%</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Link to={`/smallcase/${heroBasket.id}`} className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#6C2BD9] hover:text-[#5320A8]">
-                    View basket <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-            </div>
+          <h1 className="mt-6 font-[Space_Grotesk] text-[44px] sm:text-[60px] lg:text-[72px] font-bold leading-[1.02] tracking-tight max-w-4xl">
+            Challenging <span className="text-[#2563EB]">volatility</span>
+          </h1>
+          <p className="mt-5 text-lg sm:text-xl text-[#475569] max-w-2xl leading-relaxed">
+            Money at work — expert-managed model portfolios, AIFs and advisory, invested straight from your own broker account. Transparent, low-cost, and yours to manage.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link to="/signup" className="btn-primary px-6 py-3">Get started <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/model-portfolios" className="btn-outline px-6 py-3">Explore model portfolios</Link>
+          </div>
+          <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#475569]">
+            <span className="flex items-center gap-0.5 text-[#F59E0B]">{[0,1,2,3,4].map(i => <Star key={i} className="h-4 w-4 fill-[#F59E0B]" />)}</span>
+            {RATING}
           </div>
         </div>
       </section>
 
-      {/* Trust stats band */}
+      {/* BAND */}
       <section className="grad-band relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 noise-overlay" />
-        <div className="container-x py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-white">
-            {trustStats.map((s) => (
-              <div key={s.label}>
-                <div className="num text-3xl md:text-4xl font-bold">{s.value}</div>
-                <div className="mt-1 text-sm text-white/75">{s.label}</div>
-              </div>
-            ))}
-          </div>
+        <div className="container-x py-14 relative">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white max-w-2xl">Everything for your money, at one place</h2>
+          <p className="mt-3 text-white/75 max-w-xl">Model portfolios, alternative funds and advisory — all working together from a single dashboard.</p>
         </div>
       </section>
 
-      {/* Broker wall */}
-      <section className="border-y border-[#E8E1F0] bg-white">
-        <div className="container-x py-8">
-          <div className="flex items-center gap-6 overflow-hidden">
-            <div className="text-xs font-semibold text-[#6B6480] uppercase tracking-widest whitespace-nowrap">Works with</div>
-            <div className="flex-1 flex flex-wrap items-center gap-x-8 gap-y-4">
-              {brokers.map((b) => (
-                <div key={b.name} className="flex items-center gap-2 text-[#1A1030]">
-                  <div className="h-8 w-8 rounded-lg bg-[#F7F4FB] text-[#5320A8] grid place-items-center text-[11px] font-bold border border-[#E8E1F0]">{b.logo}</div>
-                  <span className="text-sm font-medium">{b.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* The idea */}
+      {/* HOW IT WORKS / OFFERINGS */}
       <section className="container-x py-20">
-        <div className="max-w-2xl">
-          <div className="eyebrow">The idea</div>
-          <h2 className="mt-3 text-4xl font-bold">A basket is a portfolio with a purpose</h2>
-          <p className="mt-4 text-lg text-[#6B6480]">Each one is built and rebalanced by professionals around a clear strategy — you own the thinking, not just the tickers.</p>
-        </div>
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
-          {[
-            { icon: 'Brain', title: 'Built by experts', text: 'Registered managers research, weight, and maintain every basket so you don\'t pick stocks alone.' },
-            { icon: 'Repeat', title: 'Auto-rebalanced', text: 'Get notified when a strategy shifts and apply the update in one tap to stay on track.' },
-            { icon: 'ShieldCheck', title: 'Fully transparent', text: 'See every holding, weight, and fee up front. Your shares sit safely in your own demat.' },
-          ].map((f) => (
-            <div key={f.title} className="surface p-7 hover:border-[#D8C7F1] hover:shadow-[0_16px_40px_-25px_rgba(76,29,149,0.35)] transition-all">
-              <div className="h-11 w-11 rounded-xl bg-[#F1E7FE] text-[#6C2BD9] grid place-items-center">
-                <Icon name={f.icon} className="h-5 w-5" />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold">{f.title}</h3>
-              <p className="mt-2 text-[15px] text-[#6B6480] leading-relaxed">{f.text}</p>
-            </div>
+        <div className="eyebrow">How it works</div>
+        <h2 className="mt-3 text-4xl font-bold">Three ways to put your money to work</h2>
+        <div className="mt-10 grid md:grid-cols-3 gap-6">
+          {offerings.map((o) => (
+            <Link key={o.title} to={o.to} className="surface p-7 hover:border-[#C7D2FE] hover:shadow-[0_16px_40px_-25px_rgba(37,99,235,0.35)] transition-all group">
+              <div className="h-12 w-12 rounded-xl bg-[#E7EFFF] text-[#2563EB] grid place-items-center"><o.icon className="h-6 w-6" /></div>
+              <h3 className="mt-5 text-lg font-semibold group-hover:text-[#2563EB]">{o.title}</h3>
+              <p className="mt-2 text-[15px] text-[#64748B] leading-relaxed">{o.text}</p>
+              <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#2563EB]">{o.cta} <ArrowRight className="h-4 w-4" /></div>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* Featured baskets */}
+      {/* FEATURED MODEL PORTFOLIOS */}
       <section className="container-x py-8">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <div className="eyebrow">Featured</div>
-            <h2 className="mt-3 text-4xl font-bold">Popular baskets right now</h2>
-            <p className="mt-3 text-[#6B6480] max-w-xl">A live selection curated by the platform team — returns update whenever the team republishes.</p>
+            <div className="eyebrow">Model Portfolios</div>
+            <h2 className="mt-3 text-4xl font-bold">Popular right now</h2>
+            <p className="mt-3 text-[#64748B] max-w-xl">Curated by SEBI-registered managers. Returns update whenever the team republishes.</p>
           </div>
-          <Link to="/explore/smallcases" className="btn-outline">See all baskets <ArrowRight className="h-4 w-4" /></Link>
+          <Link to="/model-portfolios" className="btn-outline">See more <ArrowRight className="h-4 w-4" /></Link>
         </div>
         <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {featured.map((b) => <BasketCard key={b.id} basket={b} />)}
+          {featured.map((b) => <FeaturedCard key={b.id} b={b} />)}
         </div>
       </section>
 
-      {/* Explore by strategy */}
+      {/* AIF + ADVISORY split */}
       <section className="container-x py-20">
-        <div className="eyebrow">Browse</div>
-        <h2 className="mt-3 text-4xl font-bold">Explore by strategy</h2>
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {strategies.map((s) => (
-            <Link key={s.key} to={`/explore/smallcases?strategy=${s.key}`}
-              className="surface p-5 flex flex-col items-start gap-3 hover:border-[#D8C7F1] hover:-translate-y-0.5 transition-all">
-              <div className="h-10 w-10 rounded-xl grad-card text-white grid place-items-center"><Icon name={s.icon} className="h-4 w-4" /></div>
-              <div className="text-sm font-semibold text-[#1A1030]">{s.label}</div>
-            </Link>
-          ))}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="rounded-2xl p-8 grad-card text-white relative overflow-hidden">
+            <Briefcase className="h-8 w-8 opacity-90" />
+            <h3 className="mt-5 text-2xl font-bold">Alternative Investment Fund</h3>
+            <p className="mt-2 text-white/85 max-w-md">Access professionally-managed AIFs to diversify beyond listed equity. Register your interest and our team will reach out.</p>
+            <Link to="/aif" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white text-[#2563EB] px-5 py-2.5 text-sm font-semibold">Explore AIF <ArrowRight className="h-4 w-4" /></Link>
+          </div>
+          <div className="rounded-2xl p-8 grad-accent text-white relative overflow-hidden">
+            <Compass className="h-8 w-8 opacity-90" />
+            <h3 className="mt-5 text-2xl font-bold">Advisory</h3>
+            <p className="mt-2 text-white/85 max-w-md">Get Buy / Sell / Hold calls in seconds, tailored to your goals. Subscribe to research-backed advisory.</p>
+            <Link to="/advisory" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white text-[#6C2BD9] px-5 py-2.5 text-sm font-semibold">See advisory <ArrowRight className="h-4 w-4" /></Link>
+          </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="bg-[#F7F4FB] border-y border-[#E8E1F0]">
-        <div className="container-x py-20">
-          <div className="eyebrow">How it works</div>
-          <h2 className="mt-3 text-4xl font-bold max-w-2xl">From idea to invested in three steps</h2>
-          <div className="mt-12 grid md:grid-cols-3 gap-6">
-            {[
-              { n: '01', t: 'Pick a basket', d: 'Browse by theme, risk, or returns and open the one that matches your goals.', icon: 'LayoutGrid' },
-              { n: '02', t: 'Connect your broker', d: 'Link your existing broker in seconds. No new account, no transfers.', icon: 'Link' },
-              { n: '03', t: 'Invest & track', d: 'Buy the whole basket in one click and manage it from a single dashboard.', icon: 'LineChart' },
-            ].map((s) => (
-              <div key={s.n} className="surface p-7 relative overflow-hidden">
-                <div className="absolute -top-4 -right-4 text-8xl font-bold text-[#F1E7FE]">{s.n}</div>
-                <div className="relative">
-                  <div className="h-11 w-11 rounded-xl bg-[#F1E7FE] text-[#6C2BD9] grid place-items-center"><Icon name={s.icon} className="h-5 w-5" /></div>
-                  <h3 className="mt-4 text-lg font-semibold">{s.t}</h3>
-                  <p className="mt-2 text-[15px] text-[#6B6480]">{s.d}</p>
-                </div>
+      {/* TRUST */}
+      <section className="bg-[#F5F7FB] border-y border-[#E6E8F0]">
+        <div className="container-x py-16">
+          <div className="eyebrow">Why Basketly</div>
+          <h2 className="mt-3 text-4xl font-bold">Built on trust</h2>
+          <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {trust.map((t) => (
+              <div key={t.title} className="surface p-6">
+                <div className="h-11 w-11 rounded-xl bg-[#E7EFFF] text-[#2563EB] grid place-items-center"><t.icon className="h-5 w-5" /></div>
+                <h3 className="mt-4 text-base font-semibold">{t.title}</h3>
+                <p className="mt-1 text-sm text-[#64748B]">{t.text}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Collections grid */}
-      <section className="container-x py-20">
-        <div className="flex items-end justify-between gap-4 flex-wrap">
-          <div>
-            <div className="eyebrow">Collections</div>
-            <h2 className="mt-3 text-4xl font-bold">Curated for how you think</h2>
-          </div>
-          <Link to="/collections" className="btn-outline">All collections <ArrowRight className="h-4 w-4" /></Link>
-        </div>
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {collections.map((c) => (
-            <Link key={c.id} to={`/collections/${c.slug}`} className="surface p-5 hover:border-[#D8C7F1] hover:-translate-y-0.5 transition-all">
-              <div className="h-10 w-10 rounded-xl bg-[#F1E7FE] text-[#6C2BD9] grid place-items-center"><Icon name={c.icon} className="h-5 w-5" /></div>
-              <div className="mt-4 text-sm font-semibold text-[#1A1030]">{c.title}</div>
-              <div className="text-xs text-[#6B6480] mt-1">{c.description}</div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Asset classes */}
-      <section className="container-x py-8">
-        <div className="grid md:grid-cols-3 gap-5">
-          {[
-            { title: 'Direct stocks', desc: 'Search, screen, and build custom baskets.', to: '/stocks', icon: 'LineChart', color: 'from-[#6C2BD9] to-[#B15CFF]' },
-            { title: 'Mutual funds', desc: 'Direct funds across equity, debt & hybrid.', to: '/mutual-funds', icon: 'PieChart', color: 'from-[#B15CFF] to-[#E23FA0]' },
-            { title: 'Fixed deposits', desc: 'Book RBI-insured FDs at attractive rates.', to: '/fixed-deposits', icon: 'Landmark', color: 'from-[#5320A8] to-[#6C2BD9]' },
-          ].map((c) => (
-            <Link key={c.title} to={c.to} className={`rounded-2xl p-6 bg-gradient-to-br ${c.color} text-white relative overflow-hidden group`}>
-              <Icon name={c.icon} className="h-8 w-8 opacity-90" />
-              <div className="mt-6 text-xl font-semibold">{c.title}</div>
-              <div className="mt-1 text-sm text-white/85 max-w-xs">{c.desc}</div>
-              <div className="mt-6 inline-flex items-center gap-1 text-sm font-semibold group-hover:gap-2 transition-all">Explore <ArrowRight className="h-4 w-4" /></div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Testimonials */}
+      {/* TESTIMONIALS */}
       <section className="container-x py-20">
         <div className="eyebrow">Loved by investors</div>
         <h2 className="mt-3 text-4xl font-bold">What people are saying</h2>
-        <div className="mt-10 grid md:grid-cols-3 gap-5">
+        <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {testimonials.map((t) => (
             <div key={t.name} className="surface p-7">
-              <div className="text-[15px] leading-relaxed text-[#1A1030]">“{t.quote}”</div>
+              <div className="flex items-center gap-0.5 text-[#F59E0B]">{[0,1,2,3,4].map(i => <Star key={i} className="h-4 w-4 fill-[#F59E0B]" />)}</div>
+              <div className="mt-4 text-[15px] leading-relaxed text-[#0F1729]">“{t.quote}”</div>
               <div className="mt-6 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full grad-card text-white grid place-items-center font-bold">{t.initial}</div>
+                <div className="h-10 w-10 rounded-full grad-card text-white grid place-items-center font-bold">{t.name.slice(0,1)}</div>
                 <div>
                   <div className="text-sm font-semibold">{t.name}</div>
-                  <div className="text-xs text-[#6B6480]">{t.tag}</div>
+                  <div className="text-xs text-[#64748B]">{t.tag}</div>
                 </div>
               </div>
             </div>
@@ -265,87 +179,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Mobile app promo */}
-      <section className="container-x pb-4">
-        <div className="relative overflow-hidden rounded-3xl grad-band text-white p-10 lg:p-14">
+      {/* CTA */}
+      <section className="container-x pb-20">
+        <div className="rounded-3xl grad-band text-white p-10 lg:p-14 text-center relative overflow-hidden">
           <div className="absolute inset-0 noise-overlay opacity-20" />
-          <div className="relative grid lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-3xl lg:text-4xl font-bold">Your portfolio, in your pocket</h3>
-              <p className="mt-3 text-white/80 max-w-md">Track baskets, apply rebalances, and invest on the go. Available on iOS and Android.</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <button className="inline-flex items-center gap-2 rounded-xl bg-black/40 border border-white/20 px-4 py-2.5 text-sm backdrop-blur hover:bg-black/50"><Icons.Apple className="h-5 w-5" /> App Store</button>
-                <button className="inline-flex items-center gap-2 rounded-xl bg-black/40 border border-white/20 px-4 py-2.5 text-sm backdrop-blur hover:bg-black/50"><Icons.Play className="h-5 w-5" /> Google Play</button>
-              </div>
-            </div>
-            <div className="relative flex justify-center lg:justify-end">
-              <div className="w-48 h-96 rounded-[2rem] bg-white/10 border border-white/25 backdrop-blur p-2 shadow-xl">
-                <div className="h-full w-full rounded-[1.6rem] bg-white text-[#1A1030] p-4 flex flex-col">
-                  <div className="flex items-center justify-between">
-                    <div className="font-[Space_Grotesk] font-bold text-sm">Basketly</div>
-                    <Icons.Bell className="h-4 w-4 text-[#6B6480]" />
-                  </div>
-                  <div className="mt-4 rounded-xl grad-card text-white p-3">
-                    <div className="text-[10px] uppercase tracking-widest opacity-80">Portfolio</div>
-                    <div className="num text-xl font-bold">₹2,84,120</div>
-                    <div className="text-[11px] mt-1">+18.4% · 3Y</div>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    {baskets.slice(0,3).map(b => (
-                      <div key={b.id} className="flex items-center justify-between text-[11px]">
-                        <span className="font-medium truncate">{b.name}</span>
-                        <span className="text-[#12B76A] font-semibold">+{b.returns.y1.toFixed(1)}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Learn preview */}
-      <section className="container-x py-20">
-        <div className="flex items-end justify-between gap-4 flex-wrap">
-          <div>
-            <div className="eyebrow">Learn</div>
-            <h2 className="mt-3 text-4xl font-bold">Guides for smarter investors</h2>
-          </div>
-          <Link to="/learn" className="btn-outline">All guides <ArrowRight className="h-4 w-4" /></Link>
-        </div>
-        <div className="mt-8 grid md:grid-cols-3 gap-5">
-          {learnPosts.slice(0,3).map((p, i) => (
-            <Link key={p.slug} to={`/learn/${p.slug}`} className="surface overflow-hidden hover:border-[#D8C7F1] transition-all group">
-              <div className={`h-40 bg-gradient-to-br ${i===0?'from-[#6C2BD9] to-[#B15CFF]':i===1?'from-[#E23FA0] to-[#B15CFF]':'from-[#3B1671] to-[#6C2BD9]'}`}></div>
-              <div className="p-5">
-                <div className="chip-brand">{p.category}</div>
-                <h3 className="mt-3 text-[17px] font-semibold group-hover:text-[#6C2BD9]">{p.title}</h3>
-                <p className="mt-1 text-sm text-[#6B6480]">{p.excerpt}</p>
-                <div className="mt-4 text-xs text-[#6B6480]">{p.readTime}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="container-x py-20">
-        <div className="grid lg:grid-cols-12 gap-12">
-          <div className="lg:col-span-4">
-            <div className="eyebrow">Questions</div>
-            <h2 className="mt-3 text-4xl font-bold">Frequently asked</h2>
-            <p className="mt-4 text-[#6B6480]">Everything about how baskets work, fees, and safety of your holdings.</p>
-          </div>
-          <div className="lg:col-span-8">
-            <Accordion type="single" collapsible className="surface divide-y divide-[#E8E1F0]">
-              {faqs.map((f, i) => (
-                <AccordionItem key={i} value={`f-${i}`} className="px-5 border-0">
-                  <AccordionTrigger className="text-left text-[15px] font-semibold py-4 hover:no-underline">{f.q}</AccordionTrigger>
-                  <AccordionContent className="text-[15px] text-[#6B6480] pb-5">{f.a}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+          <h3 className="relative text-3xl lg:text-4xl font-bold">Put your money to work today</h3>
+          <p className="relative mt-3 text-white/80 max-w-xl mx-auto">Create your free account and invest in your first model portfolio in minutes.</p>
+          <div className="relative mt-7 flex flex-wrap gap-3 justify-center">
+            <Link to="/signup" className="inline-flex items-center gap-2 rounded-full bg-white text-[#2563EB] px-6 py-3 text-sm font-semibold">Get started <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/model-portfolios" className="inline-flex items-center gap-2 rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">Browse portfolios</Link>
           </div>
         </div>
       </section>

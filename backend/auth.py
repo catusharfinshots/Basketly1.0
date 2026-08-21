@@ -1,0 +1,144 @@
+"""Email/password authentication for Basketly investors.
+
+Stores users in Mongo (collection: users) with a bcrypt-hashed password and
+issues a signed JWT on signup/login. Kept intentionally small and framework
+native so the frontend can use a simple Bearer-token flow.
+"""
+from __future__ import annotations
+
+import os
+import logging
+import uuid
+from datetime import datetime, timezone, timedelta
+from typing import Optional
+
+import bcrypt
+import jwt
+from fastapi import APIRouter, HTTPException, Depends, Header
+from pydantic import BaseModel, EmailStr, Field
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
+logger = logging.getLogger(__name__)
+
+JWT_SECRET = os.environ.get("JWT_SECRET", "basketly-dev-secret")
+JWT_ALGO = "HS256"
+JWT_EXPIRE_DAYS = 30
+
+
+def hash_password(password: str) -> str:
+    # bcrypt has a 72-byte limit; truncate defensively
+    return bcrypt.hashpw(password.encode("utf-8")[:72], bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(password.encode("utf-8")[:72], hashed.encode("utf-8"))
+    except Exception:
+        return False
+
+
+def create_token(user: dict) -> str:
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": user["id"],
+        "email": user["email"],
+        "role": user.get("role", "investor"),
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(days=JWT_EXPIRE_DAYS)).timestamp()),
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
+
+
+def public_user(user: dict) -> dict:
+    return {
+        "id": user["id"],
+        "name": user.get("name", ""),
+        "email": user["email"],
+        "role": user.get("role", "investor"),
+        "created_at": user.get("created_at"),
+    }
+
+
+class SignupRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=80)
+    email: EmailStr
+    password: str = Field(..., min_length=6, max_length=128)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1, max_length=128)
+
+
+async def seed_users(db: AsyncIOMotorDatabase) -> None:
+    """Idempotently ensure a demo investor and an admin exist."""
+    await db.users.create_index("email", unique=True)
+    seeds = [
+        {"name": "Demo Investor", "email": "demo@basketly.in", "password": "Password123", "role": "investor"},
+        {"name": "Basketly Admin", "email": "admin@basketly.in", "password": "Admin@123", "role": "admin"},
+    ]
+    for s in seeds:
+        existing = await db.users.find_one({"email": s["email"].lower()})
+        if existing:
+            continue
+        doc = {
+            "id": str(uuid.uuid4()),
+            "name": s["name"],
+            "email": s["email"].lower(),
+            "password_hash": hash_password(s["password"]),
+            "role": s["role"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.users.insert_one(doc)
+        logger.info("Seeded user %s", s["email"])
+
+
+def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
+    router = APIRouter(prefix="/auth", tags=["auth"])
+
+    async def current_user(authorization: Optional[str] = Header(None)) -> dict:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        token = authorization.split(" ", 1)[1].strip()
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Session expired, please log in again")
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid authentication token")
+        user = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+
+    @router.post("/signup")
+    async def signup(payload: SignupRequest):
+        email = payload.email.lower()
+        if await db.users.find_one({"email": email}):
+            raise HTTPException(status_code=409, detail="An account with this email already exists")
+        user = {
+            "id": str(uuid.uuid4()),
+            "name": payload.name.strip(),
+            "email": email,
+            "password_hash": hash_password(payload.password),
+            "role": "investor",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.users.insert_one(user)
+        token = create_token(user)
+        return {"token": token, "user": public_user(user)}
+
+    @router.post("/login")
+    async def login(payload: LoginRequest):
+        email = payload.email.lower()
+        user = await db.users.find_one({"email": email})
+        if not user or not verify_password(payload.password, user.get("password_hash", "")):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        token = create_token(user)
+        return {"token": token, "user": public_user(user)}
+
+    @router.get("/me")
+    async def me(user: dict = Depends(current_user)):
+        return {"user": public_user(user)}
+
+    return router

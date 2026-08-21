@@ -234,6 +234,48 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: Both GET /api/broker/kite/holdings and GET /api/broker/kite/margins return 401 with detail='Not connected' for unconnected users. Works correctly."
+  - task: "Auth signup endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/auth/signup {name,email,password} creates a user in Mongo (bcrypt hash) and returns {token, user}. Duplicate email should return 409. Invalid email or password<6 chars should return 422."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: POST /api/auth/signup - (1) New user signup returns 200 with non-empty JWT token and user object containing {id, name, email, role:'investor', created_at}. (2) Duplicate email returns 409 with detail 'An account with this email already exists'. (3) Invalid email (no @-sign) returns 422 with Pydantic validation error. (4) Password < 6 chars returns 422 with 'String should have at least 6 characters'. All validations passed."
+  - task: "Auth login endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/auth/login {email,password} returns {token, user} for valid creds. Wrong password or unknown email returns 401. Seeded users: demo@basketly.in/Password123 and admin@basketly.in/Admin@123."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: POST /api/auth/login - (1) Valid credentials (demo@basketly.in/Password123) returns 200 with token and user object where user.email='demo@basketly.in'. (2) Wrong password returns 401 with detail 'Invalid email or password'. (3) Unknown email returns 401 with detail 'Invalid email or password'. All validations passed."
+  - task: "Auth me endpoint (JWT)"
+    implemented: true
+    working: true
+    file: "/app/backend/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/auth/me with Authorization: Bearer <token> returns {user}. Missing/invalid token returns 401. Use token from login."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: GET /api/auth/me - (1) Without Authorization header returns 401 with detail 'Not authenticated'. (2) With valid Bearer token from login returns 200 with user object where user.email='demo@basketly.in'. (3) With invalid/garbage token returns 401 with detail 'Invalid authentication token'. All validations passed."
 
 frontend:
   - task: "Broker connect page renders with new Common issues section"
@@ -285,7 +327,7 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 3
+  test_sequence: 4
   run_ui: false
 
 test_plan:
@@ -339,4 +381,21 @@ agent_communication:
         7. ✅ GET /api/broker/kite/quote (unconnected user) - Returns 401 "Not connected"
         
         All order placement endpoints properly validate user connection status and return appropriate 401 errors when user is not connected to Kite. Pydantic validation is working correctly for missing fields and invalid values. All earlier endpoints continue to work correctly.
+    - agent: "testing"
+      message: |
+        ✅ ALL AUTH TESTS PASSED (10/10)
+        
+        Authentication endpoint tests:
+        1. ✅ POST /api/auth/signup (new user) - Returns 200 with non-empty JWT token and user object {id, name, email, role:'investor', created_at}
+        2. ✅ POST /api/auth/signup (duplicate email) - Returns 409 with detail "An account with this email already exists"
+        3. ✅ POST /api/auth/signup (invalid email) - Returns 422 with Pydantic validation error for missing @-sign
+        4. ✅ POST /api/auth/signup (password < 6 chars) - Returns 422 with "String should have at least 6 characters"
+        5. ✅ POST /api/auth/login (demo user) - Returns 200 with token and user where user.email="demo@basketly.in"
+        6. ✅ POST /api/auth/login (wrong password) - Returns 401 with detail "Invalid email or password"
+        7. ✅ POST /api/auth/login (unknown email) - Returns 401 with detail "Invalid email or password"
+        8. ✅ GET /api/auth/me (no token) - Returns 401 with detail "Not authenticated"
+        9. ✅ GET /api/auth/me (valid token) - Returns 200 with user object where user.email="demo@basketly.in"
+        10. ✅ GET /api/auth/me (invalid token) - Returns 401 with detail "Invalid authentication token"
+        
+        All authentication endpoints are working correctly. Seeded users (demo@basketly.in/Password123 and admin@basketly.in/Admin@123) are created successfully on startup. JWT token generation and validation working properly. All validation rules (email format, password length, duplicate detection) functioning as expected.
 

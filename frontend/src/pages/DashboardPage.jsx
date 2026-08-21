@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { usePortfolio } from '../context/PortfolioContext';
 import { useBroker } from '../context/BrokerContext';
+import { useAuth } from '../context/AuthContext';
 import { baskets, getBasket } from '../mock';
 import { TrendingUp, TrendingDown, CalendarClock, ShoppingBag, Heart, Link2, RefreshCw, CheckCircle2, Loader2, ExternalLink, LineChart, ClipboardList, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,6 +15,8 @@ const API = `${BACKEND_URL}/api`;
 export default function DashboardPage() {
   const { investments, sips, watchlist } = usePortfolio();
   const { connections, userId, getKiteHoldings, getKiteMargins, refreshKite } = useBroker();
+  const { isAuthed, loading: authLoading, user } = useAuth();
+  const navigate = useNavigate();
   const kite = connections.kite;
 
   const [kiteHoldings, setKiteHoldings] = useState([]);
@@ -82,11 +85,28 @@ export default function DashboardPage() {
   const returns = totals.current - totals.invested;
   const returnPct = totals.invested ? (returns/totals.invested)*100 : 0;
 
+  useEffect(() => {
+    if (!authLoading && !isAuthed) navigate('/login?next=/dashboard');
+  }, [authLoading, isAuthed, navigate]);
+
+  if (authLoading) {
+    return <div className="container-x py-24 text-center text-[#64748B]">Loading your dashboard…</div>;
+  }
+  if (!isAuthed) {
+    return (
+      <div className="container-x py-24 text-center">
+        <h1 className="text-2xl font-bold">Please log in</h1>
+        <p className="mt-2 text-[#64748B]">You need an account to view your dashboard.</p>
+        <Link to="/login?next=/dashboard" className="btn-primary mt-6 inline-flex">Log in</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="container-x py-10 lg:py-14">
       <div className="eyebrow">Portfolio</div>
-      <h1 className="mt-2 text-4xl md:text-5xl font-bold">Your dashboard</h1>
-      <p className="mt-3 text-[#6B6480]">Simulated portfolio — invest from any basket to see it here.</p>
+      <h1 className="mt-2 text-4xl md:text-5xl font-bold">Hi {user?.name?.split(' ')[0] || 'there'}</h1>
+      <p className="mt-3 text-[#64748B]">Your simulated portfolio — invest in any model portfolio to see it here.</p>
 
       <div className="mt-8 grid md:grid-cols-4 gap-4">
         <div className="surface p-5">

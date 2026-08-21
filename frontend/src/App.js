@@ -1,11 +1,13 @@
 import React from 'react';
 import './App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
 
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
+import ModelPortfolios from './pages/ModelPortfolios';
+import ModelPortfolioDetail from './pages/ModelPortfolioDetail';
 import BasketDetail from './pages/BasketDetail';
 import MutualFunds from './pages/MutualFunds';
 import FixedDepositsPage from './pages/FixedDepositsPage';
@@ -21,24 +23,47 @@ import DashboardPage from './pages/DashboardPage';
 import BusinessPage from './pages/BusinessPage';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import AIFPage from './pages/AIFPage';
+import AdvisoryPage from './pages/AdvisoryPage';
 import NotFound from './pages/NotFound';
 import BrokerConnectPage from './pages/BrokerConnectPage';
 import KiteCallback from './pages/KiteCallback';
 import { PortfolioProvider } from './context/PortfolioContext';
 import { BrokerProvider } from './context/BrokerContext';
+import { AuthProvider } from './context/AuthContext';
+
+function RedirectDetail() {
+  const { id } = useParams();
+  return <Navigate to={`/model-portfolios/${id}`} replace />;
+}
 
 function App() {
   return (
     <div className="App">
+      <AuthProvider>
       <BrokerProvider>
       <PortfolioProvider>
         <BrowserRouter>
           <Routes>
             <Route element={<Layout />}> 
               <Route path="/" element={<Home />} />
-              <Route path="/explore/smallcases" element={<Explore />} />
-              <Route path="/discover/all" element={<Explore />} />
-              <Route path="/smallcase/:id" element={<BasketDetail />} />
+
+              {/* New primary routes */}
+              <Route path="/model-portfolios" element={<ModelPortfolios />} />
+              <Route path="/model-portfolios/:id" element={<ModelPortfolioDetail />} />
+              <Route path="/aif" element={<AIFPage />} />
+              <Route path="/advisory" element={<AdvisoryPage />} />
+
+              {/* Legacy redirects */}
+              <Route path="/explore/smallcases" element={<Navigate to="/model-portfolios" replace />} />
+              <Route path="/discover/all" element={<Navigate to="/model-portfolios" replace />} />
+              <Route path="/smallcase/:id" element={<RedirectDetail />} />
+
+              {/* Kept as-is (still reachable directly) */}
+              <Route path="/explore/legacy" element={<Explore />} />
+              <Route path="/smallcase-legacy/:id" element={<BasketDetail />} />
+
               <Route path="/mutual-funds" element={<MutualFunds />} />
               <Route path="/mutual-funds/:category" element={<MutualFunds />} />
               <Route path="/fixed-deposits" element={<FixedDepositsPage />} />
@@ -54,6 +79,7 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/business" element={<BusinessPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
               <Route path="/brokers/connect" element={<BrokerConnectPage />} />
             </Route>
             <Route path="/broker/kite/callback" element={<KiteCallback />} />
@@ -63,6 +89,7 @@ function App() {
         </BrowserRouter>
       </PortfolioProvider>
       </BrokerProvider>
+      </AuthProvider>
       <Toaster position="top-right" richColors closeButton />
     </div>
   );

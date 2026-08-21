@@ -1,129 +1,118 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, Search, Sparkles, Link2, CheckCircle2, LineChart } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Menu, X, Link2, CheckCircle2, LineChart, LayoutDashboard, LogOut, User } from 'lucide-react';
 import { useBroker } from '../context/BrokerContext';
+import { useAuth } from '../context/AuthContext';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import OrderTicket from './OrderTicket';
 
 const navItems = [
-  {
-    label: 'Baskets',
-    to: '/explore/smallcases',
-    mega: {
-      cols: [
-        { title: 'Explore', links: [
-          { name: 'All baskets', to: '/explore/smallcases' },
-          { name: 'New launches', to: '/explore/smallcases?filter=new' },
-          { name: 'Managers', to: '/managers' },
-        ]},
-        { title: 'By strategy', links: [
-          { name: 'Thematic', to: '/explore/smallcases?strategy=thematic' },
-          { name: 'Sectoral', to: '/explore/smallcases?strategy=sectoral' },
-          { name: 'Model based', to: '/explore/smallcases?strategy=model-based' },
-          { name: 'Asset allocation', to: '/explore/smallcases?strategy=asset-allocation' },
-        ]},
-        { title: 'By goal', links: [
-          { name: 'Wealth creation', to: '/explore/smallcases?goal=wealth' },
-          { name: 'Regular income', to: '/explore/smallcases?goal=income' },
-          { name: 'Retirement', to: '/explore/smallcases?goal=retirement' },
-        ]},
-      ],
-    },
-  },
-  { label: 'Stocks', to: '/stocks' },
-  { label: 'Mutual Funds', to: '/mutual-funds' },
-  { label: 'Fixed Deposits', to: '/fixed-deposits' },
+  { label: 'Model Portfolios', to: '/model-portfolios' },
+  { label: 'AIF', to: '/aif' },
+  { label: 'Advisory', to: '/advisory' },
   { label: 'Learn', to: '/learn' },
-  { label: 'For Businesses', to: '/business' },
 ];
+
+function Logo() {
+  return (
+    <Link to="/" className="flex items-center gap-2 shrink-0">
+      <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg grad-card text-white shadow-sm">
+        <LineChart className="h-4 w-4" />
+      </span>
+      <span className="font-[Space_Grotesk] text-lg font-bold tracking-tight">Basketly</span>
+    </Link>
+  );
+}
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [ticketOpen, setTicketOpen] = useState(false);
   const navigate = useNavigate();
   const { connections } = useBroker();
+  const { isAuthed, user, logout } = useAuth();
   const kiteConnected = !!connections.kite;
 
+  const doLogout = () => { logout(); navigate('/'); };
+
   return (
-    <header className="sticky top-0 z-40 border-b border-[#E8E1F0] bg-white/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-[#E6E8F0] bg-white/85 backdrop-blur-md">
       <div className="container-x flex h-16 items-center justify-between gap-6">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg grad-card text-white shadow-md">
-            <Sparkles className="h-4 w-4" />
-          </span>
-          <span className="font-[Space_Grotesk] text-lg font-bold tracking-tight">Basketly</span>
-        </Link>
+        <Logo />
 
         <nav className="hidden lg:flex items-center gap-1">
           {navItems.map((item) => (
-            item.mega ? (
-              <Popover key={item.label}>
-                <PopoverTrigger asChild>
-                  <button className="btn-ghost flex items-center gap-1">
-                    {item.label}
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-[560px] p-6 grid grid-cols-3 gap-6 rounded-2xl border-[#E8E1F0]">
-                  {item.mega.cols.map((col) => (
-                    <div key={col.title}>
-                      <div className="eyebrow mb-3">{col.title}</div>
-                      <ul className="space-y-2">
-                        {col.links.map((l) => (
-                          <li key={l.name}>
-                            <Link to={l.to} className="text-sm font-medium text-[#1A1030] hover:text-[#6C2BD9]">
-                              {l.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <NavLink key={item.label} to={item.to}
-                className={({isActive}) => `btn-ghost ${isActive ? 'text-[#6C2BD9]' : ''}`}>
-                {item.label}
-              </NavLink>
-            )
+            <NavLink key={item.label} to={item.to}
+              className={({ isActive }) => `btn-ghost ${isActive ? 'text-[#2563EB]' : ''}`}>
+              {item.label}
+            </NavLink>
           ))}
         </nav>
 
         <div className="hidden lg:flex items-center gap-2">
-          <button className="h-9 w-9 grid place-items-center rounded-full hover:bg-[#F7F4FB]" onClick={() => navigate('/explore/smallcases')} aria-label="Search">
-            <Search className="h-4 w-4 text-[#1A1030]" />
-          </button>
           <Link to="/brokers/connect"
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${kiteConnected ? 'border-[#12B76A] text-[#12B76A] bg-[#DCFCE7]/50' : 'border-[#E8E1F0] text-[#1A1030] hover:border-[#6C2BD9] hover:text-[#6C2BD9]'}`}>
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${kiteConnected ? 'border-[#12B76A] text-[#0E9F5E] bg-[#DCFCE7]/50' : 'border-[#E6E8F0] text-[#334155] hover:border-[#2563EB] hover:text-[#2563EB]'}`}>
             {kiteConnected ? <><CheckCircle2 className="h-3.5 w-3.5" /> {connections.kite.profile?.user_shortname || 'Connected'}</> : <><Link2 className="h-3.5 w-3.5" /> Connect broker</>}
           </Link>
           {kiteConnected && (
-            <button onClick={() => setTicketOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#12B76A] px-3 py-2 text-xs font-semibold text-white hover:bg-[#059669] transition-colors">
+            <button onClick={() => setTicketOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#12B76A] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0E9F5E] transition-colors">
               <LineChart className="h-3.5 w-3.5" /> Trade
             </button>
           )}
-          <Link to="/login" className="btn-ghost">Login</Link>
-          <Link to="/explore/smallcases" className="btn-primary">Start investing</Link>
+
+          {isAuthed ? (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="inline-flex items-center gap-2 rounded-full border border-[#E6E8F0] pl-1 pr-3 py-1 hover:border-[#2563EB] transition-colors">
+                  <span className="h-7 w-7 rounded-full grad-card text-white grid place-items-center text-xs font-bold">
+                    {(user?.name || user?.email || 'U').slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="text-xs font-semibold text-[#0F1729] max-w-[90px] truncate">{user?.name?.split(' ')[0] || 'Account'}</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-56 p-2 rounded-xl border-[#E6E8F0]">
+                <div className="px-3 py-2">
+                  <div className="text-sm font-semibold text-[#0F1729] truncate">{user?.name}</div>
+                  <div className="text-xs text-[#64748B] truncate">{user?.email}</div>
+                </div>
+                <div className="h-px bg-[#E6E8F0] my-1" />
+                <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#F5F7FB]"><LayoutDashboard className="h-4 w-4" /> Dashboard</Link>
+                <Link to="/brokers/connect" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#F5F7FB]"><Link2 className="h-4 w-4" /> Connect broker</Link>
+                <button onClick={doLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#DC2626] hover:bg-[#FEF2F2]"><LogOut className="h-4 w-4" /> Log out</button>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <>
+              <Link to="/login" className="btn-ghost">Login</Link>
+              <Link to="/signup" className="btn-primary">Get started</Link>
+            </>
+          )}
         </div>
 
-        <button className="lg:hidden h-10 w-10 grid place-items-center rounded-lg hover:bg-[#F7F4FB]" onClick={() => setOpen(v => !v)} aria-label="Menu">
+        <button className="lg:hidden h-10 w-10 grid place-items-center rounded-lg hover:bg-[#F5F7FB]" onClick={() => setOpen(v => !v)} aria-label="Menu">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-[#E8E1F0] bg-white">
+        <div className="lg:hidden border-t border-[#E6E8F0] bg-white">
           <div className="container-x py-4 flex flex-col gap-1">
             {navItems.map((item) => (
               <Link key={item.label} to={item.to} onClick={() => setOpen(false)} className="py-2 text-sm font-medium">
                 {item.label}
               </Link>
             ))}
-            <div className="pt-3 flex gap-2">
-              <Link to="/login" onClick={() => setOpen(false)} className="btn-outline flex-1">Login</Link>
-              <Link to="/explore/smallcases" onClick={() => setOpen(false)} className="btn-primary flex-1">Start investing</Link>
-            </div>
+            <Link to="/brokers/connect" onClick={() => setOpen(false)} className="py-2 text-sm font-medium">Connect broker</Link>
+            {isAuthed ? (
+              <div className="pt-3 flex flex-col gap-2">
+                <Link to="/dashboard" onClick={() => setOpen(false)} className="btn-outline"><LayoutDashboard className="h-4 w-4" /> Dashboard</Link>
+                <button onClick={() => { setOpen(false); doLogout(); }} className="btn-ghost justify-start"><LogOut className="h-4 w-4" /> Log out</button>
+              </div>
+            ) : (
+              <div className="pt-3 flex gap-2">
+                <Link to="/login" onClick={() => setOpen(false)} className="btn-outline flex-1"><User className="h-4 w-4" /> Login</Link>
+                <Link to="/signup" onClick={() => setOpen(false)} className="btn-primary flex-1">Get started</Link>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -70,6 +70,10 @@ async def get_status_checks():
 from broker_kite import build_router as build_kite_router  # noqa: E402
 api_router.include_router(build_kite_router(db))
 
+# Auth (email/password) routes
+from auth import build_router as build_auth_router, seed_users  # noqa: E402
+api_router.include_router(build_auth_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 
@@ -87,6 +91,15 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+@app.on_event("startup")
+async def on_startup():
+    try:
+        await seed_users(db)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("User seeding skipped: %s", e)
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
