@@ -42,14 +42,14 @@ export default function Home() {
 
       {/* BAND */}
       <section className="band">
-        <div className="container"><h2>Everything for your money,<br /><span className="accent">at one place</span></h2></div>
+        <div className="container"><h2>Everything for your money, <span className="accent">at one place</span></h2></div>
       </section>
 
       {/* HOW IT WORKS */}
       <section id="how">
         <div className="hiw-head">
           <div className="e">How it works</div>
-          <h2>Daily investing,<br /><span className="accent">made easy</span></h2>
+          <h2>Multiplying money <span className="accent">made easy</span></h2>
         </div>
         <div className="hiw-stack">
 
@@ -140,27 +140,27 @@ export default function Home() {
               <h4>Stock Portfolios</h4>
               <div className="d">Curated stock playlists that rebalance for you</div>
               <div className="tags"><span className="tag">Thematic</span><span className="tag">Fundamental</span><span className="tag">Quant</span></div>
-              <div className="prow"><span className="ic grad">▤</span><span><div className="nm">Capital Markets Tracker</div><div className="sub">16 Stocks</div></span></div>
-              <div className="prow"><span className="ic" style={{ background: '#7A5AF8' }}>◑</span><span><div className="nm">Cyclical Opportunities</div><div className="sub">24 Stocks</div></span></div>
-              <div className="prow"><span className="ic" style={{ background: '#2E90FA' }}>◆</span><span><div className="nm">Quality Bluechips — Quant</div><div className="sub">10 Stocks</div></span></div>
+              <Link to="/model-portfolios/momentum-movers" className="prow"><span className="ic grad">▤</span><span><div className="nm">Momentum Movers</div><div className="sub">12 Stocks</div></span></Link>
+              <Link to="/model-portfolios/tech-titans" className="prow"><span className="ic" style={{ background: '#7A5AF8' }}>◑</span><span><div className="nm">Tech Titans</div><div className="sub">9 Stocks</div></span></Link>
+              <Link to="/model-portfolios/banking-leaders" className="prow"><span className="ic" style={{ background: '#2E90FA' }}>◆</span><span><div className="nm">Banking Leaders</div><div className="sub">8 Stocks</div></span></Link>
               <Link to="/model-portfolios" className="seemore">See more →</Link>
             </div>
             <div className="pcard">
               <h4>ETF Portfolios</h4>
               <div className="d">Diversified strategies with low-cost ETFs</div>
-              <div className="tags"><span className="tag">Asset Allocation</span><span className="tag">Target Date</span><span className="tag">Commodities</span></div>
-              <div className="prow"><span className="ic" style={{ background: '#12B79A' }}>🌐</span><span><div className="nm">Timeless Asset Allocation</div><div className="sub">4 ETFs</div></span></div>
-              <div className="prow"><span className="ic" style={{ background: '#F79009' }}>☀</span><span><div className="nm">Horizon 2040 Target Date</div><div className="sub">3 ETFs</div></span></div>
-              <div className="prow"><span className="ic" style={{ background: '#1A1030' }}>◈</span><span><div className="nm">Precious Metals Tracker</div><div className="sub">2 ETFs</div></span></div>
+              <div className="tags"><span className="tag">Asset Allocation</span><span className="tag">Smart Beta</span><span className="tag">Dividend</span></div>
+              <Link to="/model-portfolios/all-weather" className="prow"><span className="ic" style={{ background: '#12B79A' }}>🌐</span><span><div className="nm">All Weather Portfolio</div><div className="sub">4 ETFs</div></span></Link>
+              <Link to="/model-portfolios/smart-beta-quality" className="prow"><span className="ic" style={{ background: '#F79009' }}>☀</span><span><div className="nm">Smart Beta Quality</div><div className="sub">Factor tilt</div></span></Link>
+              <Link to="/model-portfolios/dividend-aristocrats" className="prow"><span className="ic" style={{ background: '#1A1030' }}>◈</span><span><div className="nm">Dividend Aristocrats</div><div className="sub">Steady payers</div></span></Link>
               <Link to="/model-portfolios" className="seemore">See more →</Link>
             </div>
             <div className="pcard">
               <h4>Mutual Fund Portfolios</h4>
               <div className="d">Collections of direct MFs from multiple AMCs</div>
               <div className="tags"><span className="tag">Largecap</span><span className="tag">Midcap</span><span className="tag">Smallcap</span></div>
-              <div className="prow"><span className="ic grad">▲</span><span><div className="nm">Largecap MF Picks</div><div className="sub">3 Funds</div></span></div>
-              <div className="prow"><span className="ic" style={{ background: '#7A5AF8' }}>⛰</span><span><div className="nm">Midcap MF Picks</div><div className="sub">3 Funds</div></span></div>
-              <div className="prow"><span className="ic" style={{ background: '#2E90FA' }}>⛰</span><span><div className="nm">Smallcap MF Picks</div><div className="sub">4 Funds</div></span></div>
+              <Link to="/mutual-funds" className="prow"><span className="ic grad">▲</span><span><div className="nm">Largecap MF Picks</div><div className="sub">3 Funds</div></span></Link>
+              <Link to="/mutual-funds" className="prow"><span className="ic" style={{ background: '#7A5AF8' }}>⛰</span><span><div className="nm">Midcap MF Picks</div><div className="sub">3 Funds</div></span></Link>
+              <Link to="/mutual-funds" className="prow"><span className="ic" style={{ background: '#2E90FA' }}>⛰</span><span><div className="nm">Smallcap MF Picks</div><div className="sub">4 Funds</div></span></Link>
               <Link to="/mutual-funds" className="seemore">See more →</Link>
             </div>
           </div>

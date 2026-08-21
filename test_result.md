@@ -337,6 +337,20 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: Navbar contains 'Connect broker' pill link that navigates to /brokers/connect. Works correctly."
+  - task: "Model Portfolio feature cards - portfolio rows clickable bug fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Home.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "Bug reported: In the 'Model Portfolio' section on Home page, portfolio rows (class 'prow') were not clickable. They should be anchor links that navigate to detail pages."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: All 5 test scenarios PASSED. (1) 'Momentum Movers' (Stock Portfolio) navigates to /model-portfolios/momentum-movers and shows correct title. (2) 'Tech Titans' (Stock Portfolio) navigates to /model-portfolios/tech-titans and shows correct title. (3) 'All Weather Portfolio' (ETF Portfolio) navigates to /model-portfolios/all-weather and shows correct title. (4) All 9 portfolio rows are anchor tags (<a>) with pointer cursor. (5) 'Largecap MF Picks' (Mutual Fund Portfolio) navigates to /mutual-funds. All portfolio rows in the Model Portfolio section are now clickable anchor links that properly navigate to their respective detail pages. Bug is FIXED."
 
 metadata:
   created_by: "main_agent"
@@ -427,4 +441,18 @@ agent_communication:
         6. ✅ AIF → Advisory (navbar): scrollY = 0px (scrolled from 525px to 0px)
         
         The ScrollToTop component correctly resets window.scrollY to 0 on every route change, and page headers/top content are visible. The reported bug is FIXED.
+    - agent: "testing"
+      message: |
+        ✅ MODEL PORTFOLIO CLICKABLE ROWS BUG FIX VERIFIED (5/5 tests passed)
+        
+        Tested the bug fix for Model Portfolio feature cards on Home page where portfolio rows (class 'prow') were not clickable. They are now anchor links.
+        
+        All test scenarios PASSED:
+        1. ✅ "Momentum Movers" (Stock Portfolio) → Navigated to /model-portfolios/momentum-movers, detail page shows "Momentum Movers" title
+        2. ✅ "Tech Titans" (Stock Portfolio) → Navigated to /model-portfolios/tech-titans, detail page shows "Tech Titans" title
+        3. ✅ "All Weather Portfolio" (ETF Portfolio) → Navigated to /model-portfolios/all-weather, detail page shows "All Weather Portfolio" title
+        4. ✅ All 9 portfolio rows are anchor tags (<a>) with pointer cursor (verified first 3: Momentum Movers, Tech Titans, Banking Leaders)
+        5. ✅ "Largecap MF Picks" (Mutual Fund Portfolio) → Navigated to /mutual-funds
+        
+        All portfolio rows in the Model Portfolio section are now properly implemented as clickable anchor links that navigate to their respective detail pages. The bug is FIXED.
 
