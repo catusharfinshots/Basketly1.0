@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 
 const NAV = [
   { key: 'home', label: 'Home content', icon: LayoutGrid },
-  { key: 'baskets', label: 'Baskets', icon: Package },
   { key: 'managers', label: 'Managers', icon: Users },
   { key: 'collections', label: 'Collections', icon: LineChart },
   { key: 'mutual-funds', label: 'Mutual funds', icon: LineChart },
@@ -456,29 +455,9 @@ export default function AdminPage() {
 
               {tab === 'baskets' && (
                 <section className="surface p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-semibold">Baskets</div>
-                      <div className="text-xs text-[#6B6480]">Powers the home rail, Explore page, and each basket detail page.</div>
-                    </div>
-                    <button onClick={()=>{setBaskets([{id:`b_${Date.now()}`, name:'New basket', subtitle:'', managerId:'windmill', risk:'Low', strategy:'thematic', returns:{y3:0}, minAmount:1000, subscription:'Free', constituents:[]}, ...baskets]); markDirty();}} className="btn-outline"><Plus className="h-4 w-4" /> Add basket</button>
-                  </div>
-                  <div className="mt-4">
-                    {baskets.map((b, i) => (
-                      <Row key={b.id}>
-                        <div className="h-9 w-9 rounded-lg grad-card text-white grid place-items-center text-xs font-bold">{b.name.slice(0,2).toUpperCase()}</div>
-                        <div className="flex-1 grid md:grid-cols-3 gap-3">
-                          <Input value={b.name} onChange={(e)=>{const c=[...baskets]; c[i]={...c[i], name: e.target.value}; setBaskets(c); markDirty();}} className="h-9" />
-                          <Input value={b.subtitle} onChange={(e)=>{const c=[...baskets]; c[i]={...c[i], subtitle: e.target.value}; setBaskets(c); markDirty();}} className="h-9" placeholder="Subtitle" />
-                          <div className="grid grid-cols-2 gap-2">
-                            <Input value={b.minAmount} onChange={(e)=>{const c=[...baskets]; c[i]={...c[i], minAmount: Number(e.target.value)}; setBaskets(c); markDirty();}} className="h-9 num" placeholder="Min amount" />
-                            <Input value={b.returns.y3} onChange={(e)=>{const c=[...baskets]; c[i]={...c[i], returns: {...c[i].returns, y3: Number(e.target.value)}}; setBaskets(c); markDirty();}} className="h-9 num" placeholder="3Y CAGR" />
-                          </div>
-                        </div>
-                        <button onClick={()=>{setBaskets(baskets.filter((_,j)=>j!==i)); markDirty();}} className="h-8 w-8 grid place-items-center rounded-lg text-[#F04438] hover:bg-[#FEF3F2]"><Trash2 className="h-4 w-4" /></button>
-                      </Row>
-                    ))}
-                  </div>
+                  <div className="text-sm font-semibold">Baskets are managed by research analysts</div>
+                  <div className="mt-1 text-xs text-[#6B6480]">Model portfolios (baskets) are created by research analysts in their console — with full stocks &amp; weights, methodology, rebalancing and factsheet. Review and publish them from the <span className="font-semibold text-[#5320A8]">Listings (approve)</span> tab.</div>
+                  <button onClick={()=>setTab('listings')} className="btn-primary mt-4">Go to Listings (approve)</button>
                 </section>
               )}
 

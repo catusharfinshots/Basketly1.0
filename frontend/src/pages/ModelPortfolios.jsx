@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { baskets, getManager } from '../mock';
+import { getManager } from '../mock';
 import { TrendingUp, Users, Search } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -60,14 +60,27 @@ export default function ModelPortfolios() {
   const active = params.get('filter') || 'all';
   const [q, setQ] = useState('');
   const [dbPortfolios, setDbPortfolios] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${API}/portfolios`).then(({ data }) => setDbPortfolios(data.portfolios || [])).catch(() => {});
+    axios.get(`${API}/portfolios`)
+      .then(({ data }) => setDbPortfolios(data.portfolios || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const allBaskets = useMemo(() => {
-    const norm = dbPortfolios.map((p) => ({ ...p, managerName: p.owner_name, _db: true, subtitle: p.subtitle || '' }));
-    return [...norm, ...baskets];
+    return dbPortfolios.map((p) => ({
+      ...p,
+      managerName: p.owner_name,
+      _db: true,
+      subtitle: p.subtitle || '',
+      risk: p.risk || 'Medium',
+      strategy: p.strategy || 'thematic',
+      minAmount: p.minAmount || 0,
+      returns: { y1: 0, y3: 0, y5: 0, cagr: 0, ...(p.returns || {}) },
+      constituents: p.constituents || [],
+    }));
   }, [dbPortfolios]);
 
   const list = useMemo(() => {
@@ -118,9 +131,17 @@ export default function ModelPortfolios() {
           {list.map((b) => <PortfolioCard key={b.id} b={b} />)}
         </div>
 
-        {list.length === 0 && (
+        {loading ? (
+          <div className="mt-16 text-center text-[#64748B]">Loading model portfolios…</div>
+        ) : allBaskets.length === 0 ? (
+          <div className="mt-12 surface p-12 text-center max-w-xl mx-auto">
+            <div className="mx-auto h-12 w-12 rounded-2xl bg-[#F1E7FE] text-[#6C2BD9] grid place-items-center"><TrendingUp className="h-6 w-6" /></div>
+            <div className="mt-4 text-lg font-semibold text-[#0F1729]">No model portfolios published yet</div>
+            <p className="mt-2 text-sm text-[#64748B]">Research analysts are building baskets right now. Once they're reviewed and approved, they'll appear here.</p>
+          </div>
+        ) : list.length === 0 ? (
           <div className="mt-16 text-center text-[#64748B]">No model portfolios match your search.</div>
-        )}
+        ) : null}
       </section>
     </div>
   );
