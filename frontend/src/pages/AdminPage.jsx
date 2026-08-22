@@ -4,10 +4,11 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import AnalystConsole from '../components/AnalystConsole';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '../components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 const NAV = [
@@ -191,10 +192,40 @@ export default function AdminPage() {
     } catch { toast.error('Could not load records'); }
     finally { setDbLoading(false); }
   };
-  const selectCollection = (name) => { setDbActive(name); setDbQuery(''); fetchDbDocs(name, 0, ''); };
+  const selectCollection = (name) => { setDbActive(name); setDbQuery(''); setConfirmDeleteId(null); fetchDbDocs(name, 0, ''); };
   useEffect(() => {
     if (tab === 'database') fetchDbCollections();
   }, [tab]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [clearOpen, setClearOpen] = useState(false);
+  const exportCsv = async (name) => {
+    try {
+      const res = await axios.get(`${LEADS_API}/admin/db/${name}/export`, { ...authHeader, responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `${name}.csv`; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${name}.csv`);
+    } catch { toast.error('Export failed'); }
+  };
+  const deleteRecord = async (name, id) => {
+    try {
+      await axios.delete(`${LEADS_API}/admin/db/${name}/${id}`, authHeader);
+      toast.success('Record deleted');
+      setConfirmDeleteId(null);
+      fetchDbDocs(name, dbSkip, dbQuery);
+      fetchDbCollections();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Could not delete'); }
+  };
+  const clearCollection = async (name) => {
+    try {
+      const { data } = await axios.post(`${LEADS_API}/admin/db/${name}/clear`, {}, authHeader);
+      toast.success(`Cleared ${data.deleted} record${data.deleted !== 1 ? 's' : ''}${name === 'users' ? ' (admins kept)' : ''}`);
+      setClearOpen(false);
+      fetchDbDocs(name, 0, '');
+      fetchDbCollections();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Could not clear'); }
+  };
 
   useEffect(() => {
     axios.get(`${LEADS_API}/content`).then(({ data }) => {
@@ -501,11 +532,14 @@ export default function AdminPage() {
                   </div>
 
                   {dbActive && (
-                    <div className="mt-4 flex items-center gap-2">
+                    <div className="mt-4 flex items-center gap-2 flex-wrap">
                       <Input data-testid="db-search" value={dbQuery} onChange={(e) => setDbQuery(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') fetchDbDocs(dbActive, 0, dbQuery); }}
                         placeholder="Search (email, name, status, id…) then press Enter" className="h-9 max-w-md" />
                       <button onClick={() => fetchDbDocs(dbActive, 0, dbQuery)} className="btn-outline text-xs">Search</button>
+                      <div className="flex-1" />
+                      <button data-testid="db-export-btn" onClick={() => exportCsv(dbActive)} className="btn-outline text-xs inline-flex items-center gap-1"><Download className="h-3.5 w-3.5" /> Export CSV</button>
+                      <button data-testid="db-clear-btn" onClick={() => setClearOpen(true)} disabled={dbTotal === 0} className={`inline-flex items-center gap-1 rounded-lg border border-[#FECACA] text-[#DC2626] text-xs font-semibold px-3 py-2 hover:bg-[#FEF2F2] ${dbTotal === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}><Trash2 className="h-3.5 w-3.5" /> Clear collection</button>
                     </div>
                   )}
 
@@ -521,7 +555,19 @@ export default function AdminPage() {
                           <details key={doc.id || i} data-testid="db-record" className="rounded-xl border border-[#E8E1F0] bg-white overflow-hidden group">
                             <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#F7F4FB]">
                               <span className="text-sm font-medium text-[#1A1030] truncate">{doc.email || doc.name || doc.type || doc.id || 'record'}</span>
-                              <span className="text-xs text-[#6B6480] shrink-0">{doc.role || doc.status || (doc.created_at ? new Date(doc.created_at).toLocaleDateString('en-IN') : 'view')}</span>
+                              <span className="flex items-center gap-3 shrink-0">
+                                <span className="text-xs text-[#6B6480]">{doc.role || doc.status || (doc.created_at ? new Date(doc.created_at).toLocaleDateString('en-IN') : '')}</span>
+                                {doc.id && (dbActive !== 'users' || doc.role !== 'admin') && (
+                                  confirmDeleteId === doc.id ? (
+                                    <span className="flex items-center gap-1" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                                      <button data-testid="db-record-confirm-delete" onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteRecord(dbActive, doc.id); }} className="rounded-md bg-[#DC2626] text-white text-[11px] font-semibold px-2 py-1">Delete</button>
+                                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(null); }} className="rounded-md border border-[#E8E1F0] text-[11px] font-semibold px-2 py-1">Cancel</button>
+                                    </span>
+                                  ) : (
+                                    <button data-testid="db-record-delete" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(doc.id); }} className="h-7 w-7 grid place-items-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2]"><Trash2 className="h-3.5 w-3.5" /></button>
+                                  )
+                                )}
+                              </span>
                             </summary>
                             <pre className="px-4 py-3 border-t border-[#F1E7FE] bg-[#FAFAFE] text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words">{JSON.stringify(doc, null, 2)}</pre>
                           </details>
@@ -536,6 +582,21 @@ export default function AdminPage() {
                       )}
                     </>
                   )}
+
+                  <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
+                    <AlertDialogContent data-testid="db-clear-dialog">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Clear “{dbActive}” collection?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently deletes {dbActive === 'users' ? 'all customer & analyst accounts (your admin accounts are kept)' : `all ${dbTotal} record${dbTotal !== 1 ? 's' : ''} in this collection`}. This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction data-testid="db-clear-confirm" onClick={() => clearCollection(dbActive)} className="bg-[#DC2626] hover:bg-[#B91C1C]">Yes, clear it</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </section>
               )}
 
