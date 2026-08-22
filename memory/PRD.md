@@ -21,7 +21,14 @@ publish model portfolios that admins approve to go live.
 ### Demo OTP + Become-a-partner (Jun 2026)
 - OTP now runs in **DEMO MODE** (`OTP_DEMO_MODE=true`, code `123456`) — free, any number, no SMS. Flip to `false` for real Twilio SMS (paid account needed). `phone_auth.py` branches on DEMO_MODE.
 - **Become a partner** replaces admin-generated invite links: public `/partner` page (`BecomePartner.jsx`) → `partner_applications` (pending). Admin "Partner applications" tab (`partners.py`, `/api/partners/apply`, `/api/admin/partners`, `/api/admin/partners/{id}/review`). Approve provisions the applicant's phone as an `analyst` (create/upgrade); they log in via phone-OTP → `/analyst`. Footer "Become a partner" → `/partner`. Admin "Analyst invites" tab removed from UI.
-- Verified end-to-end: demo OTP investor login via UI (→dashboard), partner apply via UI → admin approve → analyst provisioned & phone-OTP login returns analyst role.
+### Change brief v1 (22 Aug 2026) — 6 tickets, all verified 100% (testing iteration_2)
+- **T1 (flicker/flash):** Home content hydrates from a `localStorage('bk_home_content_v1')` cache then revalidates from `/api/content`; admin `publish()` also writes that cache — so no hard-coded default flashes (fixes both the "Volatility" case flip and the stats value flash).
+- **T2 (logo→home):** Navbar `Logo` and Footer brand link to `/` with smooth scroll-to-top (data-testid nav-logo-home / footer-logo-home).
+- **T3 (left):** Nav wordings (Model Portfolios/AIF/Advisory/Learn) grouped left next to the logo; hero headline/sub/CTAs/ratings left-aligned (Home.css).
+- **T4 (FAQ):** New `faq.py` (public `/api/faqs`, `/api/faqs/categories`, admin CRUD `/api/faqs*`), 6 seeded FAQs. Home FAQ accordion section (top FAQs) + `/faq` page (search + category filter + expand + contact CTA) + admin "FAQ" tab (create/edit/delete, category, order, isTop=Show on home, published).
+- **T5 (footer):** `content.footer` block (contactEmail, subscribeHeading, socials{facebook,x,youtube,linkedin,instagram}) — admin-editable via "Site settings" tab + Publish. Footer shows "Find us on" 5 socials, contact email, and a Subscribe box (POST `/api/leads` type `subscribe`; leads.py now allows it). FAQ links added to footer.
+- **T6 (home rail):** The 3-column Stock/ETF/MF showcase is driven by live `/api/portfolios` (bucketed by constituent type via `bucketOf`), each row links to its own `/model-portfolios/:id`; empty buckets show "No portfolios yet".
+- Fix during test: added missing `Pencil` lucide import in AdminPage.jsx.
 
 ## Stack / Architecture
 - Phone+OTP auth (Twilio Verify) is the public login for investors & analysts (backend/phone_auth.py). Admin stays email/password (internal). See CHANGELOG below.

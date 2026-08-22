@@ -36,9 +36,14 @@ DEFAULT_CONTENT = {
         {"name": "Ravi", "tag": "Reviewed on Play Store", "quote": "A smart app blending tech and finance — I can track and invest in one place."},
         {"name": "Jonathan", "tag": "Reviewed on App Store", "quote": "Excellent platform for beginners, especially those who don’t have time to analyse."},
     ],
+    "footer": {
+        "contactEmail": "support@mutlixx.in",
+        "subscribeHeading": "Get market insights & product updates in your inbox",
+        "socials": {"facebook": "", "x": "", "youtube": "", "linkedin": "", "instagram": ""},
+    },
 }
 
-ALLOWED_KEYS = ("hero", "stats", "trust", "testimonials")
+ALLOWED_KEYS = ("hero", "stats", "trust", "testimonials", "footer")
 
 
 def build_router(db: AsyncIOMotorDatabase) -> APIRouter:

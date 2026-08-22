@@ -102,6 +102,10 @@ api_router.include_router(build_phone_auth_router(db))
 from partners import build_router as build_partners_router  # noqa: E402
 api_router.include_router(build_partners_router(db))
 
+# FAQ system (public + admin CRUD)
+from faq import build_router as build_faq_router, seed_faqs  # noqa: E402
+api_router.include_router(build_faq_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 
@@ -132,6 +136,10 @@ async def on_startup():
         storage.init_storage()
     except Exception as e:  # noqa: BLE001
         logger.warning("Object storage init skipped: %s", e)
+    try:
+        await seed_faqs(db)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("FAQ seeding skipped: %s", e)
 
 
 @app.on_event("shutdown")

@@ -24,6 +24,7 @@ import BusinessPage from './pages/BusinessPage';
 import AdminPage from './pages/AdminPage';
 import AnalystPage from './pages/AnalystPage';
 import BecomePartner from './pages/BecomePartner';
+import FAQPage from './pages/FAQPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AIFPage from './pages/AIFPage';
@@ -94,6 +95,7 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/business" element={<BusinessPage />} />
               <Route path="/partner" element={<BecomePartner />} />
+              <Route path="/faq" element={<FAQPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/brokers/connect" element={<BrokerConnectPage />} />

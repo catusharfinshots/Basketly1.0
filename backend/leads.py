@@ -27,8 +27,8 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
     @router.post("")
     async def create_lead(payload: LeadCreate):
         t = payload.type.lower().strip()
-        if t not in ("aif", "advisory"):
-            raise HTTPException(status_code=422, detail="type must be 'aif' or 'advisory'")
+        if t not in ("aif", "advisory", "subscribe"):
+            raise HTTPException(status_code=422, detail="type must be 'aif', 'advisory' or 'subscribe'")
         lead = {
             "id": str(uuid.uuid4()),
             "type": t,

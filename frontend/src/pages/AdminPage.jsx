@@ -3,7 +3,7 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download, Pencil } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -62,6 +62,11 @@ const CONTENT_DEFAULTS = {
     { name: 'Ravi', tag: 'Reviewed on Play Store', quote: 'A smart app blending tech and finance.' },
     { name: 'Jonathan', tag: 'Reviewed on App Store', quote: 'Excellent platform for beginners.' },
   ],
+  footer: {
+    contactEmail: 'support@mutlixx.in',
+    subscribeHeading: 'Get market insights & product updates in your inbox',
+    socials: { facebook: '', x: '', youtube: '', linkedin: '', instagram: '' },
+  },
 };
 
 function Row({ children }) {
@@ -254,14 +259,40 @@ export default function AdminPage() {
     }).catch(() => {});
   }, []);
 
+  const H = { headers: { Authorization: `Bearer ${token}` } };
+  const [faqList, setFaqList] = useState([]);
+  const [faqLoading, setFaqLoading] = useState(false);
+  const [faqEdit, setFaqEdit] = useState(null);
+  const blankFaq = { question: '', answer: '', category: 'General', isTop: false, order: 0, published: true };
+  const fetchFaqs = async () => {
+    setFaqLoading(true);
+    try { const { data } = await axios.get(`${LEADS_API}/faqs/admin/all`, H); setFaqList(data.faqs || []); }
+    catch { toast.error('Could not load FAQs'); }
+    finally { setFaqLoading(false); }
+  };
+  useEffect(() => { if (tab === 'faqs') fetchFaqs(); }, [tab]);
+  const saveFaq = async () => {
+    if (!faqEdit.question.trim() || !faqEdit.answer.trim()) { toast.error('Question and answer are required'); return; }
+    try {
+      const p = { ...faqEdit, order: Number(faqEdit.order) || 0 };
+      if (p.id) await axios.put(`${LEADS_API}/faqs/${p.id}`, p, H);
+      else await axios.post(`${LEADS_API}/faqs`, p, H);
+      toast.success('FAQ saved'); setFaqEdit(null); fetchFaqs();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Could not save FAQ'); }
+  };
+  const deleteFaq = async (id) => {
+    try { await axios.delete(`${LEADS_API}/faqs/${id}`, H); toast.success('FAQ deleted'); fetchFaqs(); }
+    catch { toast.error('Could not delete'); }
+  };
+
   const markDirty = () => setDirty(true);
   const patchContent = (section, value) => { setContent((c) => ({ ...c, [section]: value })); markDirty(); };
 
   const publish = async () => {
     try {
-      await axios.put(`${LEADS_API}/content`, {
-        hero: content.hero, stats: content.stats, trust: content.trust, testimonials: content.testimonials,
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      const payload = { hero: content.hero, stats: content.stats, trust: content.trust, testimonials: content.testimonials, footer: content.footer };
+      await axios.put(`${LEADS_API}/content`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      try { localStorage.setItem('bk_home_content_v1', JSON.stringify(payload)); } catch (e) {}
       toast.success('Published', { description: 'Home page content is now live on the site.' });
       setDirty(false);
     } catch (e) {
@@ -721,38 +752,85 @@ export default function AdminPage() {
               )}
 
               {tab === 'faqs' && (
-                <section className="surface p-6">
-                  <div className="flex items-center justify-between">
+                <section className="surface p-6" data-testid="faq-admin">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>
                       <div className="text-sm font-semibold">FAQ</div>
+                      <div className="text-xs text-[#6B6480]">Manage questions for the home FAQ section and the /faq page. “Top” FAQs show on the homepage.</div>
                     </div>
-                    <button onClick={()=>{setFaqs([{q:'New question', a:''}, ...faqs]); markDirty();}} className="btn-outline"><Plus className="h-4 w-4" /> Add question</button>
+                    <button data-testid="faq-add-btn" onClick={() => setFaqEdit({ ...blankFaq, order: faqList.length })} className="btn-primary inline-flex items-center gap-1"><Plus className="h-4 w-4" /> Add FAQ</button>
                   </div>
-                  <div className="mt-4 space-y-3">
-                    {faqs.map((f, i) => (
-                      <div key={i} className="pb-3 border-b border-[#F1E7FE] last:border-0 grid md:grid-cols-2 gap-3">
-                        <Input value={f.q} onChange={(e)=>{const x=[...faqs]; x[i]={...x[i], q: e.target.value}; setFaqs(x); markDirty();}} className="h-9" placeholder="Question" />
-                        <div className="flex gap-2">
-                          <Textarea value={f.a} onChange={(e)=>{const x=[...faqs]; x[i]={...x[i], a: e.target.value}; setFaqs(x); markDirty();}} className="min-h-[36px]" placeholder="Answer" />
-                          <button onClick={()=>{setFaqs(faqs.filter((_,j)=>j!==i)); markDirty();}} className="h-8 w-8 grid place-items-center rounded-lg text-[#F04438] hover:bg-[#FEF3F2] shrink-0"><Trash2 className="h-4 w-4" /></button>
+
+                  {faqEdit && (
+                    <div className="mt-4 rounded-xl border border-[#D8C7F1] bg-[#F7F4FB] p-4 space-y-3" data-testid="faq-editor">
+                      <div><Label>Question</Label><Input data-testid="faq-q" value={faqEdit.question} onChange={(e) => setFaqEdit({ ...faqEdit, question: e.target.value })} className="h-10 mt-1.5" /></div>
+                      <div><Label>Answer</Label><Textarea data-testid="faq-a" value={faqEdit.answer} onChange={(e) => setFaqEdit({ ...faqEdit, answer: e.target.value })} rows={3} className="mt-1.5" /></div>
+                      <div className="grid sm:grid-cols-3 gap-3">
+                        <div><Label>Category</Label><Input value={faqEdit.category} onChange={(e) => setFaqEdit({ ...faqEdit, category: e.target.value })} className="h-10 mt-1.5" placeholder="e.g. Fees" /></div>
+                        <div><Label>Order</Label><Input type="number" value={faqEdit.order} onChange={(e) => setFaqEdit({ ...faqEdit, order: e.target.value })} className="h-10 mt-1.5" /></div>
+                        <div className="flex items-end gap-4 pb-1">
+                          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#6C2BD9]" checked={faqEdit.isTop} onChange={(e) => setFaqEdit({ ...faqEdit, isTop: e.target.checked })} /> Show on home</label>
+                          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#6C2BD9]" checked={faqEdit.published} onChange={(e) => setFaqEdit({ ...faqEdit, published: e.target.checked })} /> Published</label>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex gap-2">
+                        <button data-testid="faq-save" onClick={saveFaq} className="btn-primary">Save FAQ</button>
+                        <button onClick={() => setFaqEdit(null)} className="btn-outline">Cancel</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {faqLoading ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">Loading…</div>
+                  ) : faqList.length === 0 ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">No FAQs yet. Click “Add FAQ”.</div>
+                  ) : (
+                    <div className="mt-4 space-y-2">
+                      {faqList.map((f) => (
+                        <div key={f.id} data-testid="faq-admin-row" className="flex items-start justify-between gap-3 rounded-xl border border-[#E8E1F0] bg-white p-3">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-semibold text-[#1A1030]">{f.question}</span>
+                              <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#EEE9F6] text-[#5320A8]">{f.category}</span>
+                              {f.isTop && <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#0E9F5E]">Home</span>}
+                              {!f.published && <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#FEE2E2] text-[#DC2626]">Hidden</span>}
+                            </div>
+                            <div className="mt-1 text-xs text-[#64748B] line-clamp-2">{f.answer}</div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button data-testid={`faq-edit-${f.id}`} onClick={() => setFaqEdit(f)} className="h-8 w-8 grid place-items-center rounded-lg text-[#6C2BD9] hover:bg-[#F1E7FE]"><Pencil className="h-4 w-4" /></button>
+                            <button data-testid={`faq-del-${f.id}`} onClick={() => deleteFaq(f.id)} className="h-8 w-8 grid place-items-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2]"><Trash2 className="h-4 w-4" /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
               )}
 
               {tab === 'fds' && <EmptyState title="Manage fixed deposits" desc="Add providers, rates, and tenures shown on the FD page." onAdd={()=>{toast.success('New FD row added (mock)'); markDirty();}} />}
               {tab === 'settings' && (
-                <section className="surface p-6 space-y-4">
-                  <div className="text-sm font-semibold">Site settings</div>
+                <section className="surface p-6 space-y-5" data-testid="settings-panel">
+                  <div className="text-sm font-semibold">Footer & contact</div>
                   <div>
-                    <Label>Legal disclaimer</Label>
-                    <Textarea defaultValue="Investments in securities are subject to market risks..." className="mt-1.5" onChange={markDirty} />
+                    <Label>Contact email (shown in footer)</Label>
+                    <Input data-testid="settings-contact-email" value={content.footer?.contactEmail || ''} onChange={(e) => patchContent('footer', { ...content.footer, contactEmail: e.target.value })} className="mt-1.5 h-10" placeholder="support@mutlixx.in" />
                   </div>
                   <div>
-                    <Label>Contact email</Label>
-                    <Input defaultValue="hello@basketly.demo" className="mt-1.5 h-10" onChange={markDirty} />
+                    <Label>Subscribe box heading</Label>
+                    <Input value={content.footer?.subscribeHeading || ''} onChange={(e) => patchContent('footer', { ...content.footer, subscribeHeading: e.target.value })} className="mt-1.5 h-10" />
+                  </div>
+                  <div>
+                    <Label>Social media links</Label>
+                    <div className="mt-1.5 grid sm:grid-cols-2 gap-3">
+                      {['facebook', 'x', 'youtube', 'linkedin', 'instagram'].map((k) => (
+                        <div key={k} className="flex items-center gap-2">
+                          <span className="w-20 text-xs capitalize text-[#64748B]">{k}</span>
+                          <Input data-testid={`settings-social-${k}`} value={content.footer?.socials?.[k] || ''} onChange={(e) => patchContent('footer', { ...content.footer, socials: { ...(content.footer?.socials || {}), [k]: e.target.value } })} className="h-9 flex-1" placeholder={`https://${k}.com/...`} />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-xs text-[#94A3B8]">Leave blank to keep an icon as a placeholder. Click “Publish changes” to go live.</p>
                   </div>
                 </section>
               )}

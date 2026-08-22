@@ -33,17 +33,42 @@ const DEFAULTS = {
 
 const TRUST_ICONS = ['✓', '🔓', '🔐', '🏛'];
 const AV_COLORS = ['grad', '#7A5AF8', '#2E90FA', '#12B79A', '#F79009', '#EE46BC'];
+const CACHE_KEY = 'bk_home_content_v1';
+const readCache = () => { try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; } };
+
+const bucketOf = (p) => {
+  const types = (p.constituents || []).map((x) => (x.type || '').toLowerCase());
+  if (types.some((t) => t.includes('mutual') || t === 'mf' || t.includes('fund'))) return 'mf';
+  if (types.length && types.every((t) => t.includes('etf'))) return 'etf';
+  return 'stock';
+};
 
 export default function Home() {
-  const [c, setC] = useState(DEFAULTS);
+  const cached = readCache();
+  const [c, setC] = useState(cached ? { ...DEFAULTS, ...cached } : DEFAULTS);
+  const [portfolios, setPortfolios] = useState([]);
+  const [faqs, setFaqs] = useState([]);
+  const [openFaq, setOpenFaq] = useState(0);
   const { openAuth } = useAuth();
   useEffect(() => {
     let active = true;
     axios.get(`${API}/content`).then(({ data }) => {
-      if (active && data) setC({ ...DEFAULTS, ...data });
+      if (active && data) { setC({ ...DEFAULTS, ...data }); try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) {} }
     }).catch(() => {});
+    axios.get(`${API}/portfolios`).then(({ data }) => { if (active) setPortfolios(data.portfolios || []); }).catch(() => {});
+    axios.get(`${API}/faqs?top=true`).then(({ data }) => { if (active) setFaqs(data.faqs || []); }).catch(() => {});
     return () => { active = false; };
   }, []);
+
+  const byBucket = (b) => portfolios.filter((p) => bucketOf(p) === b).slice(0, 3);
+  const PRow = ({ p }) => (
+    <Link to={`/model-portfolios/${p.id}`} className="prow">
+      <span className="ic grad">{(p.name || '?').slice(0, 1).toUpperCase()}</span>
+      <span><div className="nm">{p.name}</div><div className="sub">{(p.constituents || []).length} {bucketOf(p) === 'etf' ? 'ETFs' : bucketOf(p) === 'mf' ? 'Funds' : 'Stocks'}</div></span>
+    </Link>
+  );
+  const EmptyRow = () => <div className="prow" style={{ opacity: 0.6, cursor: 'default' }}><span className="ic" style={{ background: '#E8E1F0', color: '#6C2BD9' }}>◦</span><span><div className="nm" style={{ fontSize: 13 }}>No portfolios yet</div><div className="sub">Check back soon</div></span></div>;
+
 
   const phoneList = [
     { ic: '▤', bg: 'grad', to: 'momentum-movers', nm: 'Momentum Movers', sub: '12 stocks', ret: '+31.2%' },
@@ -200,28 +225,22 @@ export default function Home() {
               <h4>Stock Portfolios</h4>
               <div className="d">Curated stock playlists that rebalance for you</div>
               <div className="tags"><span className="tag">Thematic</span><span className="tag">Fundamental</span><span className="tag">Quant</span></div>
-              <Link to="/model-portfolios" className="prow"><span className="ic grad">▤</span><span><div className="nm">Momentum Movers</div><div className="sub">12 Stocks</div></span></Link>
-              <Link to="/model-portfolios" className="prow"><span className="ic" style={{ background: '#7A5AF8' }}>◑</span><span><div className="nm">Tech Titans</div><div className="sub">9 Stocks</div></span></Link>
-              <Link to="/model-portfolios" className="prow"><span className="ic" style={{ background: '#2E90FA' }}>◆</span><span><div className="nm">Banking Leaders</div><div className="sub">8 Stocks</div></span></Link>
-              <Link to="/model-portfolios" className="seemore">See more →</Link>
+              {byBucket('stock').length ? byBucket('stock').map((p) => <PRow key={p.id} p={p} />) : <EmptyRow />}
+              <Link to="/model-portfolios" className="seemore">See all →</Link>
             </div>
             <div className="pcard">
               <h4>ETF Portfolios</h4>
               <div className="d">Diversified strategies with low-cost ETFs</div>
               <div className="tags"><span className="tag">Asset Allocation</span><span className="tag">Smart Beta</span><span className="tag">Dividend</span></div>
-              <Link to="/model-portfolios" className="prow"><span className="ic" style={{ background: '#12B79A' }}>🌐</span><span><div className="nm">All Weather Portfolio</div><div className="sub">4 ETFs</div></span></Link>
-              <Link to="/model-portfolios" className="prow"><span className="ic" style={{ background: '#F79009' }}>☀</span><span><div className="nm">Smart Beta Quality</div><div className="sub">Factor tilt</div></span></Link>
-              <Link to="/model-portfolios" className="prow"><span className="ic" style={{ background: '#1A1030' }}>◈</span><span><div className="nm">Dividend Aristocrats</div><div className="sub">Steady payers</div></span></Link>
-              <Link to="/model-portfolios" className="seemore">See more →</Link>
+              {byBucket('etf').length ? byBucket('etf').map((p) => <PRow key={p.id} p={p} />) : <EmptyRow />}
+              <Link to="/model-portfolios" className="seemore">See all →</Link>
             </div>
             <div className="pcard">
               <h4>Mutual Fund Portfolios</h4>
               <div className="d">Collections of direct MFs from multiple AMCs</div>
               <div className="tags"><span className="tag">Largecap</span><span className="tag">Midcap</span><span className="tag">Smallcap</span></div>
-              <Link to="/mutual-funds" className="prow"><span className="ic grad">▲</span><span><div className="nm">Largecap MF Picks</div><div className="sub">3 Funds</div></span></Link>
-              <Link to="/mutual-funds" className="prow"><span className="ic" style={{ background: '#7A5AF8' }}>⛰</span><span><div className="nm">Midcap MF Picks</div><div className="sub">3 Funds</div></span></Link>
-              <Link to="/mutual-funds" className="prow"><span className="ic" style={{ background: '#2E90FA' }}>⛰</span><span><div className="nm">Smallcap MF Picks</div><div className="sub">4 Funds</div></span></Link>
-              <Link to="/mutual-funds" className="seemore">See more →</Link>
+              {byBucket('mf').length ? byBucket('mf').map((p) => <PRow key={p.id} p={p} />) : <EmptyRow />}
+              <Link to="/model-portfolios" className="seemore">See all →</Link>
             </div>
           </div>
         </div>
@@ -306,6 +325,28 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      {faqs.length > 0 && (
+        <section className="faq-sec">
+          <div className="container">
+            <div className="eyebrow">Got any questions?</div>
+            <h2>Frequently asked questions</h2>
+            <div className="faq-list">
+              {faqs.map((f, i) => (
+                <div className={`faq-item ${openFaq === i ? 'open' : ''}`} key={f.id} data-testid="home-faq-item">
+                  <button className="faq-q" onClick={() => setOpenFaq(openFaq === i ? -1 : i)} aria-expanded={openFaq === i}>
+                    <span>{f.question}</span>
+                    <span className="faq-chev">⌄</span>
+                  </button>
+                  <div className="faq-a"><p>{f.answer}</p></div>
+                </div>
+              ))}
+            </div>
+            <Link to="/faq" className="faq-viewall" data-testid="view-all-faqs">View all FAQs →</Link>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

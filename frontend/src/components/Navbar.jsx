@@ -14,8 +14,9 @@ const navItems = [
 ];
 
 function Logo() {
+  const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
   return (
-    <Link to="/" className="flex items-center gap-2 shrink-0">
+    <Link to="/" onClick={scrollTop} data-testid="nav-logo-home" className="flex items-center gap-2 shrink-0">
       <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg grad-card text-white shadow-sm">
         <LineChart className="h-4 w-4" />
       </span>
@@ -37,16 +38,17 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-[#E6E8F0] bg-white/85 backdrop-blur-md">
       <div className="container-x flex h-16 items-center justify-between gap-6">
-        <Logo />
-
-        <nav className="hidden lg:flex items-center gap-1">
-          {navItems.map((item) => (
-            <NavLink key={item.label} to={item.to}
-              className={({ isActive }) => `btn-ghost ${isActive ? 'text-[#6C2BD9]' : ''}`}>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        <div className="flex items-center gap-5">
+          <Logo />
+          <nav className="hidden lg:flex items-center gap-1">
+            {navItems.map((item) => (
+              <NavLink key={item.label} to={item.to}
+                className={({ isActive }) => `btn-ghost ${isActive ? 'text-[#6C2BD9]' : ''}`}>
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
 
         <div className="hidden lg:flex items-center gap-2">
           {kiteConnected && (
