@@ -11,6 +11,7 @@ const navItems = [
   { label: 'AIF', to: '/aif' },
   { label: 'Advisory', to: '/advisory' },
   { label: 'Learn', to: '/learn' },
+  { label: 'About', to: '/about' },
 ];
 
 function Logo() {

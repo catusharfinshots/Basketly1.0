@@ -106,6 +106,10 @@ api_router.include_router(build_partners_router(db))
 from faq import build_router as build_faq_router, seed_faqs  # noqa: E402
 api_router.include_router(build_faq_router(db))
 
+# About Us page content (public + admin edit) + image uploads
+from about import build_router as build_about_router  # noqa: E402
+api_router.include_router(build_about_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

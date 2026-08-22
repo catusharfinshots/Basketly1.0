@@ -29,6 +29,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AIFPage from './pages/AIFPage';
 import AdvisoryPage from './pages/AdvisoryPage';
+import AboutPage from './pages/AboutPage';
 import NotFound from './pages/NotFound';
 import BrokerConnectPage from './pages/BrokerConnectPage';
 import KiteCallback from './pages/KiteCallback';
@@ -70,6 +71,7 @@ function App() {
               <Route path="/model-portfolios/:id" element={<ModelPortfolioDetail />} />
               <Route path="/aif" element={<AIFPage />} />
               <Route path="/advisory" element={<AdvisoryPage />} />
+              <Route path="/about" element={<AboutPage />} />
 
               {/* Legacy redirects */}
               <Route path="/explore/smallcases" element={<Navigate to="/model-portfolios" replace />} />

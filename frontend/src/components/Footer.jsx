@@ -7,7 +7,7 @@ import { LineChart, Twitter, Linkedin, Instagram, Youtube, Facebook, Mail, Send,
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const cols = [
-  { title: 'Company', links: [{ name: 'About', to: '/business' }, { name: 'Careers', to: '/business' }, { name: 'Press', to: '/business' }, { name: 'Become a partner', to: '/partner' }] },
+  { title: 'Company', links: [{ name: 'About', to: '/about' }, { name: 'Careers', to: '/about' }, { name: 'Press', to: '/about' }, { name: 'Become a partner', to: '/partner' }] },
   { title: 'Resources', links: [{ name: 'Learn', to: '/learn' }, { name: 'Blog', to: '/learn' }, { name: 'Calculators', to: '/calculators' }, { name: 'FAQs', to: '/faq' }] },
   { title: 'Offerings', links: [{ name: 'Model Portfolios', to: '/model-portfolios' }, { name: 'AIF', to: '/aif' }, { name: 'Advisory', to: '/advisory' }, { name: 'Mutual funds', to: '/mutual-funds' }, { name: 'Fixed deposits', to: '/fixed-deposits' }] },
   { title: 'Fine Print', links: [{ name: 'Terms', to: '/business' }, { name: 'Privacy', to: '/business' }, { name: 'Disclosures', to: '/business' }, { name: 'FAQs', to: '/faq' }] },

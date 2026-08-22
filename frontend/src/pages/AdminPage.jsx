@@ -8,10 +8,12 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '../components/ui/alert-dialog';
+import AboutAdmin from '../components/admin/AboutAdmin';
 import { toast } from 'sonner';
 
 const NAV = [
   { key: 'home', label: 'Home content', icon: LayoutGrid },
+  { key: 'about', label: 'About Us', icon: Users },
   { key: 'managers', label: 'Managers', icon: Users },
   { key: 'collections', label: 'Collections', icon: LineChart },
   { key: 'mutual-funds', label: 'Mutual funds', icon: LineChart },
@@ -30,6 +32,7 @@ const LEADS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const CONTENT_TABS = ['home', 'baskets', 'managers', 'collections', 'mutual-funds', 'fds', 'testimonials', 'faqs', 'settings'];
 const HEADER = {
   home: { title: 'Content manager', desc: 'Edit what investors see on the homepage, then hit Publish changes to push it live.' },
+  about: { title: 'About Us page', desc: 'Manage every section of the public /about page. Changes go live when you click Save About page.' },
   baskets: { title: 'Baskets', desc: 'Manage the baskets shown across the site.' },
   managers: { title: 'Managers', desc: 'Manage SEBI-registered basket managers.' },
   collections: { title: 'Collections', desc: 'Manage the themed collection tiles.' },
@@ -443,6 +446,8 @@ export default function AdminPage() {
                   </section>
                 </div>
               )}
+
+              {tab === 'about' && <AboutAdmin token={token} />}
 
               {tab === 'leads' && (
                 <section className="surface p-6">
