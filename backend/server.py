@@ -98,6 +98,10 @@ api_router.include_router(build_dbadmin_router(db))
 from phone_auth import build_router as build_phone_auth_router  # noqa: E402
 api_router.include_router(build_phone_auth_router(db))
 
+# Become-a-partner applications + admin approval
+from partners import build_router as build_partners_router  # noqa: E402
+api_router.include_router(build_partners_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

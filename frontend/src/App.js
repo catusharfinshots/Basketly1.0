@@ -23,6 +23,7 @@ import DashboardPage from './pages/DashboardPage';
 import BusinessPage from './pages/BusinessPage';
 import AdminPage from './pages/AdminPage';
 import AnalystPage from './pages/AnalystPage';
+import BecomePartner from './pages/BecomePartner';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AIFPage from './pages/AIFPage';
@@ -92,6 +93,7 @@ function App() {
               <Route path="/learn/:slug" element={<LearnPost />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/business" element={<BusinessPage />} />
+              <Route path="/partner" element={<BecomePartner />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/brokers/connect" element={<BrokerConnectPage />} />

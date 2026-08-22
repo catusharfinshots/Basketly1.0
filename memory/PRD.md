@@ -18,6 +18,11 @@ publish model portfolios that admins approve to go live.
 - Frontend: global `PhoneAuthModal` (2-step phone→OTP) opened via `openAuth()` from AuthContext. Nav shows only **"Get started"** (Login + standalone Connect-broker pill removed; Connect-broker moved into the logged-in account menu). Home hero CTA, `/signup` (incl. `?invite=`), dashboard/invest/analyst auth-gates all open the modal.
 - IMPORTANT: 4xx (not 5xx) used for expected OTP errors so the ingress doesn't replace the JSON with a Cloudflare error page. Twilio TRIAL only texts Verified Caller IDs.
 
+### Demo OTP + Become-a-partner (Jun 2026)
+- OTP now runs in **DEMO MODE** (`OTP_DEMO_MODE=true`, code `123456`) — free, any number, no SMS. Flip to `false` for real Twilio SMS (paid account needed). `phone_auth.py` branches on DEMO_MODE.
+- **Become a partner** replaces admin-generated invite links: public `/partner` page (`BecomePartner.jsx`) → `partner_applications` (pending). Admin "Partner applications" tab (`partners.py`, `/api/partners/apply`, `/api/admin/partners`, `/api/admin/partners/{id}/review`). Approve provisions the applicant's phone as an `analyst` (create/upgrade); they log in via phone-OTP → `/analyst`. Footer "Become a partner" → `/partner`. Admin "Analyst invites" tab removed from UI.
+- Verified end-to-end: demo OTP investor login via UI (→dashboard), partner apply via UI → admin approve → analyst provisioned & phone-OTP login returns analyst role.
+
 ## Stack / Architecture
 - Phone+OTP auth (Twilio Verify) is the public login for investors & analysts (backend/phone_auth.py). Admin stays email/password (internal). See CHANGELOG below.
 - Frontend: React + TailwindCSS + React Router + shadcn/ui. `/app/frontend/src/pages/*`, `/app/frontend/src/components/*`.

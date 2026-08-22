@@ -20,7 +20,7 @@ const NAV = [
   { key: 'faqs', label: 'FAQ', icon: HelpCircle },
   { key: 'leads', label: 'Leads', icon: Inbox },
   { key: 'listings', label: 'Listings (approve)', icon: ClipboardCheck },
-  { key: 'invites', label: 'Analyst invites', icon: UserPlus },
+  { key: 'partners', label: 'Partner applications', icon: UserPlus },
   { key: 'database', label: 'Database', icon: Database },
   { key: 'settings', label: 'Site settings', icon: Settings },
 ];
@@ -40,6 +40,7 @@ const HEADER = {
   leads: { title: 'Leads', desc: 'People who registered interest via the AIF & Advisory pages.' },
   listings: { title: 'Research-analyst listings', desc: 'Approve or reject analyst submissions to publish them live.' },
   invites: { title: 'Analyst invites', desc: 'Invite research analysts to onboard themselves.' },
+  partners: { title: 'Partner applications', desc: 'Review research-analyst applications submitted from the website and approve them.' },
   database: { title: 'Database', desc: 'Read-only view of your live data. Sensitive fields (passwords, tokens) are redacted.' },
   settings: { title: 'Site settings', desc: 'Legal disclaimer and contact details.' },
 };
@@ -163,6 +164,27 @@ export default function AdminPage() {
       toast.success('Invite revoked');
       fetchInvites();
     } catch (e) { toast.error(e?.response?.data?.detail || 'Could not revoke'); }
+  };
+
+  const [partnerApps, setPartnerApps] = useState([]);
+  const [partnersLoading, setPartnersLoading] = useState(false);
+  const fetchPartners = async () => {
+    setPartnersLoading(true);
+    try {
+      const { data } = await axios.get(`${LEADS_API}/admin/partners`, { headers: { Authorization: `Bearer ${token}` } });
+      setPartnerApps(data.applications || []);
+    } catch { toast.error('Could not load applications'); }
+    finally { setPartnersLoading(false); }
+  };
+  useEffect(() => {
+    if (tab === 'partners') fetchPartners();
+  }, [tab]);
+  const reviewPartner = async (id, action) => {
+    try {
+      await axios.post(`${LEADS_API}/admin/partners/${id}/review`, { action, note: '' }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(action === 'approve' ? 'Approved — analyst can now log in via their mobile' : 'Rejected');
+      fetchPartners();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Could not update'); }
   };
 
   const DB_LIMIT = 25;
@@ -465,52 +487,43 @@ export default function AdminPage() {
                 </section>
               )}
 
-              {tab === 'invites' && (
-                <section className="surface p-6">
-                  <div className="flex items-center justify-between">
+              {tab === 'partners' && (
+                <section className="surface p-6" data-testid="partners-panel">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>
-                      <div className="text-sm font-semibold">Analyst invites</div>
-                      <div className="text-xs text-[#6B6480]">Generate an invite link and share it with a research analyst. Only invited people can create an analyst account.</div>
+                      <div className="text-sm font-semibold">Partner applications</div>
+                      <div className="text-xs text-[#6B6480]">Research analysts apply from the website's “Become a partner” page. Approve to unlock their analyst console (they log in with their mobile).</div>
                     </div>
-                    <button data-testid="create-invite-btn" onClick={createInvite} className="btn-primary inline-flex items-center gap-1"><UserPlus className="h-4 w-4" /> Create invite</button>
+                    <button onClick={fetchPartners} className="btn-outline text-xs">Refresh</button>
                   </div>
 
-                  {newInvite && (
-                    <div data-testid="new-invite-panel" className="mt-4 rounded-xl border border-[#D8C7F1] bg-[#F7F4FB] p-4">
-                      <div className="text-xs font-semibold text-[#5320A8]">New invite link — copy it now (shown once)</div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <input readOnly value={newInvite.link} data-testid="new-invite-link" className="flex-1 h-10 rounded-lg border border-[#E8E1F0] bg-white px-3 text-sm" onFocus={(e)=>e.target.select()} />
-                        <button data-testid="copy-invite-btn" onClick={async()=>{ try{ await navigator.clipboard.writeText(newInvite.link); toast.success('Copied'); }catch{ toast.error('Copy failed'); } }} className="btn-outline inline-flex items-center gap-1"><Copy className="h-4 w-4" /> Copy</button>
-                      </div>
-                    </div>
-                  )}
-
-                  {invitesLoading ? (
+                  {partnersLoading ? (
                     <div className="mt-6 text-sm text-[#6B6480]">Loading…</div>
-                  ) : invites.length === 0 ? (
-                    <div className="mt-6 text-sm text-[#6B6480]">No invites yet. Click “Create invite” to generate one.</div>
+                  ) : partnerApps.length === 0 ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">No applications yet. They'll appear here when someone applies via “Become a partner”.</div>
                   ) : (
-                    <div className="mt-4 overflow-hidden rounded-xl border border-[#E8E1F0]">
-                      <table className="w-full text-sm">
-                        <thead className="bg-[#F7F4FB] text-[#6B6480]"><tr className="text-left">
-                          <th className="px-4 py-3 font-medium">Status</th>
-                          <th className="px-4 py-3 font-medium">Note</th>
-                          <th className="px-4 py-3 font-medium">Created</th>
-                          <th className="px-4 py-3 font-medium">Expires</th>
-                          <th className="px-4 py-3 font-medium"></th>
-                        </tr></thead>
-                        <tbody>
-                          {invites.map((iv) => (
-                            <tr key={iv.id} className="border-t border-[#F1E7FE]">
-                              <td className="px-4 py-3"><span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${iv.status === 'open' ? 'bg-[#DCFCE7] text-[#0E9F5E]' : iv.status === 'used' ? 'bg-[#EDE9FE] text-[#5320A8]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{iv.status}</span></td>
-                              <td className="px-4 py-3 text-[#6B6480]">{iv.email_note || '—'}</td>
-                              <td className="px-4 py-3 text-[#6B6480]">{new Date(iv.created_at).toLocaleDateString('en-IN')}</td>
-                              <td className="px-4 py-3 text-[#6B6480]">{new Date(iv.expires_at).toLocaleDateString('en-IN')}</td>
-                              <td className="px-4 py-3 text-right">{iv.status === 'open' && <button data-testid={`revoke-invite-${iv.id}`} onClick={()=>revokeInvite(iv.id)} className="text-xs font-semibold text-[#DC2626] hover:underline">Revoke</button>}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="mt-4 space-y-3">
+                      {partnerApps.map((a) => (
+                        <div key={a.id} data-testid="partner-app-row" className="rounded-xl border border-[#E8E1F0] bg-white p-4">
+                          <div className="flex items-start justify-between gap-3 flex-wrap">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-[#1A1030]">{a.name}</span>
+                                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${a.status === 'pending' ? 'bg-[#FEF3C7] text-[#B45309]' : a.status === 'approved' ? 'bg-[#DCFCE7] text-[#0E9F5E]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{a.status}</span>
+                              </div>
+                              <div className="mt-1 text-xs text-[#64748B]">{a.phone}{a.email ? ` · ${a.email}` : ''}{a.firm ? ` · ${a.firm}` : ''}{a.sebi_reg ? ` · SEBI ${a.sebi_reg}` : ''}</div>
+                              {a.note && <div className="mt-1.5 text-xs text-[#475569] max-w-2xl">{a.note}</div>}
+                              <div className="mt-1 text-[11px] text-[#94A3B8]">Applied {new Date(a.created_at).toLocaleDateString('en-IN')}</div>
+                            </div>
+                            {a.status === 'pending' && (
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button type="button" data-testid={`approve-partner-${a.id}`} onClick={() => reviewPartner(a.id, 'approve')} className="rounded-lg bg-[#12B76A] text-white text-xs font-semibold px-3 py-2 hover:bg-[#0E9F5E]">Approve</button>
+                                <button type="button" data-testid={`reject-partner-${a.id}`} onClick={() => reviewPartner(a.id, 'reject')} className="rounded-lg border border-[#FECACA] text-[#DC2626] text-xs font-semibold px-3 py-2 hover:bg-[#FEF2F2]">Reject</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </section>

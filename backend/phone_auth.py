@@ -30,6 +30,11 @@ AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 VERIFY_SID = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
 _client = Client(ACCOUNT_SID, AUTH_TOKEN) if (ACCOUNT_SID and AUTH_TOKEN) else None
 
+# Demo mode: skip real SMS and accept a fixed code (free, any number). Flip
+# OTP_DEMO_MODE=false in .env to use real Twilio SMS.
+DEMO_MODE = os.environ.get("OTP_DEMO_MODE", "true").strip().lower() == "true"
+DEMO_CODE = os.environ.get("OTP_DEMO_CODE", "123456")
+
 _last_send: dict[str, float] = {}
 SEND_COOLDOWN = 25  # seconds per number
 
@@ -62,9 +67,11 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
 
     @router.post("/request-otp")
     async def request_otp(body: PhoneReq):
+        phone = to_e164(body.phone)
+        if DEMO_MODE:
+            return {"ok": True, "demo": True, "status": "pending"}
         if not _client or not VERIFY_SID:
             raise HTTPException(status_code=400, detail="SMS service is not configured yet.")
-        phone = to_e164(body.phone)
         now = time.time()
         if now - _last_send.get(phone, 0) < SEND_COOLDOWN:
             raise HTTPException(status_code=429, detail="Please wait a few seconds before requesting another code")
@@ -79,22 +86,26 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
             if getattr(e, "code", None) == 21608:
                 detail = "This number isn't verified on our SMS trial account yet. Please verify it in Twilio, or use a verified number."
             raise HTTPException(status_code=400, detail=detail)
-        return {"ok": True, "status": v.status}
+        return {"ok": True, "demo": False, "status": v.status}
 
     @router.post("/verify-otp")
     async def verify_otp(body: VerifyReq):
-        if not _client or not VERIFY_SID:
-            raise HTTPException(status_code=400, detail="SMS service is not configured yet.")
         phone = to_e164(body.phone)
-        try:
-            res = await run_in_threadpool(
-                lambda: _client.verify.v2.services(VERIFY_SID).verification_checks.create(to=phone, code=body.code)
-            )
-        except Exception as e:  # noqa: BLE001
-            logger.warning("OTP check failed: %s", e)
-            raise HTTPException(status_code=400, detail="Couldn't verify the code, please request a new one.")
-        if res.status != "approved":
-            raise HTTPException(status_code=401, detail="Invalid or expired code")
+        if DEMO_MODE:
+            if body.code != DEMO_CODE:
+                raise HTTPException(status_code=401, detail="Invalid code. In demo mode the code is 123456.")
+        else:
+            if not _client or not VERIFY_SID:
+                raise HTTPException(status_code=400, detail="SMS service is not configured yet.")
+            try:
+                res = await run_in_threadpool(
+                    lambda: _client.verify.v2.services(VERIFY_SID).verification_checks.create(to=phone, code=body.code)
+                )
+            except Exception as e:  # noqa: BLE001
+                logger.warning("OTP check failed: %s", e)
+                raise HTTPException(status_code=400, detail="Couldn't verify the code, please request a new one.")
+            if res.status != "approved":
+                raise HTTPException(status_code=401, detail="Invalid or expired code")
 
         import invites as invites_mod
 

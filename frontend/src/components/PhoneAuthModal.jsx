@@ -16,6 +16,7 @@ export default function PhoneAuthModal() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [cooldown, setCooldown] = useState(0);
+  const [demo, setDemo] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -34,10 +35,11 @@ export default function PhoneAuthModal() {
     e?.preventDefault();
     setError(''); setBusy(true);
     try {
-      await requestOtp(phone);
+      const res = await requestOtp(phone);
+      setDemo(!!res?.demo);
       setStep('code');
       setCooldown(30);
-      toast.success(`OTP sent to ${phone}`);
+      toast.success(res?.demo ? 'Demo mode: use code 123456' : `OTP sent to ${phone}`);
     } catch (err) {
       setError(err?.response?.data?.detail || 'Could not send code. Please try again.');
     } finally { setBusy(false); }
@@ -99,6 +101,7 @@ export default function PhoneAuthModal() {
                 <label className="text-xs uppercase tracking-wider text-[#64748B]">Enter OTP</label>
                 <Input data-testid="otp-input" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} required
                   placeholder="6-digit code" className="h-11 mt-1.5 tracking-[0.4em] text-center text-lg" inputMode="numeric" autoFocus />
+                {demo && <p data-testid="demo-otp-hint" className="mt-1.5 text-xs font-medium text-[#5320A8]">Demo mode — enter <b>123456</b> to continue.</p>}
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider text-[#64748B]">Your name (optional)</label>
