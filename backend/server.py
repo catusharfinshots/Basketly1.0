@@ -90,6 +90,10 @@ api_router.include_router(build_analyst_router(db))
 from invites import build_router as build_invites_router  # noqa: E402
 api_router.include_router(build_invites_router(db))
 
+# Admin-only read-only database viewer
+from dbadmin import build_router as build_dbadmin_router  # noqa: E402
+api_router.include_router(build_dbadmin_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

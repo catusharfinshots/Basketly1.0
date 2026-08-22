@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import AnalystConsole from '../components/AnalystConsole';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy } from 'lucide-react';
+import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -21,6 +21,7 @@ const NAV = [
   { key: 'leads', label: 'Leads', icon: Inbox },
   { key: 'listings', label: 'Listings (approve)', icon: ClipboardCheck },
   { key: 'invites', label: 'Analyst invites', icon: UserPlus },
+  { key: 'database', label: 'Database', icon: Database },
   { key: 'settings', label: 'Site settings', icon: Settings },
 ];
 
@@ -39,6 +40,7 @@ const HEADER = {
   leads: { title: 'Leads', desc: 'People who registered interest via the AIF & Advisory pages.' },
   listings: { title: 'Research-analyst listings', desc: 'Approve or reject analyst submissions to publish them live.' },
   invites: { title: 'Analyst invites', desc: 'Invite research analysts to onboard themselves.' },
+  database: { title: 'Database', desc: 'Read-only view of your live data. Sensitive fields (passwords, tokens) are redacted.' },
   settings: { title: 'Site settings', desc: 'Legal disclaimer and contact details.' },
 };
 
@@ -162,6 +164,37 @@ export default function AdminPage() {
       fetchInvites();
     } catch (e) { toast.error(e?.response?.data?.detail || 'Could not revoke'); }
   };
+
+  const DB_LIMIT = 25;
+  const [dbCollections, setDbCollections] = useState([]);
+  const [dbActive, setDbActive] = useState(null);
+  const [dbDocs, setDbDocs] = useState([]);
+  const [dbTotal, setDbTotal] = useState(0);
+  const [dbSkip, setDbSkip] = useState(0);
+  const [dbQuery, setDbQuery] = useState('');
+  const [dbLoading, setDbLoading] = useState(false);
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
+  const fetchDbCollections = async () => {
+    try {
+      const { data } = await axios.get(`${LEADS_API}/admin/db/collections`, authHeader);
+      setDbCollections(data.collections || []);
+      if (!dbActive && data.collections?.length) selectCollection(data.collections[0].name);
+    } catch { toast.error('Could not load collections'); }
+  };
+  const fetchDbDocs = async (name, skip = 0, q = '') => {
+    setDbLoading(true);
+    try {
+      const { data } = await axios.get(`${LEADS_API}/admin/db/${name}?skip=${skip}&limit=${DB_LIMIT}&q=${encodeURIComponent(q)}`, authHeader);
+      setDbDocs(data.documents || []);
+      setDbTotal(data.total || 0);
+      setDbSkip(skip);
+    } catch { toast.error('Could not load records'); }
+    finally { setDbLoading(false); }
+  };
+  const selectCollection = (name) => { setDbActive(name); setDbQuery(''); fetchDbDocs(name, 0, ''); };
+  useEffect(() => {
+    if (tab === 'database') fetchDbCollections();
+  }, [tab]);
 
   useEffect(() => {
     axios.get(`${LEADS_API}/content`).then(({ data }) => {
@@ -449,6 +482,59 @@ export default function AdminPage() {
                         </tbody>
                       </table>
                     </div>
+                  )}
+                </section>
+              )}
+
+              {tab === 'database' && (
+                <section className="surface p-6" data-testid="db-viewer">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex flex-wrap gap-2">
+                      {dbCollections.map((col) => (
+                        <button key={col.name} data-testid={`db-col-${col.name}`} onClick={() => selectCollection(col.name)}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${dbActive === col.name ? 'bg-[#6C2BD9] text-white' : 'bg-[#F7F4FB] text-[#1A1030] hover:bg-[#F1E7FE]'}`}>
+                          {col.name}<span className={`rounded-full px-1.5 ${dbActive === col.name ? 'bg-white/20' : 'bg-[#E8E1F0]'}`}>{col.count}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => dbActive && fetchDbDocs(dbActive, dbSkip, dbQuery)} className="btn-outline text-xs">Refresh</button>
+                  </div>
+
+                  {dbActive && (
+                    <div className="mt-4 flex items-center gap-2">
+                      <Input data-testid="db-search" value={dbQuery} onChange={(e) => setDbQuery(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') fetchDbDocs(dbActive, 0, dbQuery); }}
+                        placeholder="Search (email, name, status, id…) then press Enter" className="h-9 max-w-md" />
+                      <button onClick={() => fetchDbDocs(dbActive, 0, dbQuery)} className="btn-outline text-xs">Search</button>
+                    </div>
+                  )}
+
+                  {dbLoading ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">Loading records…</div>
+                  ) : dbDocs.length === 0 ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">No records in this collection.</div>
+                  ) : (
+                    <>
+                      <div className="mt-4 text-xs text-[#6B6480]">Showing {dbSkip + 1}–{Math.min(dbSkip + DB_LIMIT, dbTotal)} of {dbTotal}</div>
+                      <div className="mt-3 space-y-2">
+                        {dbDocs.map((doc, i) => (
+                          <details key={doc.id || i} data-testid="db-record" className="rounded-xl border border-[#E8E1F0] bg-white overflow-hidden group">
+                            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-3 hover:bg-[#F7F4FB]">
+                              <span className="text-sm font-medium text-[#1A1030] truncate">{doc.email || doc.name || doc.type || doc.id || 'record'}</span>
+                              <span className="text-xs text-[#6B6480] shrink-0">{doc.role || doc.status || (doc.created_at ? new Date(doc.created_at).toLocaleDateString('en-IN') : 'view')}</span>
+                            </summary>
+                            <pre className="px-4 py-3 border-t border-[#F1E7FE] bg-[#FAFAFE] text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words">{JSON.stringify(doc, null, 2)}</pre>
+                          </details>
+                        ))}
+                      </div>
+                      {dbTotal > DB_LIMIT && (
+                        <div className="mt-4 flex items-center justify-between">
+                          <button disabled={dbSkip === 0} onClick={() => fetchDbDocs(dbActive, Math.max(0, dbSkip - DB_LIMIT), dbQuery)} className={`btn-outline text-xs ${dbSkip === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}><ChevronLeft className="h-3.5 w-3.5" /> Prev</button>
+                          <span className="text-xs text-[#6B6480]">Page {Math.floor(dbSkip / DB_LIMIT) + 1} of {Math.max(1, Math.ceil(dbTotal / DB_LIMIT))}</span>
+                          <button disabled={dbSkip + DB_LIMIT >= dbTotal} onClick={() => fetchDbDocs(dbActive, dbSkip + DB_LIMIT, dbQuery)} className={`btn-outline text-xs ${dbSkip + DB_LIMIT >= dbTotal ? 'opacity-40 cursor-not-allowed' : ''}`}>Next <ChevronRight className="h-3.5 w-3.5" /></button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </section>
               )}
