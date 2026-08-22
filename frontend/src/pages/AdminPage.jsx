@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import AnalystConsole from '../components/AnalystConsole';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
 import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { Input } from '../components/ui/input';
@@ -273,13 +272,13 @@ export default function AdminPage() {
   }
   if (!isAdmin) {
     if (user.role === 'analyst') {
-      return <AnalystConsole />;
+      return <Navigate to="/analyst" replace />;
     }
     return (
       <div className="min-h-screen grid place-items-center bg-[#F7F4FB] p-6">
         <div className="surface p-8 text-center max-w-sm">
           <h1 className="text-xl font-bold">No console access</h1>
-          <p className="mt-2 text-sm text-[#6B6480]">Hi {user.name}. This area is for platform admins and research analysts.</p>
+          <p className="mt-2 text-sm text-[#6B6480]">Hi {user.name}. This area is for platform admins only.</p>
           <button onClick={() => { logout(); navigate('/'); }} className="btn-outline mt-5 w-full">Sign out</button>
         </div>
       </div>

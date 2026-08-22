@@ -24,7 +24,7 @@ export default function SignupPage() {
       const role = invite ? 'analyst' : 'investor';
       const user = await signup({ name, email, password, role, invite_code: invite || undefined });
       toast.success(`Account created — welcome, ${user.name.split(' ')[0]}`);
-      nav(user.role === 'analyst' ? '/admin' : next);
+      nav(user.role === 'analyst' ? '/analyst' : next);
     } catch (err) {
       toast.error(err?.response?.data?.detail || 'Could not create account');
     } finally {

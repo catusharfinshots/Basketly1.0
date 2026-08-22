@@ -6,6 +6,11 @@ Evolved into: a smallcase-style investing platform ("Basketly") with a unified p
 functional AIF/Advisory lead forms, real JWT auth, and a role-based Admin/Analyst console where analysts
 publish model portfolios that admins approve to go live.
 
+## Routes
+- `/admin` → **AdminPage** (admins only; analysts are redirected to `/analyst`, investors see a no-access card).
+- `/analyst` → **AnalystPage** wrapper → AnalystConsole (analysts only; admins redirected to `/admin`, investors see a "go to dashboard" card). Added Jun 2026 to split the two consoles onto separate URLs.
+- Login/signup redirect by role: admin→`/admin`, analyst→`/analyst`, investor→`/dashboard`.
+
 ## Stack / Architecture
 - Frontend: React + TailwindCSS + React Router + shadcn/ui. `/app/frontend/src/pages/*`, `/app/frontend/src/components/*`.
 - Backend: FastAPI (routers built per module) + Motor (MongoDB async). `/app/backend/server.py` includes routers.

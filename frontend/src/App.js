@@ -22,6 +22,7 @@ import LearnPost from './pages/LearnPost';
 import DashboardPage from './pages/DashboardPage';
 import BusinessPage from './pages/BusinessPage';
 import AdminPage from './pages/AdminPage';
+import AnalystPage from './pages/AnalystPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AIFPage from './pages/AIFPage';
@@ -95,6 +96,7 @@ function App() {
             </Route>
             <Route path="/broker/kite/callback" element={<KiteCallback />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/analyst" element={<AnalystPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
