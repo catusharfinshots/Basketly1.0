@@ -86,6 +86,10 @@ api_router.include_router(build_content_router(db))
 from analyst import build_router as build_analyst_router  # noqa: E402
 api_router.include_router(build_analyst_router(db))
 
+# Admin-issued analyst invites
+from invites import build_router as build_invites_router  # noqa: E402
+api_router.include_router(build_invites_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 
@@ -111,6 +115,11 @@ async def on_startup():
         await seed_users(db)
     except Exception as e:  # noqa: BLE001
         logger.warning("User seeding skipped: %s", e)
+    try:
+        import storage
+        storage.init_storage()
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Object storage init skipped: %s", e)
 
 
 @app.on_event("shutdown")

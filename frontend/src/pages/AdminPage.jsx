@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import AnalystConsole from '../components/AnalystConsole';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck } from 'lucide-react';
+import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -21,10 +21,27 @@ const NAV = [
   { key: 'faqs', label: 'FAQ', icon: HelpCircle },
   { key: 'leads', label: 'Leads', icon: Inbox },
   { key: 'listings', label: 'Listings (approve)', icon: ClipboardCheck },
+  { key: 'invites', label: 'Analyst invites', icon: UserPlus },
   { key: 'settings', label: 'Site settings', icon: Settings },
 ];
 
 const LEADS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const CONTENT_TABS = ['home', 'baskets', 'managers', 'collections', 'mutual-funds', 'fds', 'testimonials', 'faqs', 'settings'];
+const HEADER = {
+  home: { title: 'Content manager', desc: 'Edit what investors see on the homepage, then hit Publish changes to push it live.' },
+  baskets: { title: 'Baskets', desc: 'Manage the baskets shown across the site.' },
+  managers: { title: 'Managers', desc: 'Manage SEBI-registered basket managers.' },
+  collections: { title: 'Collections', desc: 'Manage the themed collection tiles.' },
+  'mutual-funds': { title: 'Mutual funds', desc: 'Manage the mutual funds catalogue.' },
+  fds: { title: 'Fixed deposits', desc: 'Manage fixed-deposit providers and rates.' },
+  testimonials: { title: 'Testimonials', desc: 'Manage investor testimonials.' },
+  faqs: { title: 'FAQ', desc: 'Manage frequently asked questions.' },
+  leads: { title: 'Leads', desc: 'People who registered interest via the AIF & Advisory pages.' },
+  listings: { title: 'Research-analyst listings', desc: 'Approve or reject analyst submissions to publish them live.' },
+  invites: { title: 'Analyst invites', desc: 'Invite research analysts to onboard themselves.' },
+  settings: { title: 'Site settings', desc: 'Legal disclaimer and contact details.' },
+};
 
 const CONTENT_DEFAULTS = {
   hero: { headline: 'Challenging', highlight: 'volatility', sub: 'Money at work — expert-managed model portfolios, alternative investment funds and SEBI-registered advisory, all in one place.', primaryCta: 'Get started', secondaryCta: 'Explore portfolios' },
@@ -112,6 +129,39 @@ export default function AdminPage() {
       toast.success(action === 'approve' ? 'Approved — now live on the site' : 'Rejected');
       fetchListings();
     } catch (e) { toast.error(e?.response?.data?.detail || 'Could not update'); }
+  };
+
+  const [invites, setInvites] = useState([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
+  const [newInvite, setNewInvite] = useState(null);
+  const fetchInvites = async () => {
+    setInvitesLoading(true);
+    try {
+      const { data } = await axios.get(`${LEADS_API}/admin/invites`, { headers: { Authorization: `Bearer ${token}` } });
+      setInvites(data.invites || []);
+    } catch { toast.error('Could not load invites'); }
+    finally { setInvitesLoading(false); }
+  };
+  useEffect(() => {
+    if (tab === 'invites') fetchInvites();
+  }, [tab]);
+  const inviteLink = (code) => `${window.location.origin}/signup?invite=${code}`;
+  const createInvite = async () => {
+    try {
+      const { data } = await axios.post(`${LEADS_API}/admin/invites`, { email_note: '' }, { headers: { Authorization: `Bearer ${token}` } });
+      const link = inviteLink(data.code);
+      setNewInvite({ ...data.invite, code: data.code, link });
+      try { await navigator.clipboard.writeText(link); toast.success('Invite created — link copied to clipboard'); }
+      catch { toast.success('Invite created'); }
+      fetchInvites();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Could not create invite'); }
+  };
+  const revokeInvite = async (id) => {
+    try {
+      await axios.post(`${LEADS_API}/admin/invites/${id}/revoke`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Invite revoked');
+      fetchInvites();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Could not revoke'); }
   };
 
   useEffect(() => {
@@ -208,15 +258,17 @@ export default function AdminPage() {
           <div className="max-w-5xl">
             <div className="flex items-end justify-between gap-4 flex-wrap">
               <div>
-                <h1 className="text-2xl font-bold">Content manager</h1>
-                <p className="text-sm text-[#6B6480]">Edit what investors see across every page, then hit <span className="font-semibold text-[#1A1030]">Publish changes</span> to push it live.</p>
+                <h1 className="text-2xl font-bold">{HEADER[tab]?.title || 'Content manager'}</h1>
+                <p className="text-sm text-[#6B6480]">{HEADER[tab]?.desc || 'Manage your site content.'}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={discard} disabled={!dirty} className={`btn-outline ${!dirty ? 'opacity-50 cursor-not-allowed' : ''}`}>Discard</button>
-                <button onClick={publish} className="btn-primary">Publish changes</button>
-              </div>
+              {CONTENT_TABS.includes(tab) && (
+                <div className="flex items-center gap-2">
+                  <button onClick={discard} disabled={!dirty} className={`btn-outline ${!dirty ? 'opacity-50 cursor-not-allowed' : ''}`}>Discard</button>
+                  <button onClick={publish} className="btn-primary">Publish changes</button>
+                </div>
+              )}
             </div>
-            {dirty && <div className="mt-3 text-xs text-[#B45309] bg-[#FFFAEB] border border-[#FDE68A] rounded-lg px-3 py-1.5 inline-block">You have unpublished changes.</div>}
+            {CONTENT_TABS.includes(tab) && dirty && <div className="mt-3 text-xs text-[#B45309] bg-[#FFFAEB] border border-[#FDE68A] rounded-lg px-3 py-1.5 inline-block">You have unpublished changes.</div>}
 
             <div className="mt-8 space-y-6">
               {tab === 'home' && (
@@ -346,6 +398,57 @@ export default function AdminPage() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {tab === 'invites' && (
+                <section className="surface p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-semibold">Analyst invites</div>
+                      <div className="text-xs text-[#6B6480]">Generate an invite link and share it with a research analyst. Only invited people can create an analyst account.</div>
+                    </div>
+                    <button data-testid="create-invite-btn" onClick={createInvite} className="btn-primary inline-flex items-center gap-1"><UserPlus className="h-4 w-4" /> Create invite</button>
+                  </div>
+
+                  {newInvite && (
+                    <div data-testid="new-invite-panel" className="mt-4 rounded-xl border border-[#D8C7F1] bg-[#F7F4FB] p-4">
+                      <div className="text-xs font-semibold text-[#5320A8]">New invite link — copy it now (shown once)</div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <input readOnly value={newInvite.link} data-testid="new-invite-link" className="flex-1 h-10 rounded-lg border border-[#E8E1F0] bg-white px-3 text-sm" onFocus={(e)=>e.target.select()} />
+                        <button data-testid="copy-invite-btn" onClick={async()=>{ try{ await navigator.clipboard.writeText(newInvite.link); toast.success('Copied'); }catch{ toast.error('Copy failed'); } }} className="btn-outline inline-flex items-center gap-1"><Copy className="h-4 w-4" /> Copy</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {invitesLoading ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">Loading…</div>
+                  ) : invites.length === 0 ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">No invites yet. Click “Create invite” to generate one.</div>
+                  ) : (
+                    <div className="mt-4 overflow-hidden rounded-xl border border-[#E8E1F0]">
+                      <table className="w-full text-sm">
+                        <thead className="bg-[#F7F4FB] text-[#6B6480]"><tr className="text-left">
+                          <th className="px-4 py-3 font-medium">Status</th>
+                          <th className="px-4 py-3 font-medium">Note</th>
+                          <th className="px-4 py-3 font-medium">Created</th>
+                          <th className="px-4 py-3 font-medium">Expires</th>
+                          <th className="px-4 py-3 font-medium"></th>
+                        </tr></thead>
+                        <tbody>
+                          {invites.map((iv) => (
+                            <tr key={iv.id} className="border-t border-[#F1E7FE]">
+                              <td className="px-4 py-3"><span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${iv.status === 'open' ? 'bg-[#DCFCE7] text-[#0E9F5E]' : iv.status === 'used' ? 'bg-[#EDE9FE] text-[#5320A8]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{iv.status}</span></td>
+                              <td className="px-4 py-3 text-[#6B6480]">{iv.email_note || '—'}</td>
+                              <td className="px-4 py-3 text-[#6B6480]">{new Date(iv.created_at).toLocaleDateString('en-IN')}</td>
+                              <td className="px-4 py-3 text-[#6B6480]">{new Date(iv.expires_at).toLocaleDateString('en-IN')}</td>
+                              <td className="px-4 py-3 text-right">{iv.status === 'open' && <button data-testid={`revoke-invite-${iv.id}`} onClick={()=>revokeInvite(iv.id)} className="text-xs font-semibold text-[#DC2626] hover:underline">Revoke</button>}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </section>

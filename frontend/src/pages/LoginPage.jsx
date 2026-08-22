@@ -21,7 +21,8 @@ export default function LoginPage() {
     try {
       const user = await login({ email, password });
       toast.success(`Welcome back, ${user.name.split(' ')[0]}`);
-      nav(next);
+      const dest = params.get('next') || (user.role === 'admin' || user.role === 'analyst' ? '/admin' : '/dashboard');
+      nav(dest);
     } catch (err) {
       toast.error(err?.response?.data?.detail || 'Invalid email or password');
     } finally {

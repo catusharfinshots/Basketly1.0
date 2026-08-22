@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Plus, Trash2, Save, Send, ArrowLeft, Pencil, LogOut, LineChart } from 'lucide-react';
+import { Plus, Trash2, Save, Send, ArrowLeft, Pencil, LogOut, LineChart, Upload, FileText } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -15,6 +15,7 @@ const BLANK = {
   constituents: [{ symbol: '', name: '', type: 'Stock', weight: 0 }],
   returns: { cagr: 0, y1: 0, y3: 0, y5: 0 },
   factsheet: { objective: '', whoShouldInvest: '', riskFactors: '', pdfName: '' },
+  factsheet_pdf: null,
 };
 
 const STATUS_STYLES = {
@@ -34,6 +35,7 @@ export default function AnalystConsole() {
   const [form, setForm] = useState(BLANK);
   const [editingId, setEditingId] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -106,6 +108,37 @@ export default function AnalystConsole() {
   const remove = async (id) => {
     try { await axios.delete(`${API}/analyst/portfolios/${id}`, auth); toast.success('Deleted'); await load(); }
     catch { toast.error('Could not delete'); }
+  };
+
+  const onFactsheetPick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      toast.error('Please choose a PDF file'); return;
+    }
+    let id = editingId;
+    if (!id) { const saved = await saveForm(); id = saved?.id; if (!id) return; }
+    setUploadingPdf(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const { data } = await axios.post(`${API}/analyst/portfolios/${id}/factsheet`, fd, auth);
+      setForm((f) => ({ ...f, factsheet_pdf: data.factsheet_pdf }));
+      toast.success('Factsheet PDF uploaded');
+      await load();
+    } catch (err) { toast.error(err?.response?.data?.detail || 'Upload failed'); }
+    finally { setUploadingPdf(false); }
+  };
+
+  const removeFactsheet = async () => {
+    if (!editingId) { setForm((f) => ({ ...f, factsheet_pdf: null })); return; }
+    try {
+      await axios.delete(`${API}/analyst/portfolios/${editingId}/factsheet`, auth);
+      setForm((f) => ({ ...f, factsheet_pdf: null }));
+      toast.success('Factsheet removed');
+      await load();
+    } catch { toast.error('Could not remove'); }
   };
 
   const setC = (i, key, val) => setForm((f) => { const a = [...f.constituents]; a[i] = { ...a[i], [key]: val }; return { ...f, constituents: a }; });
@@ -248,7 +281,23 @@ export default function AnalystConsole() {
                   <div><Label>Who should invest</Label><Textarea value={form.factsheet.whoShouldInvest} onChange={(e) => setForm({ ...form, factsheet: { ...form.factsheet, whoShouldInvest: e.target.value } })} className="mt-1.5" /></div>
                   <div><Label>Risk factors</Label><Textarea value={form.factsheet.riskFactors} onChange={(e) => setForm({ ...form, factsheet: { ...form.factsheet, riskFactors: e.target.value } })} className="mt-1.5" /></div>
                 </div>
-                <div className="text-xs text-[#6B6480]">📎 Factsheet PDF upload is coming in the next update — for now these structured fields render as the factsheet.</div>
+                <div>
+                  <Label>Factsheet PDF</Label>
+                  {form.factsheet_pdf ? (
+                    <div data-testid="factsheet-pdf-row" className="mt-1.5 flex items-center justify-between gap-3 rounded-xl border border-[#E8E1F0] bg-white px-3 py-2.5">
+                      <a data-testid="factsheet-pdf-link" href={`${API}/portfolios/${editingId}/factsheet?auth=${token}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium text-[#5320A8] hover:underline min-w-0">
+                        <FileText className="h-4 w-4 shrink-0" /> <span className="truncate">{form.factsheet_pdf.filename}</span>
+                      </a>
+                      <button type="button" data-testid="factsheet-pdf-remove" onClick={removeFactsheet} className="h-8 w-8 grid place-items-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2] shrink-0"><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                  ) : (
+                    <label data-testid="factsheet-pdf-upload" className="mt-1.5 flex items-center gap-2 rounded-xl border border-dashed border-[#D8C7F1] bg-[#F7F4FB] px-3 py-3 text-sm text-[#5320A8] cursor-pointer hover:bg-[#F1E7FE] transition-colors w-fit">
+                      <Upload className="h-4 w-4" /> {uploadingPdf ? 'Uploading…' : 'Upload factsheet PDF'}
+                      <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={onFactsheetPick} disabled={uploadingPdf} />
+                    </label>
+                  )}
+                  <div className="mt-1.5 text-xs text-[#6B6480]">Investors can download this PDF from your live portfolio page. Max 10 MB.</div>
+                </div>
               </div>
             </section>
 

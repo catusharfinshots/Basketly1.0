@@ -160,11 +160,19 @@ export default function ModelPortfolioDetail() {
                     <div className="mt-3 text-sm font-semibold group-hover:text-[#6C2BD9]">Methodology</div>
                     <div className="text-xs text-[#64748B]">How this portfolio was created</div>
                   </button>
-                  <a href="#" onClick={(e) => { e.preventDefault(); toast.info('Factsheet PDF is a demo placeholder.'); }} className="surface p-4 hover:border-[#D8C7F1] transition-all group">
-                    <FileText className="h-5 w-5 text-[#6C2BD9]" />
-                    <div className="mt-3 text-sm font-semibold group-hover:text-[#6C2BD9]">Factsheet</div>
-                    <div className="text-xs text-[#64748B]">Download key points</div>
-                  </a>
+                  {basket.factsheet_pdf ? (
+                    <a data-testid="factsheet-download" href={`${API}/portfolios/${basket.id}/factsheet`} target="_blank" rel="noreferrer" className="surface p-4 hover:border-[#D8C7F1] transition-all group block">
+                      <FileText className="h-5 w-5 text-[#6C2BD9]" />
+                      <div className="mt-3 text-sm font-semibold group-hover:text-[#6C2BD9]">Factsheet</div>
+                      <div className="text-xs text-[#64748B]">Download the PDF factsheet</div>
+                    </a>
+                  ) : (
+                    <a href="#" onClick={(e) => { e.preventDefault(); toast.info('No factsheet PDF has been attached to this portfolio yet.'); }} className="surface p-4 hover:border-[#D8C7F1] transition-all group">
+                      <FileText className="h-5 w-5 text-[#6C2BD9]" />
+                      <div className="mt-3 text-sm font-semibold group-hover:text-[#6C2BD9]">Factsheet</div>
+                      <div className="text-xs text-[#64748B]">Download key points</div>
+                    </a>
+                  )}
                 </div>
               </div>
             )}

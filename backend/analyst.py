@@ -11,11 +11,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, UploadFile, File, Header
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from auth import build_current_user_dep
+from auth import build_current_user_dep, decode_token
+import storage
 
 
 def _now() -> str:
@@ -138,6 +140,67 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
         if res.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Portfolio not found")
         return {"ok": True}
+
+    # ---------- Factsheet PDF ----------
+    @router.post("/analyst/portfolios/{pid}/factsheet")
+    async def upload_factsheet(pid: str, file: UploadFile = File(...), user: dict = Depends(require_analyst)):
+        existing = await col.find_one({"id": pid, "owner_id": user["id"]})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Portfolio not found")
+        if (file.content_type or "") != "application/pdf" and not (file.filename or "").lower().endswith(".pdf"):
+            raise HTTPException(status_code=422, detail="Please upload a PDF file.")
+        data = await file.read()
+        if len(data) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="PDF must be 10 MB or smaller.")
+        path = f"{storage.APP_NAME}/factsheets/{user['id']}/{uuid.uuid4()}.pdf"
+        try:
+            result = storage.put_object(path, data, "application/pdf")
+        except Exception as e:  # noqa: BLE001
+            raise HTTPException(status_code=502, detail=f"Upload failed: {e}")
+        meta = {
+            "storage_path": result["path"],
+            "filename": file.filename or "factsheet.pdf",
+            "size": result.get("size", len(data)),
+            "uploaded_at": _now(),
+        }
+        await col.update_one({"id": pid}, {"$set": {"factsheet_pdf": meta, "updated_at": _now()}})
+        return {"factsheet_pdf": meta}
+
+    @router.delete("/analyst/portfolios/{pid}/factsheet")
+    async def delete_factsheet(pid: str, user: dict = Depends(require_analyst)):
+        res = await col.update_one(
+            {"id": pid, "owner_id": user["id"]}, {"$set": {"factsheet_pdf": None, "updated_at": _now()}}
+        )
+        if res.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Portfolio not found")
+        return {"ok": True}
+
+    @router.get("/portfolios/{pid}/factsheet")
+    async def download_factsheet(pid: str, authorization: Optional[str] = Header(None), auth: Optional[str] = Query(None)):
+        doc = await col.find_one({"id": pid})
+        if not doc or not doc.get("factsheet_pdf"):
+            raise HTTPException(status_code=404, detail="Factsheet not found")
+        # Approved factsheets are public; drafts require owner/admin.
+        if doc.get("status") != "approved":
+            token = None
+            if authorization and authorization.startswith("Bearer "):
+                token = authorization.split(" ", 1)[1].strip()
+            elif auth:
+                token = auth
+            if not token:
+                raise HTTPException(status_code=401, detail="Not authenticated")
+            payload = decode_token(token)
+            requester = await db.users.find_one({"id": payload.get("sub")}, {"_id": 0})
+            if not requester or (requester.get("role") != "admin" and requester["id"] != doc.get("owner_id")):
+                raise HTTPException(status_code=403, detail="Not allowed")
+        meta = doc["factsheet_pdf"]
+        try:
+            data, _ct = storage.get_object(meta["storage_path"])
+        except Exception as e:  # noqa: BLE001
+            raise HTTPException(status_code=502, detail=f"Download failed: {e}")
+        fname = meta.get("filename", "factsheet.pdf")
+        return Response(content=data, media_type="application/pdf",
+                        headers={"Content-Disposition": f'inline; filename="{fname}"'})
 
     # ---------- Admin: review ----------
     @router.get("/admin/portfolios")

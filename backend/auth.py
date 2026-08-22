@@ -89,6 +89,7 @@ class SignupRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=128)
     role: str = Field(default="investor")
+    invite_code: Optional[str] = Field(default=None, max_length=300)
 
 
 class LoginRequest(BaseModel):
@@ -139,11 +140,18 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
 
     @router.post("/signup")
     async def signup(payload: SignupRequest):
+        import invites as invites_mod
         email = payload.email.lower()
         if await db.users.find_one({"email": email}):
             raise HTTPException(status_code=409, detail="An account with this email already exists")
-        # self-signup can only create investor or analyst accounts (never admin)
-        role = payload.role if payload.role in ("investor", "analyst") else "investor"
+        # analyst requires a valid admin-issued invite; otherwise default to investor.
+        consumed_invite = None
+        role = "investor"
+        if payload.role == "analyst" and payload.invite_code:
+            consumed_invite = await invites_mod.consume_invite(db, payload.invite_code)
+            if not consumed_invite:
+                raise HTTPException(status_code=403, detail="This analyst invite is invalid, used or expired.")
+            role = "analyst"
         user = {
             "id": str(uuid.uuid4()),
             "name": payload.name.strip(),
@@ -152,7 +160,14 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
             "role": role,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        await db.users.insert_one(user)
+        try:
+            await db.users.insert_one(user)
+        except Exception:
+            if consumed_invite:
+                await invites_mod.release_invite(db, consumed_invite["id"])
+            raise HTTPException(status_code=409, detail="An account with this email already exists")
+        if consumed_invite:
+            await invites_mod.bind_invite(db, consumed_invite["id"], user["id"])
         token = create_token(user)
         return {"token": token, "user": public_user(user)}
 

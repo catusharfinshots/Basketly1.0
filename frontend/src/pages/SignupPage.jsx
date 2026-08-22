@@ -11,18 +11,18 @@ export default function SignupPage() {
   const nav = useNavigate();
   const [params] = useSearchParams();
   const next = params.get('next') || '/dashboard';
+  const invite = params.get('invite') || '';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isAnalyst, setIsAnalyst] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true);
     try {
-      const role = isAnalyst ? 'analyst' : 'investor';
-      const user = await signup({ name, email, password, role });
+      const role = invite ? 'analyst' : 'investor';
+      const user = await signup({ name, email, password, role, invite_code: invite || undefined });
       toast.success(`Account created — welcome, ${user.name.split(' ')[0]}`);
       nav(user.role === 'analyst' ? '/admin' : next);
     } catch (err) {
@@ -51,27 +51,26 @@ export default function SignupPage() {
 
         <div className="surface p-8 shadow-[0_30px_60px_-30px_rgba(108,43,217,0.35)]">
           <h2 className="text-lg font-semibold">Create account</h2>
+          {invite && (
+            <div data-testid="analyst-invite-banner" className="mt-3 rounded-xl border border-[#D8C7F1] bg-[#F7F4FB] px-3 py-2.5 text-sm">
+              <span className="font-semibold text-[#5320A8]">Research analyst invitation</span>
+              <span className="block text-xs text-[#64748B]">You've been invited to join as a research analyst. Your account will be created with analyst access.</span>
+            </div>
+          )}
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
               <Label className="text-xs uppercase tracking-wider text-[#64748B]">Full name</Label>
-              <Input required value={name} onChange={(e)=>setName(e.target.value)} className="h-11 mt-1.5" placeholder="Your name" />
+              <Input data-testid="signup-name" required value={name} onChange={(e)=>setName(e.target.value)} className="h-11 mt-1.5" placeholder="Your name" />
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wider text-[#64748B]">Email</Label>
-              <Input required type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="h-11 mt-1.5" placeholder="you@company.com" />
+              <Input data-testid="signup-email" required type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="h-11 mt-1.5" placeholder="you@company.com" />
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wider text-[#64748B]">Password</Label>
-              <Input required type="password" minLength={6} value={password} onChange={(e)=>setPassword(e.target.value)} className="h-11 mt-1.5" placeholder="At least 6 characters" />
+              <Input data-testid="signup-password" required type="password" minLength={6} value={password} onChange={(e)=>setPassword(e.target.value)} className="h-11 mt-1.5" placeholder="At least 6 characters" />
             </div>
-            <label className="flex items-start gap-2.5 rounded-xl border border-[#E8E1F0] p-3 cursor-pointer hover:border-[#6C2BD9] transition-colors">
-              <input type="checkbox" checked={isAnalyst} onChange={(e)=>setIsAnalyst(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#6C2BD9]" />
-              <span className="text-sm">
-                <span className="font-semibold text-[#1A1030]">I’m a research analyst</span>
-                <span className="block text-xs text-[#64748B]">Create & list model portfolios for investors (goes live after admin approval).</span>
-              </span>
-            </label>
-            <button disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Create account</button>
+            <button data-testid="signup-submit" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Create account</button>
             <div className="text-sm text-center text-[#64748B]">Already have an account? <Link to="/login" className="font-semibold text-[#6C2BD9]">Log in</Link></div>
           </form>
         </div>

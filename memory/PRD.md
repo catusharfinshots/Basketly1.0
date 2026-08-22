@@ -38,6 +38,11 @@ publish model portfolios that admins approve to go live.
 - Admin approval workflow VERIFIED end-to-end: analyst submit → admin approve → appears live on public /model-portfolios.
 - ScrollToTop router fix; clickable model-portfolio feature rows.
 
+### Added Jun 2026 (this session)
+- **Factsheet PDF Upload**: analysts upload a PDF factsheet (Emergent Object Storage) per portfolio; investors download it from the public detail page. Backend: `storage.py`; endpoints POST/DELETE `/api/analyst/portfolios/{pid}/factsheet`, GET `/api/portfolios/{pid}/factsheet` (public if approved, else owner/admin). Frontend: AnalystConsole upload UI + ModelPortfolioDetail download card. VERIFIED (testing_agent iteration_1, 100%).
+- **Analyst Invites**: admin-only invite links gate the `analyst` role. Self-signup as analyst now requires a valid, unused, unexpired invite (else becomes investor). Backend: `invites.py` (HMAC-digest storage, atomic find_one_and_update consume + compensating release), routes `/api/admin/invites` (create/list/revoke); `auth.py` signup accepts `invite_code`. Frontend: AdminPage "Analyst invites" tab + SignupPage invite banner. VERIFIED (100%, incl. reuse=403 gating).
+- **UX polish**: admin/analyst login now routes straight to `/admin`; admin console header is tab-specific and hides Publish/Discard on management tabs (leads/listings/invites).
+
 ## Known / notes
 - The "Approve button not firing" bug from the prior fork was a FALSE ALARM (previous test selector matched sidebar
   "Listings (approve)" nav item, not the real Approve button). Approve/Reject work correctly end-to-end.
