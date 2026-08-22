@@ -81,7 +81,7 @@ export default function Footer() {
           <p className="text-xs text-[#64748B] max-w-3xl">
             Investments in securities are subject to market risks. Read all scheme related documents carefully before investing. Past performance is not indicative of future returns. Basketly is a demo build — no real trades are placed.
           </p>
-          <Link to="/admin" className="text-xs font-semibold text-[#6C2BD9] hover:text-[#5320A8]">Platform owner login →</Link>
+          <Link to="/analyst" data-testid="become-partner-link" className="text-xs font-semibold text-[#6C2BD9] hover:text-[#5320A8]">Become a partner →</Link>
         </div>
       </div>
     </footer>

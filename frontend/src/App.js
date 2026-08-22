@@ -33,6 +33,7 @@ import KiteCallback from './pages/KiteCallback';
 import { PortfolioProvider } from './context/PortfolioContext';
 import { BrokerProvider } from './context/BrokerContext';
 import { AuthProvider } from './context/AuthContext';
+import PhoneAuthModal from './components/PhoneAuthModal';
 
 function RedirectDetail() {
   const { id } = useParams();
@@ -57,6 +58,7 @@ function App() {
       <PortfolioProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <PhoneAuthModal />
           <Routes>
             <Route element={<Layout />}> 
               <Route path="/" element={<Home />} />

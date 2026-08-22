@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -35,6 +36,7 @@ const AV_COLORS = ['grad', '#7A5AF8', '#2E90FA', '#12B79A', '#F79009', '#EE46BC'
 
 export default function Home() {
   const [c, setC] = useState(DEFAULTS);
+  const { openAuth } = useAuth();
   useEffect(() => {
     let active = true;
     axios.get(`${API}/content`).then(({ data }) => {
@@ -61,7 +63,7 @@ export default function Home() {
           <h1>{c.hero.headline} <span className="accent">{c.hero.highlight}</span></h1>
           <p className="lead">{c.hero.sub}</p>
           <div className="hero-cta">
-            <Link to="/signup" className="btn btn-primary">{c.hero.primaryCta} →</Link>
+            <button onClick={() => openAuth({ next: '/dashboard' })} className="btn btn-primary">{c.hero.primaryCta} →</button>
             <Link to="/model-portfolios" className="btn btn-outline">▢ {c.hero.secondaryCta}</Link>
           </div>
           <div className="ratings">

@@ -22,7 +22,7 @@ export default function ModelPortfolioDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const mockBasket = getBasket(id);
-  const { isAuthed } = useAuth();
+  const { isAuthed, openAuth } = useAuth();
   const { toggleWatch, isWatched } = usePortfolio();
   const [tab, setTab] = useState('Overview');
   const [investOpen, setInvestOpen] = useState(false);
@@ -72,8 +72,7 @@ export default function ModelPortfolioDetail() {
 
   const onInvest = () => {
     if (!isAuthed) {
-      toast.info('Please log in to invest.');
-      navigate(`/login?next=/model-portfolios/${basket.id}`);
+      openAuth({ next: `/model-portfolios/${basket.id}` });
       return;
     }
     setInvestOpen(true);

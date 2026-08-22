@@ -58,6 +58,29 @@ export function AuthProvider({ children }) {
     return data.user;
   }, [persist]);
 
+  // ----- Phone + OTP (Twilio Verify) -----
+  const requestOtp = useCallback(async (phone) => {
+    const { data } = await axios.post(`${API}/auth/phone/request-otp`, { phone });
+    return data;
+  }, []);
+
+  const verifyOtp = useCallback(async ({ phone, code, name, invite_code }) => {
+    const { data } = await axios.post(`${API}/auth/phone/verify-otp`, { phone, code, name, invite_code });
+    persist(data.token, data.user);
+    return data.user;
+  }, [persist]);
+
+  // Global auth modal state
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authInvite, setAuthInvite] = useState(null);
+  const [authNext, setAuthNext] = useState(null);
+  const openAuth = useCallback((opts = {}) => {
+    setAuthInvite(opts.invite || null);
+    setAuthNext(opts.next || null);
+    setAuthOpen(true);
+  }, []);
+  const closeAuth = useCallback(() => setAuthOpen(false), []);
+
   const value = {
     user,
     token,
@@ -66,6 +89,13 @@ export function AuthProvider({ children }) {
     signup,
     login,
     logout,
+    requestOtp,
+    verifyOtp,
+    authOpen,
+    authInvite,
+    authNext,
+    openAuth,
+    closeAuth,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

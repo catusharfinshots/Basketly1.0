@@ -5,7 +5,7 @@ import AnalystConsole from '../components/AnalystConsole';
 import { LineChart } from 'lucide-react';
 
 export default function AnalystPage() {
-  const { user, isAuthed, loading, logout } = useAuth();
+  const { user, isAuthed, loading, logout, openAuth } = useAuth();
   const navigate = useNavigate();
 
   if (loading) {
@@ -17,8 +17,8 @@ export default function AnalystPage() {
         <div className="surface p-8 text-center max-w-sm">
           <span className="h-12 w-12 mx-auto rounded-xl grad-card text-white grid place-items-center"><LineChart className="h-5 w-5" /></span>
           <h1 className="mt-4 text-xl font-bold">Analyst console</h1>
-          <p className="mt-2 text-sm text-[#6B6480]">Please log in with your research-analyst account to manage your model portfolios.</p>
-          <button data-testid="analyst-login-btn" onClick={() => navigate('/login?next=/analyst')} className="btn-primary mt-5 w-full">Log in</button>
+          <p className="mt-2 text-sm text-[#6B6480]">Please log in with your research-analyst mobile number to manage your model portfolios.</p>
+          <button data-testid="analyst-login-btn" onClick={() => openAuth({ next: '/analyst' })} className="btn-primary mt-5 w-full">Log in</button>
         </div>
       </div>
     );

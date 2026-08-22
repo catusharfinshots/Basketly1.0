@@ -29,7 +29,7 @@ export default function Navbar() {
   const [ticketOpen, setTicketOpen] = useState(false);
   const navigate = useNavigate();
   const { connections } = useBroker();
-  const { isAuthed, user, logout } = useAuth();
+  const { isAuthed, user, logout, openAuth } = useAuth();
   const kiteConnected = !!connections.kite;
 
   const doLogout = () => { logout(); navigate('/'); };
@@ -49,10 +49,6 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-2">
-          <Link to="/brokers/connect"
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${kiteConnected ? 'border-[#12B76A] text-[#0E9F5E] bg-[#DCFCE7]/50' : 'border-[#E6E8F0] text-[#334155] hover:border-[#6C2BD9] hover:text-[#6C2BD9]'}`}>
-            {kiteConnected ? <><CheckCircle2 className="h-3.5 w-3.5" /> {connections.kite.profile?.user_shortname || 'Connected'}</> : <><Link2 className="h-3.5 w-3.5" /> Connect broker</>}
-          </Link>
           {kiteConnected && (
             <button onClick={() => setTicketOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#12B76A] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0E9F5E] transition-colors">
               <LineChart className="h-3.5 w-3.5" /> Trade
@@ -81,10 +77,7 @@ export default function Navbar() {
               </PopoverContent>
             </Popover>
           ) : (
-            <>
-              <Link to="/login" className="btn-ghost">Login</Link>
-              <Link to="/signup" className="btn-primary">Get started</Link>
-            </>
+            <button data-testid="nav-get-started" onClick={() => openAuth({ next: '/dashboard' })} className="btn-primary">Get started</button>
           )}
         </div>
 
@@ -101,16 +94,15 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
-            <Link to="/brokers/connect" onClick={() => setOpen(false)} className="py-2 text-sm font-medium">Connect broker</Link>
             {isAuthed ? (
               <div className="pt-3 flex flex-col gap-2">
                 <Link to="/dashboard" onClick={() => setOpen(false)} className="btn-outline"><LayoutDashboard className="h-4 w-4" /> Dashboard</Link>
+                <Link to="/brokers/connect" onClick={() => setOpen(false)} className="btn-ghost justify-start"><Link2 className="h-4 w-4" /> Connect broker</Link>
                 <button onClick={() => { setOpen(false); doLogout(); }} className="btn-ghost justify-start"><LogOut className="h-4 w-4" /> Log out</button>
               </div>
             ) : (
-              <div className="pt-3 flex gap-2">
-                <Link to="/login" onClick={() => setOpen(false)} className="btn-outline flex-1"><User className="h-4 w-4" /> Login</Link>
-                <Link to="/signup" onClick={() => setOpen(false)} className="btn-primary flex-1">Get started</Link>
+              <div className="pt-3">
+                <button onClick={() => { setOpen(false); openAuth({ next: '/dashboard' }); }} className="btn-primary w-full">Get started</button>
               </div>
             )}
           </div>

@@ -11,7 +11,15 @@ publish model portfolios that admins approve to go live.
 - `/analyst` → **AnalystPage** wrapper → AnalystConsole (analysts only; admins redirected to `/admin`, investors see a "go to dashboard" card). Added Jun 2026 to split the two consoles onto separate URLs.
 - Login/signup redirect by role: admin→`/admin`, analyst→`/analyst`, investor→`/dashboard`.
 
+### Phone + OTP auth (Jun 2026)
+- Public site login/signup is now **mobile number + SMS OTP via Twilio Verify** for investors AND analysts. Backend `phone_auth.py`: `POST /api/auth/phone/request-otp`, `POST /api/auth/phone/verify-otp` (validates E.164 via `phonenumbers`, 25s resend cooldown, run_in_threadpool for the sync Twilio SDK). New number→investor; valid `invite_code`→analyst (reuses `invites.consume_invite`). Twilio creds in backend/.env; Verify Service `Basketly Login` created via API.
+- Users: `email` now optional (phone users have none); unique indexes made **partial** on `email`/`phone` (string only). `create_token`/`public_user` tolerate missing email and expose `phone`.
+- Admin remains email/password (internal, `/login`), unchanged.
+- Frontend: global `PhoneAuthModal` (2-step phone→OTP) opened via `openAuth()` from AuthContext. Nav shows only **"Get started"** (Login + standalone Connect-broker pill removed; Connect-broker moved into the logged-in account menu). Home hero CTA, `/signup` (incl. `?invite=`), dashboard/invest/analyst auth-gates all open the modal.
+- IMPORTANT: 4xx (not 5xx) used for expected OTP errors so the ingress doesn't replace the JSON with a Cloudflare error page. Twilio TRIAL only texts Verified Caller IDs.
+
 ## Stack / Architecture
+- Phone+OTP auth (Twilio Verify) is the public login for investors & analysts (backend/phone_auth.py). Admin stays email/password (internal). See CHANGELOG below.
 - Frontend: React + TailwindCSS + React Router + shadcn/ui. `/app/frontend/src/pages/*`, `/app/frontend/src/components/*`.
 - Backend: FastAPI (routers built per module) + Motor (MongoDB async). `/app/backend/server.py` includes routers.
 - Auth: email/password JWT (PyJWT + bcrypt), RBAC roles: `admin`, `investor`, `analyst`. Users seeded idempotently on startup.

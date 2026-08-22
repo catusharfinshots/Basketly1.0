@@ -15,7 +15,7 @@ const API = `${BACKEND_URL}/api`;
 export default function DashboardPage() {
   const { investments, sips, watchlist } = usePortfolio();
   const { connections, userId, getKiteHoldings, getKiteMargins, refreshKite } = useBroker();
-  const { isAuthed, loading: authLoading, user } = useAuth();
+  const { isAuthed, loading: authLoading, user, openAuth } = useAuth();
   const navigate = useNavigate();
   const kite = connections.kite;
 
@@ -86,8 +86,8 @@ export default function DashboardPage() {
   const returnPct = totals.invested ? (returns/totals.invested)*100 : 0;
 
   useEffect(() => {
-    if (!authLoading && !isAuthed) navigate('/login?next=/dashboard');
-  }, [authLoading, isAuthed, navigate]);
+    if (!authLoading && !isAuthed) openAuth({ next: '/dashboard' });
+  }, [authLoading, isAuthed, openAuth]);
 
   if (authLoading) {
     return <div className="container-x py-24 text-center text-[#64748B]">Loading your dashboard…</div>;
@@ -97,7 +97,7 @@ export default function DashboardPage() {
       <div className="container-x py-24 text-center">
         <h1 className="text-2xl font-bold">Please log in</h1>
         <p className="mt-2 text-[#64748B]">You need an account to view your dashboard.</p>
-        <Link to="/login?next=/dashboard" className="btn-primary mt-6 inline-flex">Log in</Link>
+        <button onClick={() => openAuth({ next: '/dashboard' })} className="btn-primary mt-6 inline-flex">Get started</button>
       </div>
     );
   }

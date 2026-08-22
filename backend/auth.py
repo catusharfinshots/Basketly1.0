@@ -41,7 +41,7 @@ def create_token(user: dict) -> str:
     now = datetime.now(timezone.utc)
     payload = {
         "sub": user["id"],
-        "email": user["email"],
+        "email": user.get("email"),
         "role": user.get("role", "investor"),
         "iat": int(now.timestamp()),
         "exp": int((now + timedelta(days=JWT_EXPIRE_DAYS)).timestamp()),
@@ -78,7 +78,8 @@ def public_user(user: dict) -> dict:
     return {
         "id": user["id"],
         "name": user.get("name", ""),
-        "email": user["email"],
+        "email": user.get("email"),
+        "phone": user.get("phone"),
         "role": user.get("role", "investor"),
         "created_at": user.get("created_at"),
     }
@@ -99,7 +100,13 @@ class LoginRequest(BaseModel):
 
 async def seed_users(db: AsyncIOMotorDatabase) -> None:
     """Idempotently ensure a demo investor and an admin exist."""
-    await db.users.create_index("email", unique=True)
+    # email is optional (phone users have none) -> partial unique index on string emails only
+    try:
+        await db.users.drop_index("email_1")
+    except Exception:
+        pass
+    await db.users.create_index("email", unique=True, partialFilterExpression={"email": {"$type": "string"}})
+    await db.users.create_index("phone", unique=True, partialFilterExpression={"phone": {"$type": "string"}})
     seeds = [
         {"name": "Demo Investor", "email": "demo@basketly.in", "password": "Password123", "role": "investor"},
         {"name": "Basketly Admin", "email": "admin@basketly.in", "password": "Admin@123", "role": "admin"},
