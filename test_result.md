@@ -292,6 +292,76 @@ backend:
           comment: "✅ TESTED: All 6 site-content endpoint tests PASSED. (1) GET /api/content (public) returns 200 with hero (headline, highlight, sub, primaryCta, secondaryCta), stats (rating, investors, managed), trust array, testimonials array. (2) PUT /api/content without Authorization header returns 401 with detail 'Not authenticated'. (3) PUT /api/content with investor token (demo@basketly.in) returns 403 with detail 'You do not have access to this resource' (only admins allowed). (4) Login as admin (admin@basketly.in/Admin@123) and PUT /api/content with new stats {rating:'4.9/5', investors:'5 lakh+', managed:'₹500 Cr+'} returns 200 with JSON reflecting new stats. (5) GET /api/content again returns 200 with updated stats persisted (rating 4.9/5, investors 5 lakh+, managed ₹500 Cr+). (6) PUT /api/content as admin to restore defaults {rating:'4.6/5', investors:'1 lakh+', managed:'₹100 Cr+'} returns 200 with JSON reflecting restored defaults. All authentication, authorization, persistence, and data validation working correctly."
 
 frontend:
+  - task: "Admin Content Console - Unauthenticated gate"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Visiting /admin without authentication should show 'Owner console' gate with 'Log in' button (NOT the content editor)."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Unauthenticated gate working correctly. Visiting /admin without login shows 'Owner console' heading with 'Log in' button. Content editor is NOT shown (as expected). Screenshot confirms correct gate display."
+  - task: "Admin Content Console - Admin login and editor access"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Login as admin@basketly.in/Admin@123 via /login?next=/admin should land on /admin with 'Content manager' showing 'Home content' tab with Hero fields (Headline, Highlighted word, Sub-headline, Primary button, Secondary button), Rating stats, Trust points, Testimonials, and sidebar including 'Leads'."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Admin login → editor working correctly. After login with admin@basketly.in/Admin@123, navigated to /admin and verified: (1) 'Content manager' heading visible, (2) 'Home content' tab visible, (3) All Hero fields present (Headline, Highlighted word, Sub-headline, Primary button, Secondary button), (4) Rating stats section visible, (5) Trust points section visible, (6) Testimonials section visible, (7) 'Leads' visible in sidebar. All requirements met."
+  - task: "Admin Content Console - Edit and publish content (CORE FEATURE)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "On Home content tab, change Hero 'Headline' field from 'Challenging' to 'Growing', click 'Publish changes', then navigate to Home '/' and verify hero H1 shows 'Growing volatility' (i.e., edited headline appears live on public site)."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Edit + publish feature working correctly. (1) Changed Hero Headline from 'Challenging' to 'Growing' in admin editor, (2) Clicked 'Publish changes' button, (3) Success toast appeared, (4) Navigated to Home '/' and verified hero H1 shows 'Growing volatility'. CORE FEATURE CONFIRMED: Edits publish and appear live on the public site. Screenshot confirms 'Growing volatility' displayed on Home page."
+  - task: "Admin Content Console - Content cleanup and restore"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Restore Hero Headline back to 'Challenging', click 'Publish changes', reload Home '/' and confirm it reads 'Challenging volatility' again."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Content cleanup working correctly. (1) Restored Hero Headline to 'Challenging' in admin editor, (2) Clicked 'Publish changes', (3) Reloaded Home '/' and verified hero H1 shows 'Challenging volatility'. Cleanup successful - original content restored."
+  - task: "Admin Content Console - Role-based access control (investor role)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Logout, login as investor demo@basketly.in/Password123, visit /admin and verify it shows 'Research analyst console' placeholder (NOT the content editor and NOT the owner gate)."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Role-based access control working correctly. (1) Signed out from admin account, (2) Logged in as investor demo@basketly.in/Password123, (3) Visited /admin and verified 'Research analyst console' heading is visible with message 'Hi Demo Investor. Your listings console (profile, portfolios & factsheets) is coming up in the next phase.' (4) Content editor is NOT shown (as expected for investor role), (5) Owner console gate is NOT shown (as expected for authenticated user). Role gating working correctly."
   - task: "ScrollToTop component - fix scroll position bug on route changes"
     implemented: true
     working: true
@@ -365,11 +435,37 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: All 5 test scenarios PASSED. (1) 'Momentum Movers' (Stock Portfolio) navigates to /model-portfolios/momentum-movers and shows correct title. (2) 'Tech Titans' (Stock Portfolio) navigates to /model-portfolios/tech-titans and shows correct title. (3) 'All Weather Portfolio' (ETF Portfolio) navigates to /model-portfolios/all-weather and shows correct title. (4) All 9 portfolio rows are anchor tags (<a>) with pointer cursor. (5) 'Largecap MF Picks' (Mutual Fund Portfolio) navigates to /mutual-funds. All portfolio rows in the Model Portfolio section are now clickable anchor links that properly navigate to their respective detail pages. Bug is FIXED."
+  - task: "Research-analyst listing endpoints and role-based signup"
+    implemented: true
+    working: true
+    file: "/app/backend/analyst.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW feature: Research-analyst listing endpoints in /app/backend/analyst.py. Analysts can manage profiles and portfolios (draft→pending→approved lifecycle). Admins review and approve. Public endpoints expose only approved portfolios without owner_id/review_note. Updated signup in auth.py to allow role:'analyst' (self-signup cannot grant admin)."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: All 20 tests PASSED. (1) Admin login working. (2) Signup with role:'analyst' returns user.role='analyst'. (3) Signup with role:'admin' correctly returns user.role='investor' (self-signup cannot grant admin). (4) GET /api/analyst/profile returns profile object. (5) PUT /api/analyst/profile updates and persists profile. (6) POST /api/analyst/portfolios creates portfolio with status='draft'. (7) GET /api/analyst/portfolios lists analyst's portfolios. (8) Authorization: analyst token on GET /api/admin/portfolios returns 403 (correct). (9) Authorization: no token on GET /api/analyst/portfolios returns 401 (correct). (10) Draft portfolio NOT visible in public GET /api/portfolios. (11) Draft portfolio detail GET /api/portfolios/{id} returns 404. (12) POST /api/analyst/portfolios/{id}/submit changes status draft→pending. (13) Admin GET /api/admin/portfolios?status=pending includes pending portfolio. (14) Admin POST /api/admin/portfolios/{id}/review with action:'approve' changes status pending→approved. (15) Approved portfolio visible in public GET /api/portfolios, owner_id and review_note NOT exposed. (16) Approved portfolio detail GET /api/portfolios/{id} returns 200, owner_id and review_note NOT exposed. (17) Investor token on GET /api/analyst/portfolios returns 403 (correct). (18) DELETE /api/analyst/portfolios/{id} works. All role-based authorization (401/403) and draft→pending→approved→public visibility lifecycle working correctly."
+  - task: "Research-analyst E2E UI flow (signup → create → submit → admin approve → public)"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/AdminPage.jsx, /app/frontend/src/pages/SignupPage.jsx, /app/frontend/src/components/AnalystConsole.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL BUG FOUND in frontend admin approval flow. E2E UI test results: ✅ STEP A (Analyst signup): PASS - Signup with 'I'm a research analyst' checkbox redirects to /admin showing analyst console with 'My model portfolios' heading and 'New portfolio' button (NOT owner content editor). ✅ STEP B (Create + submit portfolio): PASS - Portfolio form works correctly, constituents can be added (TCS 60%, INFY 40%), methodology field works, 'Save & submit for approval' button submits successfully and portfolio appears in analyst's list with status 'PENDING'. ❌ STEP C (Admin approve): FAIL - Admin can login and see 'Listings (approve)' tab, pending portfolios are visible with 'by QA Analyst' and status 'pending', BUT clicking the 'Approve' button does NOT trigger the API call POST /api/admin/portfolios/{id}/review. Network logs show NO 'review' API call. Status remains 'pending' after button click. Backend API works correctly when tested via curl (returns {ok:true, status:'approved'}), so this is a FRONTEND bug in AdminPage.jsx reviewListing onClick handler. ❌ STEP D (Verify public): FAIL - Portfolio does NOT appear on public /model-portfolios page because it was never approved due to Step C bug. ⚠️ STEP E (Cleanup): NOT TESTED due to Step C failure. **ROOT CAUSE**: The Approve button onClick handler in AdminPage.jsx (line 346) is not firing the reviewListing function. Button is not disabled (disabled={p.status === 'approved'} and status is 'pending'), but click event is not triggering the API call."
+
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 6
+  test_sequence: 8
   run_ui: false
 
 test_plan:
@@ -379,6 +475,41 @@ test_plan:
   test_priority: "high_first"
 
 agent_communication:
+    - agent: "testing"
+      message: |
+        ❌ CRITICAL BUG FOUND: Research-analyst E2E UI flow - Admin Approve button NOT working
+        
+        **Test Summary:**
+        ✅ STEP A PASS: Analyst signup → analyst console
+        ✅ STEP B PASS: Create + submit portfolio → pending status
+        ❌ STEP C FAIL: Admin approve button does NOT work
+        ❌ STEP D FAIL: Portfolio NOT visible on public page (because not approved)
+        ⚠️ STEP E: Cleanup not tested
+        
+        **Critical Issue:**
+        The "Approve" button in /app/frontend/src/pages/AdminPage.jsx (line 346) does NOT trigger the API call when clicked. Network monitoring shows NO POST /api/admin/portfolios/{id}/review request is made. The onClick handler `onClick={() => reviewListing(p.id, 'approve')}` is not firing.
+        
+        **Backend Verification:**
+        Backend API works perfectly when tested via curl:
+        - POST /api/admin/portfolios/{id}/review with action:'approve' returns {ok:true, status:'approved'}
+        - Approved portfolio correctly appears in public GET /api/portfolios
+        
+        **Root Cause:**
+        Frontend bug in AdminPage.jsx - the button click event is not triggering the reviewListing function. This is blocking the entire admin approval workflow.
+        
+        **What Works:**
+        - Analyst signup with checkbox "I'm a research analyst" ✅
+        - Redirect to analyst console (NOT owner console) ✅
+        - Portfolio creation form with constituents ✅
+        - Submit for approval (draft→pending) ✅
+        - Admin can see pending portfolios in Listings tab ✅
+        - Backend approval API endpoint ✅
+        
+        **What's Broken:**
+        - Frontend Approve button onClick handler ❌
+        - Admin cannot approve portfolios via UI ❌
+        - Portfolios stuck in pending status ❌
+        - Public visibility blocked ❌
     - agent: "main"
       message: |
         Please test both the backend Kite endpoints and the frontend broker connect / callback pages.
@@ -499,4 +630,85 @@ agent_communication:
            - Public site now shows original values
         
         All authentication (401 for no auth), authorization (403 for non-admin), data persistence (MongoDB updates), and content retrieval working correctly. The site-content management feature is fully functional.
+    - agent: "testing"
+      message: |
+        ✅ ALL ADMIN CONTENT CONSOLE E2E TESTS PASSED (5/5 scenarios)
+        
+        Tested the Basketly ADMIN CONTENT CONSOLE end-to-end with admin credentials (admin@basketly.in/Admin@123) and investor credentials (demo@basketly.in/Password123).
+        
+        SCENARIO RESULTS:
+        
+        1. ✅ PASS - Unauthenticated gate:
+           - Visited /admin without login
+           - Verified "Owner console" heading is visible
+           - Verified "Log in" button is visible
+           - Verified content editor is NOT shown (as expected)
+           - Screenshot confirms correct gate display
+        
+        2. ✅ PASS - Admin login → editor:
+           - Logged in as admin@basketly.in/Admin@123 via /login?next=/admin
+           - Landed on /admin with "Content manager" heading
+           - Verified "Home content" tab is visible and active
+           - Verified all Hero fields present: Headline, Highlighted word, Sub-headline, Primary button, Secondary button
+           - Verified "Rating stats" section visible
+           - Verified "Trust points" section visible
+           - Verified "Testimonials" section visible
+           - Verified "Leads" visible in sidebar
+           - All requirements met
+        
+        3. ✅ PASS - Edit + publish reflects on Home (CORE TEST):
+           - Changed Hero "Headline" from "Challenging" to "Growing"
+           - Clicked "Publish changes" button
+           - Success toast appeared
+           - Navigated to Home "/" and verified hero H1 shows "Growing volatility"
+           - **CORE FEATURE CONFIRMED: Edits publish and appear live on the public site**
+           - Screenshot confirms "Growing volatility" displayed on Home page
+        
+        4. ✅ PASS - Cleanup restored:
+           - Restored Hero Headline to "Challenging"
+           - Clicked "Publish changes"
+           - Reloaded Home "/" and verified hero H1 shows "Challenging volatility"
+           - Cleanup successful - original content restored
+        
+        5. ✅ PASS - Role gating (investor):
+           - Signed out from admin account
+           - Logged in as investor demo@basketly.in/Password123
+           - Visited /admin and verified "Research analyst console" heading visible
+           - Verified content editor is NOT shown (as expected for investor role)
+           - Verified owner console gate is NOT shown (as expected for authenticated user)
+           - Role-based access control working correctly
+        
+        **SUMMARY**: All 5 scenarios passed. The Admin Content Console is fully functional with proper authentication gates, role-based access control, and the core edit-publish-reflect workflow working end-to-end. Content changes made in the admin editor are successfully persisted to MongoDB and immediately reflected on the public Home page.
+    - agent: "testing"
+      message: |
+        ✅ ALL RESEARCH-ANALYST LISTING ENDPOINT TESTS PASSED (20/20)
+        
+        Tested NEW research-analyst listing endpoints in /app/backend/analyst.py and updated signup role handling in /app/backend/auth.py.
+        
+        TEST RESULTS:
+        
+        1. ✅ Admin login - Returns 200 with valid JWT token
+        2. ✅ Create analyst via signup with role:'analyst' - Returns 200 with user.role='analyst' (self-signup can create analyst accounts)
+        3. ✅ Signup with role:'admin' returns user.role='investor' - Self-signup CANNOT grant admin role (security check working)
+        4. ✅ GET /api/analyst/profile - Returns 200 with profile object (displayName, sebiReg, philosophy, description, logo)
+        5. ✅ PUT /api/analyst/profile - Returns 200, profile updated and persisted to MongoDB
+        6. ✅ POST /api/analyst/portfolios - Returns 200, portfolio created with id and status='draft'
+        7. ✅ GET /api/analyst/portfolios - Returns 200, list contains created portfolio
+        8. ✅ Authorization: analyst token on GET /api/admin/portfolios - Returns 403 (analyst cannot access admin endpoints)
+        9. ✅ Authorization: no token on GET /api/analyst/portfolios - Returns 401 (authentication required)
+        10. ✅ Public visibility before approval: GET /api/portfolios - Draft portfolio NOT visible in public list
+        11. ✅ Public visibility before approval: GET /api/portfolios/{id} - Returns 404 (draft not approved yet)
+        12. ✅ Submit portfolio: POST /api/analyst/portfolios/{id}/submit - Returns 200, status changed draft→pending
+        13. ✅ Admin review: GET /api/admin/portfolios?status=pending - Returns 200, pending portfolio found in admin list
+        14. ✅ Admin approve: POST /api/admin/portfolios/{id}/review with action:'approve' - Returns 200, status changed pending→approved
+        15. ✅ Public visibility after approval: GET /api/portfolios - Approved portfolio NOW visible in public list
+        16. ✅ Public list security: owner_id NOT exposed in public list (field filtering working)
+        17. ✅ Public list security: review_note NOT exposed in public list (field filtering working)
+        18. ✅ Public detail: GET /api/portfolios/{id} - Returns 200 with approved portfolio
+        19. ✅ Public detail security: owner_id NOT exposed in public detail (field filtering working)
+        20. ✅ Public detail security: review_note NOT exposed in public detail (field filtering working)
+        21. ✅ Investor cannot manage listings: investor token on GET /api/analyst/portfolios - Returns 403 (role-based access control working)
+        22. ✅ Cleanup: DELETE /api/analyst/portfolios/{id} - Returns 200, portfolio deleted successfully
+        
+        **SUMMARY**: All role-based authorization (401/403) checks working correctly. The draft→pending→approved→public visibility lifecycle is functioning as designed. Security field filtering (owner_id, review_note) working correctly on public endpoints. The research-analyst listing feature is fully functional and ready for production.
 

@@ -1,7 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import axios from 'axios';
 import { baskets, getManager } from '../mock';
 import { TrendingUp, Users, Search } from 'lucide-react';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const FILTERS = [
   { key: 'all', label: 'All', match: () => true },
@@ -14,7 +17,8 @@ const FILTERS = [
 const riskColor = (risk) => risk === 'Low' ? 'text-[#0E9F5E] bg-[#DCFCE7]' : risk === 'High' ? 'text-[#DC2626] bg-[#FEE2E2]' : 'text-[#B45309] bg-[#FEF3C7]';
 
 function PortfolioCard({ b }) {
-  const mgr = getManager(b.managerId);
+  const mgr = b.managerId ? getManager(b.managerId) : null;
+  const managerName = mgr?.name || b.managerName || b.owner_name || 'Research Analyst';
   return (
     <Link to={`/model-portfolios/${b.id}`}
       className="group surface p-5 hover:shadow-[0_16px_40px_-24px_rgba(108,43,217,0.35)] hover:border-[#D8C7F1] transition-all block">
@@ -23,7 +27,7 @@ function PortfolioCard({ b }) {
           {b.name.slice(0, 2).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <div className="text-xs text-[#64748B]">by {mgr?.name}</div>
+          <div className="text-xs text-[#64748B]">by {managerName}</div>
           <h3 className="text-[16px] font-semibold text-[#0F1729] leading-snug group-hover:text-[#6C2BD9]">{b.name}</h3>
         </div>
       </div>
@@ -32,7 +36,7 @@ function PortfolioCard({ b }) {
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${riskColor(b.risk)}`}>{b.risk} volatility</span>
         <span className="chip-brand">{b.strategy.replace('-', ' ')}</span>
-        <span className="chip">{b.constituents.length} stocks</span>
+        <span className="chip">{(b.constituents || []).length} stocks</span>
       </div>
 
       <div className="mt-4 pt-3 border-t border-[#EEF1F6] grid grid-cols-2 gap-3">
@@ -55,13 +59,23 @@ export default function ModelPortfolios() {
   const [params, setParams] = useSearchParams();
   const active = params.get('filter') || 'all';
   const [q, setQ] = useState('');
+  const [dbPortfolios, setDbPortfolios] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${API}/portfolios`).then(({ data }) => setDbPortfolios(data.portfolios || [])).catch(() => {});
+  }, []);
+
+  const allBaskets = useMemo(() => {
+    const norm = dbPortfolios.map((p) => ({ ...p, managerName: p.owner_name, _db: true, subtitle: p.subtitle || '' }));
+    return [...norm, ...baskets];
+  }, [dbPortfolios]);
 
   const list = useMemo(() => {
     const f = FILTERS.find((x) => x.key === active) || FILTERS[0];
-    return baskets.filter(f.match).filter((b) =>
-      !q || b.name.toLowerCase().includes(q.toLowerCase()) || b.subtitle.toLowerCase().includes(q.toLowerCase())
+    return allBaskets.filter(f.match).filter((b) =>
+      !q || b.name.toLowerCase().includes(q.toLowerCase()) || (b.subtitle || '').toLowerCase().includes(q.toLowerCase())
     );
-  }, [active, q]);
+  }, [active, q, allBaskets]);
 
   return (
     <div>

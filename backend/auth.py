@@ -88,6 +88,7 @@ class SignupRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=80)
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=128)
+    role: str = Field(default="investor")
 
 
 class LoginRequest(BaseModel):
@@ -141,12 +142,14 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
         email = payload.email.lower()
         if await db.users.find_one({"email": email}):
             raise HTTPException(status_code=409, detail="An account with this email already exists")
+        # self-signup can only create investor or analyst accounts (never admin)
+        role = payload.role if payload.role in ("investor", "analyst") else "investor"
         user = {
             "id": str(uuid.uuid4()),
             "name": payload.name.strip(),
             "email": email,
             "password_hash": hash_password(payload.password),
-            "role": "investor",
+            "role": role,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
         await db.users.insert_one(user)

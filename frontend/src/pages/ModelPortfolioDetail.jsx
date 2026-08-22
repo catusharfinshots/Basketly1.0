@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { getBasket, getManager } from '../mock';
 import { getPrice } from '../lib/prices';
 import PerformanceChart from '../components/PerformanceChart';
@@ -15,26 +16,56 @@ import {
 
 const TABS = ['Overview', 'Stocks & Weights', 'Methodology', 'Returns'];
 const INR = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function ModelPortfolioDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const basket = getBasket(id);
+  const mockBasket = getBasket(id);
   const { isAuthed } = useAuth();
   const { toggleWatch, isWatched } = usePortfolio();
   const [tab, setTab] = useState('Overview');
   const [investOpen, setInvestOpen] = useState(false);
   const [methodOpen, setMethodOpen] = useState(false);
+  const [basket, setBasket] = useState(mockBasket || null);
+  const [notFound, setNotFound] = useState(false);
 
-  const manager = useMemo(() => (basket ? getManager(basket.managerId) : null), [basket]);
+  useEffect(() => {
+    if (mockBasket) { setBasket(mockBasket); setNotFound(false); return; }
+    let active = true;
+    axios.get(`${API}/portfolios/${id}`).then(({ data }) => {
+      if (!active) return;
+      const p = data.portfolio;
+      setBasket({
+        ...p,
+        fee: { amount: p.feeAmount || 0, cycle: p.feeCycle || 'monthly' },
+        lastRebalancedAt: p.updated_at || new Date().toISOString(),
+        managerName: p.owner_name,
+      });
+    }).catch(() => { if (active) setNotFound(true); });
+    return () => { active = false; };
+  }, [id, mockBasket]);
 
-  if (!basket) {
+  const manager = useMemo(() => {
+    if (!basket) return null;
+    if (basket.managerId) return getManager(basket.managerId);
+    return {
+      name: basket.owner_name || basket.managerName || 'Research Analyst',
+      logo: (basket.owner_name || basket.managerName || 'AN').slice(0, 2).toUpperCase(),
+      baskets: '—', sebiReg: '—', description: '', philosophy: 'Research-analyst managed portfolio',
+    };
+  }, [basket]);
+
+  if (notFound) {
     return (
       <div className="container-x py-24 text-center">
         <h1 className="text-2xl font-bold">Model portfolio not found</h1>
         <Link to="/model-portfolios" className="btn-primary mt-6 inline-flex">Browse model portfolios</Link>
       </div>
     );
+  }
+  if (!basket) {
+    return <div className="container-x py-24 text-center text-[#6B6480]">Loading portfolio…</div>;
   }
 
   const watched = isWatched(basket.id);

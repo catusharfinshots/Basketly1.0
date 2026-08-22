@@ -82,6 +82,10 @@ api_router.include_router(build_leads_router(db))
 from content import build_router as build_content_router  # noqa: E402
 api_router.include_router(build_content_router(db))
 
+# Research-analyst listings + admin review + public portfolios
+from analyst import build_router as build_analyst_router  # noqa: E402
+api_router.include_router(build_analyst_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

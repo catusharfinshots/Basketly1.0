@@ -46,8 +46,8 @@ export function AuthProvider({ children }) {
     return () => { active = false; };
   }, []);
 
-  const signup = useCallback(async ({ name, email, password }) => {
-    const { data } = await axios.post(`${API}/auth/signup`, { name, email, password });
+  const signup = useCallback(async ({ name, email, password, role }) => {
+    const { data } = await axios.post(`${API}/auth/signup`, { name, email, password, role });
     persist(data.token, data.user);
     return data.user;
   }, [persist]);

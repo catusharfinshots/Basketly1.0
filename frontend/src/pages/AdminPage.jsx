@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import AnalystConsole from '../components/AnalystConsole';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox } from 'lucide-react';
+import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -19,6 +20,7 @@ const NAV = [
   { key: 'testimonials', label: 'Testimonials', icon: MessageSquare },
   { key: 'faqs', label: 'FAQ', icon: HelpCircle },
   { key: 'leads', label: 'Leads', icon: Inbox },
+  { key: 'listings', label: 'Listings (approve)', icon: ClipboardCheck },
   { key: 'settings', label: 'Site settings', icon: Settings },
 ];
 
@@ -91,6 +93,27 @@ export default function AdminPage() {
     if (tab === 'leads') fetchLeads();
   }, [tab]);
 
+  const [listings, setListings] = useState([]);
+  const [listingsLoading, setListingsLoading] = useState(false);
+  const fetchListings = async () => {
+    setListingsLoading(true);
+    try {
+      const { data } = await axios.get(`${LEADS_API}/admin/portfolios`, { headers: { Authorization: `Bearer ${token}` } });
+      setListings(data.portfolios || []);
+    } catch { toast.error('Could not load listings'); }
+    finally { setListingsLoading(false); }
+  };
+  useEffect(() => {
+    if (tab === 'listings') fetchListings();
+  }, [tab]);
+  const reviewListing = async (id, action) => {
+    try {
+      await axios.post(`${LEADS_API}/admin/portfolios/${id}/review`, { action, note: '' }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(action === 'approve' ? 'Approved — now live on the site' : 'Rejected');
+      fetchListings();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Could not update'); }
+  };
+
   useEffect(() => {
     axios.get(`${LEADS_API}/content`).then(({ data }) => {
       if (data) setContent({ ...CONTENT_DEFAULTS, ...data });
@@ -136,11 +159,14 @@ export default function AdminPage() {
     );
   }
   if (!isAdmin) {
+    if (user.role === 'analyst') {
+      return <AnalystConsole />;
+    }
     return (
       <div className="min-h-screen grid place-items-center bg-[#F7F4FB] p-6">
         <div className="surface p-8 text-center max-w-sm">
-          <h1 className="text-xl font-bold">Research analyst console</h1>
-          <p className="mt-2 text-sm text-[#6B6480]">Hi {user.name}. Your listings console (profile, portfolios &amp; factsheets) is coming up in the next phase.</p>
+          <h1 className="text-xl font-bold">No console access</h1>
+          <p className="mt-2 text-sm text-[#6B6480]">Hi {user.name}. This area is for platform admins and research analysts.</p>
           <button onClick={() => { logout(); navigate('/'); }} className="btn-outline mt-5 w-full">Sign out</button>
         </div>
       </div>
@@ -284,6 +310,42 @@ export default function AdminPage() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {tab === 'listings' && (
+                <section className="surface p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-semibold">Research-analyst listings</div>
+                      <div className="text-xs text-[#6B6480]">Approve submissions to publish them on the public Model Portfolio pages.</div>
+                    </div>
+                    <button onClick={fetchListings} className="btn-outline">Refresh</button>
+                  </div>
+                  {listingsLoading ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">Loading…</div>
+                  ) : listings.length === 0 ? (
+                    <div className="mt-6 text-sm text-[#6B6480]">No analyst submissions yet.</div>
+                  ) : (
+                    <div className="mt-4 space-y-3">
+                      {listings.map((p) => (
+                        <div key={p.id} className="border border-[#E8E1F0] rounded-xl p-4 flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-[#1A1030] truncate">{p.name}</span>
+                              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${p.status === 'approved' ? 'bg-[#DCFCE7] text-[#0E9F5E]' : p.status === 'pending' ? 'bg-[#FEF3C7] text-[#B45309]' : p.status === 'rejected' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#F1F1F4] text-[#6B6480]'}`}>{p.status}</span>
+                            </div>
+                            <div className="text-xs text-[#6B6480] mt-0.5">by {p.owner_name || '—'} · {p.subtitle || 'No subtitle'} · {p.constituents?.length || 0} holdings · min ₹{Number(p.minAmount).toLocaleString('en-IN')} · {p.strategy}</div>
+                            <div className="text-xs text-[#6B6480] mt-1 line-clamp-2">{p.methodology || 'No methodology provided.'}</div>
+                          </div>
+                          <div className="flex flex-col gap-2 shrink-0">
+                            <button type="button" onClick={() => reviewListing(p.id, 'approve')} disabled={p.status === 'approved'} className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#12B76A] text-white text-xs font-semibold px-4 py-2 hover:bg-[#0E9F5E] disabled:opacity-40">Approve</button>
+                            <button type="button" onClick={() => reviewListing(p.id, 'reject')} disabled={p.status === 'rejected'} className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#E8E1F0] text-[#DC2626] text-xs font-semibold px-4 py-2 hover:bg-[#FEF2F2] disabled:opacity-40">Reject</button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </section>
