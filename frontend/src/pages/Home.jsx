@@ -60,6 +60,38 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
+  // Scroll-driven depth: as each stacked card gets covered by the next, gently scale + dim it.
+  useEffect(() => {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cards = Array.from(document.querySelectorAll('.bk-home .hiw-card'));
+    if (cards.length < 2) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      for (let i = 0; i < cards.length - 1; i++) {
+        const cur = cards[i].getBoundingClientRect();
+        const next = cards[i + 1].getBoundingClientRect();
+        // gap between this card's top and the next card's top; when the next card
+        // pins right below (gap ≈ peek) this card is fully covered.
+        const peek = cards[i].querySelector('.hiw-strip')?.offsetHeight || 52;
+        const gap = next.top - cur.top;
+        const range = 360; // px of travel over which the dim ramps in
+        const cover = Math.min(1, Math.max(0, 1 - (gap - peek) / range));
+        cards[i].style.setProperty('--cover', cover.toFixed(3));
+      }
+      cards[cards.length - 1].style.setProperty('--cover', '0');
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   const byBucket = (b) => portfolios.filter((p) => bucketOf(p) === b).slice(0, 3);
   const PRow = ({ p }) => (
     <Link to={`/model-portfolios/${p.id}`} className="prow">

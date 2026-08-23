@@ -81,7 +81,11 @@
   position:sticky;
   top:calc(var(--pin-top) + var(--i) * var(--peek));
   background:#fff;border:1px solid var(--line);border-radius:24px;
-  box-shadow:0 24px 60px rgba(83,32,168,.12);overflow:hidden;margin-bottom:26px;transition:filter .3s}
+  box-shadow:0 24px 60px rgba(83,32,168,.12);overflow:hidden;margin-bottom:26px;
+  transform:scale(calc(1 - .05 * var(--cover, 0)));transform-origin:center top;
+  filter:brightness(calc(1 - .16 * var(--cover, 0)));
+  transition:transform .18s ease,filter .18s ease}
+.bk-home .hiw-card::after{content:"";position:absolute;inset:0;border-radius:24px;pointer-events:none;background:rgba(26,16,48,.5);opacity:calc(.22 * var(--cover, 0));transition:opacity .18s ease}
 .bk-home .hiw-strip{display:flex;align-items:center;gap:10px;height:var(--peek);padding:0 28px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fff}
 .bk-home .hiw-strip .n{height:24px;width:24px;border-radius:7px;background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:12px}
 .bk-home .hiw-card.c0 .hiw-strip{background:linear-gradient(90deg,var(--brand),var(--brand-2))}
