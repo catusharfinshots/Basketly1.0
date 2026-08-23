@@ -84,18 +84,18 @@ export default function SIPCalculator() {
             <Slider className="mt-3" value={[years]} onValueChange={([v])=>setYears(v)} min={1} max={40} step={1} />
           </div>
 
-          <div className="pt-2 grid grid-cols-3 gap-3 text-center">
+          <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
             <div>
               <div className="text-xs text-[#6B6480] uppercase tracking-wider">Invested</div>
-              <div className="num mt-1 text-lg font-bold text-[#5320A8]">₹{invested.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+              <div className="num mt-1 text-lg font-bold text-[#5320A8] truncate">₹{invested.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
             </div>
             <div>
               <div className="text-xs text-[#6B6480] uppercase tracking-wider">Est. returns</div>
-              <div className="num mt-1 text-lg font-bold text-[#12B76A]">₹{gains.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+              <div className="num mt-1 text-lg font-bold text-[#12B76A] truncate">₹{gains.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
             </div>
             <div>
               <div className="text-xs text-[#6B6480] uppercase tracking-wider">Total value</div>
-              <div className="num mt-1 text-lg font-bold">₹{futureVal.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
+              <div className="num mt-1 text-lg font-bold truncate">₹{futureVal.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div>
             </div>
           </div>
         </div>

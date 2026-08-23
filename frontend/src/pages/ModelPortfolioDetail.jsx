@@ -177,7 +177,7 @@ export default function ModelPortfolioDetail() {
             )}
 
             {tab === 'Stocks & Weights' && (
-              <div className="surface overflow-hidden">
+              <div className="surface overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-[#F5F7FB] text-[#64748B]">
                     <tr className="text-left">

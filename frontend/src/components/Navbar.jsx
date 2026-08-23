@@ -100,6 +100,11 @@ export default function Navbar() {
             ))}
             {isAuthed ? (
               <div className="pt-3 flex flex-col gap-2">
+                {kiteConnected && (
+                  <button onClick={() => { setOpen(false); setTicketOpen(true); }} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#12B76A] px-3 py-2.5 text-sm font-semibold text-white hover:bg-[#0E9F5E] transition-colors">
+                    <LineChart className="h-4 w-4" /> Trade
+                  </button>
+                )}
                 <Link to="/dashboard" onClick={() => setOpen(false)} className="btn-outline"><LayoutDashboard className="h-4 w-4" /> Dashboard</Link>
                 <Link to="/brokers/connect" onClick={() => setOpen(false)} className="btn-ghost justify-start"><Link2 className="h-4 w-4" /> Connect broker</Link>
                 <button onClick={() => { setOpen(false); doLogout(); }} className="btn-ghost justify-start"><LogOut className="h-4 w-4" /> Log out</button>

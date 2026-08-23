@@ -151,7 +151,7 @@ export default function InvestFlow({ open, onOpenChange, basket, onViewInvestmen
               <div className="mt-6">
                 <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0F1729]"><span>Monthly SIP Investment</span><Info className="h-3.5 w-3.5 text-[#94A3B8]" /></div>
                 <p className="text-xs text-[#64748B] mt-1">Auto-debited from your broker account each month</p>
-                <div className="mt-2 grid grid-cols-2 gap-3">
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-[#64748B]">SIP Amount</label>
                     <div className="mt-1 flex items-center rounded-xl border border-[#E6E8F0] px-3 py-2.5">

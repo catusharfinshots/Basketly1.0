@@ -361,19 +361,19 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-[240px_1fr] min-h-[calc(100vh-3.5rem)]">
-        <aside className="bg-white border-r border-[#E8E1F0] p-4">
-          <nav className="space-y-1">
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] min-h-[calc(100vh-3.5rem)]">
+        <aside className="bg-white border-b lg:border-b-0 lg:border-r border-[#E8E1F0] p-3 lg:p-4">
+          <nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible">
             {NAV.map(n => (
               <button key={n.key} onClick={()=>setTab(n.key)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${tab===n.key ? 'bg-[#F1E7FE] text-[#5320A8]' : 'text-[#1A1030] hover:bg-[#F7F4FB]'}`}>
+                className={`shrink-0 lg:w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${tab===n.key ? 'bg-[#F1E7FE] text-[#5320A8]' : 'text-[#1A1030] hover:bg-[#F7F4FB]'}`}>
                 <n.icon className="h-4 w-4" /> {n.label}
               </button>
             ))}
           </nav>
         </aside>
 
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           <div className="max-w-5xl">
             <div className="flex items-end justify-between gap-4 flex-wrap">
               <div>
@@ -464,7 +464,7 @@ export default function AdminPage() {
                   ) : leads.length === 0 ? (
                     <div className="mt-6 text-sm text-[#6B6480]">No leads yet. Submit the form on the AIF or Advisory page to see it here.</div>
                   ) : (
-                    <div className="mt-4 overflow-hidden rounded-xl border border-[#E8E1F0]">
+                    <div className="mt-4 overflow-x-auto rounded-xl border border-[#E8E1F0]">
                       <table className="w-full text-sm">
                         <thead className="bg-[#F7F4FB] text-[#6B6480]"><tr className="text-left">
                           <th className="px-4 py-3 font-medium">Type</th>

@@ -65,7 +65,7 @@ export default function Explore() {
 
       <div className="mt-8 grid lg:grid-cols-[280px_1fr] gap-8">
         {/* Filters */}
-        <aside className={`${filtersOpen ? 'block' : 'hidden'} lg:block surface p-5 h-fit sticky top-24`}>
+        <aside className={`${filtersOpen ? 'block' : 'hidden'} lg:block surface p-5 h-fit lg:sticky lg:top-24`}>
           <div className="flex items-center justify-between">
             <div className="text-sm font-semibold">Filters</div>
             <button onClick={clearAll} className="text-xs font-semibold text-[#6C2BD9]">Clear all</button>

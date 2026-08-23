@@ -28,7 +28,8 @@
 .bk-home .hero-cta{display:flex;gap:12px;justify-content:flex-start;margin:28px 0 18px;flex-wrap:wrap}
 .bk-home .ratings{display:flex;gap:22px;justify-content:flex-start;color:var(--muted);font-size:14px;flex-wrap:wrap}
 .bk-home .ratings b{color:var(--ink)}
-@media(max-width:600px){.bk-home .hero h1{font-size:40px}}
+@media(max-width:600px){.bk-home .hero h1{font-size:38px;letter-spacing:-.02em;overflow-wrap:break-word}}
+@media(max-width:400px){.bk-home .hero h1{font-size:32px}}
 
 .bk-home .stage{margin:40px auto 0;position:relative;width:100%;max-width:920px;height:330px}
 .bk-home .grass{position:absolute;left:0;right:0;bottom:-1px;height:120px;background:
@@ -97,6 +98,7 @@
 .bk-home .hiw-btn{cursor:pointer;border:none;border-radius:12px;font-size:15px;font-weight:600;padding:0 20px;height:46px;display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none}
 .bk-home .hiw-card.c0 .hiw-btn{background:var(--brand)} .bk-home .hiw-card.c1 .hiw-btn{background:var(--teal)} .bk-home .hiw-card.c2 .hiw-btn{background:var(--blue)}
 @media(max-width:860px){.bk-home .hiw-body{grid-template-columns:1fr;gap:24px;padding:26px 22px 32px}.bk-home .hiw-copy h3{font-size:25px}}
+@media(max-width:900px){.bk-home .hiw-card{position:static;top:auto}.bk-home .hiw-stack{padding-bottom:0}}
 .bk-home .hiw-visual{display:grid;place-items:center}
 .bk-home .hiw-phone{width:246px;height:334px;background:#0E0722;border-radius:34px;padding:10px;box-shadow:0 26px 54px rgba(26,16,48,.28)}
 .bk-home .hiw-screen{width:100%;height:100%;background:linear-gradient(180deg,#F5F1FD,#fff);border-radius:26px;padding:15px;overflow:hidden}

@@ -4,6 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile safety net (§1.2): a single stray element can never scroll the whole page */
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+*, *::before, *::after {
+    min-width: 0; /* lets flex/grid children shrink instead of overflowing */
+}
+
 body {
     margin: 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

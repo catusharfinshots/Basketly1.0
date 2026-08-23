@@ -252,7 +252,7 @@ export default function AnalystConsole() {
               </div>
               <div className="space-y-2 mt-2">
                 {form.constituents.map((c, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_1.4fr_0.9fr_0.7fr_auto] gap-2 items-center">
+                  <div key={i} className="grid grid-cols-2 md:grid-cols-[1fr_1.4fr_0.9fr_0.7fr_auto] gap-2 items-center">
                     <Input value={c.symbol} onChange={(e) => setC(i, 'symbol', e.target.value)} className="h-9" placeholder="Symbol" />
                     <Input value={c.name} onChange={(e) => setC(i, 'name', e.target.value)} className="h-9" placeholder="Name" />
                     <select value={c.type} onChange={(e) => setC(i, 'type', e.target.value)} className="h-9 rounded-lg border border-[#E8E1F0] px-2 text-sm"><option>Stock</option><option>ETF</option></select>

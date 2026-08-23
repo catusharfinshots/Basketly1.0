@@ -185,7 +185,7 @@ export default function OrderTicket({ open, onOpenChange, initialSymbol, initial
             </div>
 
             {/* Buy/Sell + Product */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs uppercase tracking-wider text-[#6B6480]">Side</Label>
                 <div className="mt-1.5 grid grid-cols-2 gap-2">
@@ -204,7 +204,7 @@ export default function OrderTicket({ open, onOpenChange, initialSymbol, initial
             </div>
 
             {/* Qty + Order type */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs uppercase tracking-wider text-[#6B6480]">Quantity</Label>
                 <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} className="h-10 mt-1.5 num" min={1} />
@@ -221,7 +221,7 @@ export default function OrderTicket({ open, onOpenChange, initialSymbol, initial
 
             {/* Price / trigger */}
             {(orderType === 'LIMIT' || orderType === 'SL') && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs uppercase tracking-wider text-[#6B6480]">Limit price (\u20B9)</Label>
                   <Input type="number" step="0.05" value={price} onChange={e => setPrice(e.target.value)} className="h-10 mt-1.5 num" />
@@ -242,7 +242,7 @@ export default function OrderTicket({ open, onOpenChange, initialSymbol, initial
             )}
 
             {/* Variety + Validity */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs uppercase tracking-wider text-[#6B6480]">Variety</Label>
                 <div className="mt-1.5 grid grid-cols-2 gap-1">
