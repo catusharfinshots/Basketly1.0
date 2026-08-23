@@ -4,9 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Mobile safety net (§1.2): a single stray element can never scroll the whole page */
+/* Mobile safety net (§1.2): a single stray element can never scroll the whole page.
+   Use overflow-x:clip (NOT hidden) — hidden forces the other axis to `auto`, which
+   creates a scroll container and breaks every position:sticky on the site. clip
+   prevents horizontal scroll while keeping sticky working. */
 html, body {
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100vw;
 }
 *, *::before, *::after {
