@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, Link2, CheckCircle2, LineChart, LayoutDashboard, LogOut, User } from 'lucide-react';
+import omniMark from '../assets/omnivest-mark-white.svg';
 import { useBroker } from '../context/BrokerContext';
 import { useAuth } from '../context/AuthContext';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -19,9 +20,9 @@ function Logo() {
   return (
     <Link to="/" onClick={scrollTop} data-testid="nav-logo-home" className="flex items-center gap-2 shrink-0">
       <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg grad-card text-white shadow-sm">
-        <LineChart className="h-4 w-4" />
+        <img src={omniMark} alt="" className="h-5 w-5" />
       </span>
-      <span className="font-[Space_Grotesk] text-lg font-bold tracking-tight">Basketly</span>
+      <span className="font-[Space_Grotesk] text-lg font-bold tracking-tight">Omnivest</span>
     </Link>
   );
 }

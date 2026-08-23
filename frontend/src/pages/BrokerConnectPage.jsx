@@ -143,7 +143,7 @@ export default function BrokerConnectPage() {
         <div className="font-semibold text-[#1A1030]">How the connection works</div>
         <ol className="mt-3 list-decimal ml-5 space-y-1.5">
           <li>You click Connect and a Kite login popup opens on kite.zerodha.com.</li>
-          <li>After you log in, Kite redirects the popup back to Basketly with a short-lived <code>request_token</code>.</li>
+          <li>After you log in, Kite redirects the popup back to Omnivest with a short-lived <code>request_token</code>.</li>
           <li>Our server exchanges that token for an <code>access_token</code> using the app secret and stores it securely.</li>
           <li>Your holdings & margins are pulled live into your dashboard. You can disconnect anytime.</li>
         </ol>

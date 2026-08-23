@@ -1,4 +1,4 @@
-/* Scoped styles for the Basketly Home page — matches uploaded basketly-home.html.
+/* Scoped styles for the Omnivest Home page — matches uploaded basketly-home.html.
    Every rule is prefixed with .bk-home so it never leaks into other pages. */
 .bk-home{
   --brand:#6C2BD9; --brand-2:#9B4DFF; --brand-ink:#5320A8; --brand-soft:#F1E7FE;

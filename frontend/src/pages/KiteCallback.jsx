@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { getStoredUserId } from '../context/BrokerContext';
-import { CheckCircle2, XCircle, Loader2, Sparkles } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import omniMark from '../assets/omnivest-mark-white.svg';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -39,7 +40,7 @@ export default function KiteCallback() {
     }
     if (!userId) {
       setState('error');
-      setDetail('No Basketly session found. Please open this from the Basketly window.');
+      setDetail('No Omnivest session found. Please open this from the Omnivest window.');
       return;
     }
 
@@ -61,8 +62,8 @@ export default function KiteCallback() {
   return (
     <div className="min-h-screen grad-hero grid place-items-center px-6">
       <div className="surface p-8 max-w-md w-full text-center">
-        <div className="h-12 w-12 rounded-2xl grad-card text-white grid place-items-center mx-auto"><Sparkles className="h-5 w-5" /></div>
-        <div className="mt-4 font-[Space_Grotesk] text-xl font-bold">Basketly · Kite Connect</div>
+        <div className="h-12 w-12 rounded-2xl grad-card text-white grid place-items-center mx-auto"><img src={omniMark} alt="" className="h-7 w-7" /></div>
+        <div className="mt-4 font-[Space_Grotesk] text-xl font-bold">Omnivest · Kite Connect</div>
 
         {state === 'processing' && (
           <div className="mt-6 flex flex-col items-center gap-3">

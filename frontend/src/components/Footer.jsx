@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { LineChart, Twitter, Linkedin, Instagram, Youtube, Facebook, Mail, Send, CheckCircle2 } from 'lucide-react';
+import { Twitter, Linkedin, Instagram, Youtube, Facebook, Mail, Send, CheckCircle2 } from 'lucide-react';
+import omniMark from '../assets/omnivest-mark-white.svg';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -23,7 +24,7 @@ const SOCIALS = [
 
 export default function Footer() {
   const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-  const [footer, setFooter] = useState({ contactEmail: 'support@mutlixx.in', subscribeHeading: 'Get market insights & product updates in your inbox', socials: {} });
+  const [footer, setFooter] = useState({ contactEmail: 'support@omnivest.in', subscribeHeading: 'Get market insights & product updates in your inbox', socials: {} });
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
@@ -52,9 +53,9 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link to="/" onClick={scrollTop} data-testid="footer-logo-home" className="flex items-center gap-2 w-fit">
               <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg grad-card text-white">
-                <LineChart className="h-4 w-4" />
+                <img src={omniMark} alt="" className="h-5 w-5" />
               </span>
-              <span className="font-[Space_Grotesk] text-lg font-bold">Basketly</span>
+              <span className="font-[Space_Grotesk] text-lg font-bold">Omnivest</span>
             </Link>
             <p className="mt-4 text-sm text-[#64748B] max-w-xs">
               Money at work — expert-managed model portfolios, AIFs and advisory, invested from your own broker account. Demo build — simulated data, not financial advice.
@@ -94,7 +95,7 @@ export default function Footer() {
 
         <div className="mt-10 rounded-2xl bg-white border border-[#E6E8F0] p-6 grid md:grid-cols-2 gap-4 items-center">
           <div>
-            <div className="text-base font-semibold text-[#0F1729]">Subscribe to Basketly</div>
+            <div className="text-base font-semibold text-[#0F1729]">Subscribe to Omnivest</div>
             <p className="text-sm text-[#64748B]">{footer.subscribeHeading}</p>
           </div>
           {subscribed ? (
@@ -113,7 +114,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-8 border-t border-[#E6E8F0] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <p className="text-xs text-[#64748B] max-w-3xl">
-            Investments in securities are subject to market risks. Read all scheme related documents carefully before investing. Past performance is not indicative of future returns. Basketly is a demo build — no real trades are placed.
+            Investments in securities are subject to market risks. Read all scheme related documents carefully before investing. Past performance is not indicative of future returns. Omnivest is a demo build — no real trades are placed.
           </p>
           <Link to="/partner" onClick={scrollTop} data-testid="become-partner-link" className="text-xs font-semibold text-[#6C2BD9] hover:text-[#5320A8] shrink-0">Become a partner →</Link>
         </div>

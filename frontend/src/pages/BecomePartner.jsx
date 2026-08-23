@@ -32,7 +32,7 @@ export default function BecomePartner() {
         <div className="surface p-10 text-center max-w-md" data-testid="partner-success">
           <span className="h-14 w-14 mx-auto rounded-2xl bg-[#DCFCE7] text-[#0E9F5E] grid place-items-center"><CheckCircle2 className="h-7 w-7" /></span>
           <h1 className="mt-5 text-2xl font-bold">Application received</h1>
-          <p className="mt-2 text-sm text-[#64748B]">Thanks for applying to become a research analyst on Basketly. Our team will review your application. Once approved, just tap <b>Get started</b> and log in with this mobile number to access your analyst console.</p>
+          <p className="mt-2 text-sm text-[#64748B]">Thanks for applying to become a research analyst on Omnivest. Our team will review your application. Once approved, just tap <b>Get started</b> and log in with this mobile number to access your analyst console.</p>
         </div>
       </div>
     );
@@ -44,7 +44,7 @@ export default function BecomePartner() {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#EDE9FE] text-[#5320A8] text-xs font-semibold px-3 py-1.5"><LineChart className="h-3.5 w-3.5" /> For research analysts</span>
           <h1 className="mt-4 text-4xl sm:text-5xl font-bold leading-tight">Become a partner</h1>
-          <p className="mt-4 text-base text-[#475569] max-w-lg">List your model portfolios on Basketly and reach investors across India. Apply below — once our team approves you, you'll get your own analyst console to build and publish baskets.</p>
+          <p className="mt-4 text-base text-[#475569] max-w-lg">List your model portfolios on Omnivest and reach investors across India. Apply below — once our team approves you, you'll get your own analyst console to build and publish baskets.</p>
           <div className="mt-8 space-y-4 max-w-md">
             {[
               { icon: TrendingUp, t: 'Publish model portfolios', d: 'Design baskets with stocks, weights, methodology, rebalancing and a factsheet.' },

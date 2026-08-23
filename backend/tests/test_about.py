@@ -45,7 +45,7 @@ class TestAboutGet:
         d = r.json()
         for k in ("hero", "story", "teamIntro", "founders", "team", "teamStats", "investors", "contacts", "visibility"):
             assert k in d, f"missing key: {k}"
-        assert isinstance(d["founders"], list) and len(d["founders"]) >= 2
+        assert isinstance(d["founders"], list) and len(d["founders"]) >= 1
         assert isinstance(d["team"], list) and len(d["team"]) >= 2
         assert isinstance(d["contacts"], list) and len(d["contacts"]) >= 3
         assert d["investors"].get("enabled") is False

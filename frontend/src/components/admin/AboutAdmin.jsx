@@ -263,7 +263,7 @@ export default function AboutAdmin({ token }) {
           {contacts.map((c, i) => (
             <div key={c.id || i} className="rounded-xl border border-[#E8E1F0] p-4 grid sm:grid-cols-2 gap-3">
               <div><Label>Title</Label><Input value={c.title || ''} onChange={(e) => patchIn(contacts, setContacts, i, { title: e.target.value })} className="h-9 mt-1.5" /></div>
-              <div><Label>Email</Label><Input value={c.email || ''} onChange={(e) => patchIn(contacts, setContacts, i, { email: e.target.value })} className="h-9 mt-1.5" placeholder="name@basketly.in" /></div>
+              <div><Label>Email</Label><Input value={c.email || ''} onChange={(e) => patchIn(contacts, setContacts, i, { email: e.target.value })} className="h-9 mt-1.5" placeholder="name@omnivest.in" /></div>
               <div className="sm:col-span-2"><Label>Text</Label><Textarea value={c.text || ''} onChange={(e) => patchIn(contacts, setContacts, i, { text: e.target.value })} rows={2} className="mt-1.5" /></div>
               <div className="sm:col-span-2 flex items-center justify-between gap-3">
                 <Input value={c.link || ''} onChange={(e) => patchIn(contacts, setContacts, i, { link: e.target.value })} className="h-9 flex-1" placeholder="Optional link (used if no email)" />

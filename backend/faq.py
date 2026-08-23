@@ -17,11 +17,11 @@ def _now() -> str:
 
 
 SEED_FAQS = [
-    {"question": "What is a model portfolio on Basketly?", "answer": "A model portfolio is a ready-made basket of stocks or ETFs built around a theme or strategy by a SEBI-registered research analyst. You invest in it from your own broker account, and it is rebalanced on a fixed schedule.", "category": "Model Portfolios", "isTop": True},
-    {"question": "Do I need to open a new account to invest?", "answer": "No. Your stocks and ETFs are held in your existing demat account. Basketly connects to your broker — there is no separate account to open.", "category": "Getting Started", "isTop": True},
+    {"question": "What is a model portfolio on Omnivest?", "answer": "A model portfolio is a ready-made basket of stocks or ETFs built around a theme or strategy by a SEBI-registered research analyst. You invest in it from your own broker account, and it is rebalanced on a fixed schedule.", "category": "Model Portfolios", "isTop": True},
+    {"question": "Do I need to open a new account to invest?", "answer": "No. Your stocks and ETFs are held in your existing demat account. Omnivest connects to your broker — there is no separate account to open.", "category": "Getting Started", "isTop": True},
     {"question": "Are there any lock-ins?", "answer": "No lock-ins. You can exit your investments whenever you like — model portfolios can be liquidated at any time.", "category": "Model Portfolios", "isTop": True},
     {"question": "How much money do I need to start?", "answer": "It depends on the portfolio — each listing shows its minimum investment amount. Many portfolios start from just a few thousand rupees.", "category": "Getting Started", "isTop": True},
-    {"question": "Is my money and data safe?", "answer": "Yes. Basketly uses financial-grade security with encryption in transit and at rest. Your money always stays in your own broker account — we never hold your funds.", "category": "Safety & Security", "isTop": True},
+    {"question": "Is my money and data safe?", "answer": "Yes. Omnivest uses financial-grade security with encryption in transit and at rest. Your money always stays in your own broker account — we never hold your funds.", "category": "Safety & Security", "isTop": True},
     {"question": "What are the fees?", "answer": "Fees vary by portfolio and are shown on each portfolio's page before you invest. Some portfolios are free to access while others carry a subscription set by the research analyst.", "category": "Fees & Charges", "isTop": True},
 ]
 

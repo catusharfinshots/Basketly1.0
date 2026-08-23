@@ -1,4 +1,4 @@
-// Basketly - all mocked data (frontend only)
+// Omnivest - all mocked data (frontend only)
 
 export const brokers = [
   { name: 'Zerodha', logo: 'ZR' },
@@ -413,7 +413,7 @@ export const testimonials = [
 ];
 
 export const faqs = [
-  { q: 'Where are my stocks held?', a: 'Every share you buy sits in your own demat account with your broker. Basketly never holds your money or securities.' },
+  { q: 'Where are my stocks held?', a: 'Every share you buy sits in your own demat account with your broker. Omnivest never holds your money or securities.' },
   { q: 'How much does it cost?', a: 'A small transaction fee per order, shown before you invest, plus a manager subscription on premium baskets. Standard broker charges apply on trades.' },
   { q: 'Can I exit anytime?', a: 'Yes. You can sell part or all of any basket whenever you like, directly from your dashboard.' },
   { q: 'What is rebalancing?', a: 'When a basket\'s strategy changes, the manager updates its holdings. You get a notification and can apply the update in one tap.' },

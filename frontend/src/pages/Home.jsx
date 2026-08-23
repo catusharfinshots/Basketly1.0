@@ -25,7 +25,7 @@ const DEFAULTS = {
     { name: 'Saurabh', tag: 'Reviewed on Play Store', quote: 'One of the best finance products in recent times. The UI is clean and investing is effortless.' },
     { name: 'Nithin', tag: 'Posted on X', quote: 'The best investment-tech experience I’ve used in India today. Genuinely well built.' },
     { name: 'Asma', tag: 'Reviewed on Play Store', quote: 'Best app for investing with multiple choices of portfolios and clear methodology.' },
-    { name: 'Tanmay', tag: 'Posted on X', quote: 'Fallen in love with Basketly — such a smooth, smooth product from end to end.' },
+    { name: 'Tanmay', tag: 'Posted on X', quote: 'Fallen in love with Omnivest — such a smooth, smooth product from end to end.' },
     { name: 'Ravi', tag: 'Reviewed on Play Store', quote: 'A smart app blending tech and finance — I can track and invest in one place.' },
     { name: 'Jonathan', tag: 'Reviewed on App Store', quote: 'Excellent platform for beginners, especially those who don’t have time to analyse.' },
   ],
@@ -152,7 +152,7 @@ export default function Home() {
                 <Link to="/model-portfolios" className="hiw-btn">Explore portfolios →</Link>
               </div>
               <div className="hiw-visual"><div className="hiw-phone"><div className="hiw-screen">
-                <div className="hiw-stop"><span>Basketly</span><span>All Weather</span></div>
+                <div className="hiw-stop"><span>Omnivest</span><span>All Weather</span></div>
                 <div className="hiw-mini">
                   <div className="t">Model portfolio</div><div className="v">All Weather Portfolio</div>
                   <div className="hiw-row"><span>Nifty BeES</span><b>34%</b></div><div className="hiw-bar"><i style={{ width: '34%', background: 'linear-gradient(90deg,var(--brand),var(--brand-2))' }}></i></div>
@@ -179,7 +179,7 @@ export default function Home() {
                 <Link to="/aif" className="hiw-btn">Explore AIF →</Link>
               </div>
               <div className="hiw-visual"><div className="hiw-phone"><div className="hiw-screen">
-                <div className="hiw-stop"><span>Basketly</span><span>AIF</span></div>
+                <div className="hiw-stop"><span>Omnivest</span><span>AIF</span></div>
                 <div className="hiw-mini"><div className="t">AIF strategy</div><div className="v">Long-Short Alpha</div></div>
                 <div className="hiw-mini"><div className="t">Target IRR</div><div className="v" style={{ color: 'var(--teal)' }}>14–18%</div></div>
                 <div className="hiw-mini"><div className="t">Min. commitment</div><div className="v">₹1 Cr</div></div>
@@ -202,7 +202,7 @@ export default function Home() {
                 <Link to="/advisory" className="hiw-btn">Get advisory →</Link>
               </div>
               <div className="hiw-visual"><div className="hiw-phone"><div className="hiw-screen">
-                <div className="hiw-stop"><span>Basketly</span><span>Advisory</span></div>
+                <div className="hiw-stop"><span>Omnivest</span><span>Advisory</span></div>
                 <div className="hiw-mini"><div className="t">Expert verdict · Long term</div>
                   <div className="hiw-verdict" style={{ color: 'var(--green)' }}><span className="hiw-dot" style={{ background: 'var(--green)' }}></span> Maintain a “Buy”</div></div>
                 <div className="hiw-mini"><div className="t">Expert verdict · Short term</div>

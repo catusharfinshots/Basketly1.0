@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnalystConsole from '../components/AnalystConsole';
-import { LineChart } from 'lucide-react';
+import omniMark from '../assets/omnivest-mark-white.svg';
 
 export default function AnalystPage() {
   const { user, isAuthed, loading, logout, openAuth } = useAuth();
@@ -15,7 +15,7 @@ export default function AnalystPage() {
     return (
       <div className="min-h-screen grid place-items-center bg-[#F7F4FB] p-6">
         <div className="surface p-8 text-center max-w-sm">
-          <span className="h-12 w-12 mx-auto rounded-xl grad-card text-white grid place-items-center"><LineChart className="h-5 w-5" /></span>
+          <span className="h-12 w-12 mx-auto rounded-xl grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-7 w-7" /></span>
           <h1 className="mt-4 text-xl font-bold">Analyst console</h1>
           <p className="mt-2 text-sm text-[#6B6480]">Please log in with your research-analyst mobile number to manage your model portfolios.</p>
           <button data-testid="analyst-login-btn" onClick={() => openAuth({ next: '/analyst' })} className="btn-primary mt-5 w-full">Log in</button>

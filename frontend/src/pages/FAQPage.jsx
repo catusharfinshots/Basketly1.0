@@ -11,7 +11,7 @@ export default function FAQPage() {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('All');
   const [openId, setOpenId] = useState(null);
-  const [contactEmail, setContactEmail] = useState('support@mutlixx.in');
+  const [contactEmail, setContactEmail] = useState('support@omnivest.in');
 
   useEffect(() => {
     axios.get(`${API}/faqs`).then(({ data }) => setFaqs(data.faqs || [])).catch(() => {});
@@ -36,7 +36,7 @@ export default function FAQPage() {
         <div className="container-x py-14">
           <div className="inline-flex items-center gap-2 text-xs font-semibold bg-white/15 rounded-full px-3 py-1.5"><HelpCircle className="h-3.5 w-3.5" /> Help centre</div>
           <h1 className="mt-4 text-4xl sm:text-5xl font-bold">Frequently asked questions</h1>
-          <p className="mt-3 text-white/85 max-w-xl">Everything you need to know about investing in model portfolios on Basketly.</p>
+          <p className="mt-3 text-white/85 max-w-xl">Everything you need to know about investing in model portfolios on Omnivest.</p>
           <div className="mt-6 max-w-xl relative">
             <Search className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
             <Input data-testid="faq-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search questions…" className="h-12 pl-11 bg-white text-[#1A1030]" />

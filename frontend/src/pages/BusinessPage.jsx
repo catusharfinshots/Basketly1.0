@@ -5,7 +5,7 @@ import { ArrowRight, Zap, Code2, Building2, LineChart, ShieldCheck, Users } from
 const offerings = [
   { title: 'Gateway', tagline: 'Investment & transaction APIs', desc: 'Let any fintech embed basket investing, order flow, and portfolio management with a few API calls.', icon: Code2, features: ['Broker-agnostic OAuth', 'Basket, order, holdings APIs', 'Webhooks for rebalance events', 'Sandbox with mock brokers'] },
   { title: 'Publisher', tagline: 'For RIAs & research analysts', desc: 'Create, publish, and manage your own baskets. Reach subscribers with subscription-based baskets.', icon: LineChart, features: ['Basket builder with backtests', 'Subscriber CRM', 'Rebalance publishing tools', 'Compliance and audit logs'] },
-  { title: 'Brokers', tagline: 'Partner with Basketly', desc: 'Add basket investing to your broker platform. Reduce churn and grow AUM with a curated marketplace.', icon: Building2, features: ['Deep-linked order flow', 'Co-branded storefront', 'Auto-SIP mandate support', 'Analytics dashboard'] },
+  { title: 'Brokers', tagline: 'Partner with Omnivest', desc: 'Add basket investing to your broker platform. Reduce churn and grow AUM with a curated marketplace.', icon: Building2, features: ['Deep-linked order flow', 'Co-branded storefront', 'Auto-SIP mandate support', 'Analytics dashboard'] },
   { title: 'Tickertape', tagline: 'Research & analytics', desc: 'A stock and MF screener + portfolio analysis product built for serious retail investors.', icon: Zap, features: ['200+ ready screens', 'Portfolio X-ray', 'Backtesting', 'Alerts & smart baskets'] },
 ];
 
@@ -44,7 +44,7 @@ export default function BusinessPage() {
       <div className="container-x pb-16 grid md:grid-cols-3 gap-4">
         {[
           { icon: ShieldCheck, t: 'SEBI-aware compliance', d: 'Audit logs, e-consents, and disclosure gating baked in.' },
-          { icon: Users, t: 'Distribution at scale', d: 'Reach 18L+ investors on the Basketly consumer app.' },
+          { icon: Users, t: 'Distribution at scale', d: 'Reach 18L+ investors on the Omnivest consumer app.' },
           { icon: LineChart, t: 'Analytics you can act on', d: 'Cohorts, funnels, and portfolio behaviour insights.' },
         ].map((f, i) => (
           <div key={i} className="rounded-2xl bg-[#F7F4FB] border border-[#E8E1F0] p-6">

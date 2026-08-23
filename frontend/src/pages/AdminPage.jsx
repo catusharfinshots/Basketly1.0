@@ -3,12 +3,13 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { Sparkles, LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download, Pencil } from 'lucide-react';
+import { LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download, Pencil } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '../components/ui/alert-dialog';
 import AboutAdmin from '../components/admin/AboutAdmin';
+import omniMark from '../assets/omnivest-mark-white.svg';
 import { toast } from 'sonner';
 
 const NAV = [
@@ -61,12 +62,12 @@ const CONTENT_DEFAULTS = {
     { name: 'Saurabh', tag: 'Reviewed on Play Store', quote: 'One of the best finance products in recent times.' },
     { name: 'Nithin', tag: 'Posted on X', quote: 'The best investment-tech experience I’ve used in India today.' },
     { name: 'Asma', tag: 'Reviewed on Play Store', quote: 'Best app for investing with multiple choices of portfolios.' },
-    { name: 'Tanmay', tag: 'Posted on X', quote: 'Fallen in love with Basketly — such a smooth product.' },
+    { name: 'Tanmay', tag: 'Posted on X', quote: 'Fallen in love with Omnivest — such a smooth product.' },
     { name: 'Ravi', tag: 'Reviewed on Play Store', quote: 'A smart app blending tech and finance.' },
     { name: 'Jonathan', tag: 'Reviewed on App Store', quote: 'Excellent platform for beginners.' },
   ],
   footer: {
-    contactEmail: 'support@mutlixx.in',
+    contactEmail: 'support@omnivest.in',
     subscribeHeading: 'Get market insights & product updates in your inbox',
     socials: { facebook: '', x: '', youtube: '', linkedin: '', instagram: '' },
   },
@@ -318,7 +319,7 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen grid place-items-center bg-[#F7F4FB] p-6">
         <div className="surface p-8 text-center max-w-sm">
-          <span className="h-12 w-12 mx-auto rounded-xl grad-card text-white grid place-items-center"><Sparkles className="h-5 w-5" /></span>
+          <span className="h-12 w-12 mx-auto rounded-xl grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-7 w-7" /></span>
           <h1 className="mt-4 text-xl font-bold">Owner console</h1>
           <p className="mt-2 text-sm text-[#6B6480]">Please log in with an admin account to manage the site.</p>
           <button onClick={() => navigate('/login?next=/admin')} className="btn-primary mt-5 w-full">Log in</button>
@@ -347,9 +348,9 @@ export default function AdminPage() {
       <header className="sticky top-0 z-30 bg-white border-b border-[#E8E1F0]">
         <div className="px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="h-8 w-8 rounded-lg grad-card text-white grid place-items-center"><Sparkles className="h-4 w-4" /></span>
+            <span className="h-8 w-8 rounded-lg grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-5 w-5" /></span>
             <div>
-              <div className="font-[Space_Grotesk] text-sm font-bold">Basketly</div>
+              <div className="font-[Space_Grotesk] text-sm font-bold">Omnivest</div>
               <div className="text-[10px] uppercase tracking-widest text-[#6C2BD9] font-bold">Owner console</div>
             </div>
           </div>
@@ -819,7 +820,7 @@ export default function AdminPage() {
                   <div className="text-sm font-semibold">Footer & contact</div>
                   <div>
                     <Label>Contact email (shown in footer)</Label>
-                    <Input data-testid="settings-contact-email" value={content.footer?.contactEmail || ''} onChange={(e) => patchContent('footer', { ...content.footer, contactEmail: e.target.value })} className="mt-1.5 h-10" placeholder="support@mutlixx.in" />
+                    <Input data-testid="settings-contact-email" value={content.footer?.contactEmail || ''} onChange={(e) => patchContent('footer', { ...content.footer, contactEmail: e.target.value })} className="mt-1.5 h-10" placeholder="support@omnivest.in" />
                   </div>
                   <div>
                     <Label>Subscribe box heading</Label>

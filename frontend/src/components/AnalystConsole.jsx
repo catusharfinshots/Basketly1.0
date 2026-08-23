@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Plus, Trash2, Save, Send, ArrowLeft, Pencil, LogOut, LineChart, Upload, FileText } from 'lucide-react';
+import { Plus, Trash2, Save, Send, ArrowLeft, Pencil, LogOut, Upload, FileText } from 'lucide-react';
+import omniMark from '../assets/omnivest-mark-white.svg';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -149,8 +150,8 @@ export default function AnalystConsole() {
       <header className="sticky top-0 z-30 bg-white border-b border-[#E8E1F0]">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-lg grad-card text-white grid place-items-center"><LineChart className="h-4 w-4" /></span>
-            <div><div className="font-[Space_Grotesk] font-bold leading-none">Basketly</div><div className="text-[10px] uppercase tracking-widest text-[#6B6480]">Analyst console</div></div>
+            <span className="h-8 w-8 rounded-lg grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-5 w-5" /></span>
+            <div><div className="font-[Space_Grotesk] font-bold leading-none">Omnivest</div><div className="text-[10px] uppercase tracking-widest text-[#6B6480]">Analyst console</div></div>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-[#6B6480] hidden sm:inline">{user?.name}</span>

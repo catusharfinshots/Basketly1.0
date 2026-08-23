@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { LineChart, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import omniMark from '../assets/omnivest-mark-white.svg';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 
@@ -35,15 +36,11 @@ export default function LoginPage() {
       <div className="container-x grid lg:grid-cols-2 gap-10 items-center py-12">
         <div>
           <Link to="/" className="flex items-center gap-2">
-            <span className="h-10 w-10 rounded-xl grad-card text-white grid place-items-center"><LineChart className="h-5 w-5" /></span>
-            <span className="font-[Space_Grotesk] text-xl font-bold">Basketly</span>
+            <span className="h-10 w-10 rounded-xl grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-6 w-6" /></span>
+            <span className="font-[Space_Grotesk] text-xl font-bold">Omnivest</span>
           </Link>
           <h1 className="mt-8 text-4xl lg:text-5xl font-bold max-w-lg">Welcome back.</h1>
           <p className="mt-4 text-[#64748B] max-w-md">Sign in to see your model portfolios, SIPs, and holdings.</p>
-          <div className="mt-8 surface p-4 max-w-sm text-sm">
-            <div className="font-semibold text-[#0F1729]">Demo account</div>
-            <div className="text-[#64748B] mt-1">demo@basketly.in · Password123</div>
-          </div>
         </div>
 
         <div className="surface p-8 shadow-[0_30px_60px_-30px_rgba(108,43,217,0.35)]">
@@ -58,7 +55,7 @@ export default function LoginPage() {
               <Input required type="password" value={password} onChange={(e)=>setPassword(e.target.value)} className="h-11 mt-1.5" placeholder="••••••••" />
             </div>
             <button disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Log in</button>
-            <div className="text-sm text-center text-[#64748B]">New to Basketly? <Link to="/signup" className="font-semibold text-[#6C2BD9]">Create an account</Link></div>
+            <div className="text-sm text-center text-[#64748B]">New to Omnivest? <Link to="/signup" className="font-semibold text-[#6C2BD9]">Create an account</Link></div>
           </form>
         </div>
       </div>

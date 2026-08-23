@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Linkedin, Mail, ArrowRight, ChevronDown } from 'lucide-react';
+import { Linkedin, Mail, ArrowRight } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
 const mediaUrl = (u) => (!u ? '' : u.startsWith('/api/') ? `${BACKEND}${u}` : u);
+const slugify = (name = '') => name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const initials = (name = '') => name.split(' ').map((s) => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?';
 
 function Avatar({ src, name, className = '' }) {
@@ -14,28 +15,19 @@ function Avatar({ src, name, className = '' }) {
   return <span className={`grad-card text-white grid place-items-center font-bold ${className}`}>{initials(name)}</span>;
 }
 
-function PersonCard({ p, testid }) {
-  const [open, setOpen] = useState(false);
+function PersonCard({ p, kind, testid }) {
   return (
     <div data-testid={testid} className="rounded-2xl border border-[#E8E1F0] bg-white p-6 flex flex-col transition-shadow hover:shadow-[0_12px_40px_-18px_rgba(108,43,217,0.35)]">
       <Avatar src={p.photoUrl} name={p.name} className="h-20 w-20 rounded-2xl text-xl" />
       <div className="mt-4 text-lg font-semibold text-[#1A1030]">{p.name}</div>
       <div className="text-sm font-medium text-[#6C2BD9]">{p.role}</div>
-      {p.shortBio && <p className="mt-2 text-sm text-[#6B6480]">{p.shortBio}</p>}
-
-      <div className={`grid transition-all duration-300 ${open ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
-          <p className="text-sm leading-relaxed text-[#475569]">{p.fullBio}</p>
-        </div>
-      </div>
+      {p.shortBio && <p className="mt-2 text-sm text-[#6B6480] line-clamp-4">{p.shortBio}</p>}
 
       <div className="mt-4 flex items-center gap-3">
-        {(p.fullBio || '').trim() && (
-          <button data-testid={`${testid}-toggle`} onClick={() => setOpen((v) => !v)}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-[#6C2BD9] hover:text-[#5320A8]">
-            {open ? 'Show less' : 'Read Bio'} <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
-          </button>
-        )}
+        <Link to={`/${kind}/${slugify(p.name)}`} data-testid={`${testid}-readbio`}
+          className="inline-flex items-center gap-1 text-sm font-semibold text-[#6C2BD9] hover:text-[#5320A8]">
+          Read Bio <ArrowRight className="h-4 w-4" />
+        </Link>
         {p.linkedinUrl && (
           <a href={p.linkedinUrl} target="_blank" rel="noreferrer" aria-label={`${p.name} on LinkedIn`}
             data-testid={`${testid}-linkedin`}
@@ -116,7 +108,7 @@ export default function AboutPage() {
       {/* Section 2 — Our Story + stats */}
       {vis.story !== false && (
         <section className="container-x py-16 md:py-24 text-center" data-testid="about-story">
-          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6C2BD9]">About Basketly</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6C2BD9]">About Omnivest</div>
           <h2 className="mt-3 text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">{story.heading || 'Our Story'}</h2>
           {story.intro && <p className="mt-4 max-w-2xl mx-auto text-base text-[#6B6480] leading-relaxed">{story.intro}</p>}
           <div className="mt-10 max-w-4xl mx-auto">
@@ -144,7 +136,7 @@ export default function AboutPage() {
         <section className="container-x py-16 md:py-24" data-testid="about-founders">
           <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">Our Founders</h2>
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {founders.map((f) => <PersonCard key={f.id} p={f} testid="founder-card" />)}
+            {founders.map((f) => <PersonCard key={f.id} p={f} kind="founders" testid="founder-card" />)}
           </div>
         </section>
       )}
@@ -156,7 +148,7 @@ export default function AboutPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">Our Team</h2>
             {team.length > 0 && (
               <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {team.map((m) => <PersonCard key={m.id} p={m} testid="team-card" />)}
+                {team.map((m) => <PersonCard key={m.id} p={m} kind="team" testid="team-card" />)}
               </div>
             )}
             {teamStats.length > 0 && (

@@ -1,4 +1,4 @@
-"""Email/password authentication for Basketly investors.
+"""Email/password authentication for Omnivest investors.
 
 Stores users in Mongo (collection: users) with a bcrypt-hashed password and
 issues a signed JWT on signup/login. Kept intentionally small and framework
@@ -109,7 +109,7 @@ async def seed_users(db: AsyncIOMotorDatabase) -> None:
     await db.users.create_index("phone", unique=True, partialFilterExpression={"phone": {"$type": "string"}})
     seeds = [
         {"name": "Demo Investor", "email": "demo@basketly.in", "password": "Password123", "role": "investor"},
-        {"name": "Basketly Admin", "email": "admin@basketly.in", "password": "Admin@123", "role": "admin"},
+        {"name": "Omnivest Admin", "email": "admin@basketly.in", "password": "Admin@123", "role": "admin"},
     ]
     for s in seeds:
         existing = await db.users.find_one({"email": s["email"].lower()})
