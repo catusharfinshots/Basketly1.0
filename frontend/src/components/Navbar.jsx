@@ -22,7 +22,7 @@ function Logo() {
       <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg grad-card text-white shadow-sm">
         <img src={omniMark} alt="" className="h-5 w-5" />
       </span>
-      <span className="font-[Space_Grotesk] text-lg font-bold tracking-tight">Omnivest</span>
+      <span className="font-[Inter] text-lg font-bold tracking-tight">Omnivest</span>
     </Link>
   );
 }

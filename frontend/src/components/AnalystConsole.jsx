@@ -151,7 +151,7 @@ export default function AnalystConsole() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="h-8 w-8 rounded-lg grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-5 w-5" /></span>
-            <div><div className="font-[Space_Grotesk] font-bold leading-none">Omnivest</div><div className="text-[10px] uppercase tracking-widest text-[#6B6480]">Analyst console</div></div>
+            <div><div className="font-[Inter] font-bold leading-none">Omnivest</div><div className="text-[10px] uppercase tracking-widest text-[#6B6480]">Analyst console</div></div>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-[#6B6480] hidden sm:inline">{user?.name}</span>

@@ -46,7 +46,7 @@ function StatStrip({ stats, testid }) {
     <div data-testid={testid} className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {stats.map((s, i) => (
         <div key={i} className="rounded-2xl border border-[#E8E1F0] bg-white px-5 py-6 text-center">
-          <div className="text-2xl md:text-3xl font-bold text-[#1A1030] font-[Space_Grotesk]">{s.value}</div>
+          <div className="text-2xl md:text-3xl font-bold text-[#1A1030] font-[Inter]">{s.value}</div>
           <div className="mt-1 text-xs font-medium uppercase tracking-wide text-[#6B6480]">{s.label}</div>
         </div>
       ))}
@@ -96,7 +96,7 @@ export default function AboutPage() {
       <section className="relative overflow-hidden text-white" style={{ background: hero.bgColor || '#6C2BD9' }} data-testid="about-hero">
         <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(600px 300px at 85% 20%, rgba(255,255,255,0.5), transparent)' }} />
         <div className="container-x relative py-20 md:py-28 max-w-4xl">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] font-[Space_Grotesk]">{hero.headline}</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] font-[Inter]">{hero.headline}</h1>
           <div className="mt-6 space-y-4 max-w-2xl">
             {(hero.body || []).map((para, i) => (
               <p key={i} className="text-base md:text-lg text-white/85 leading-relaxed">{para}</p>
@@ -109,7 +109,7 @@ export default function AboutPage() {
       {vis.story !== false && (
         <section className="container-x py-16 md:py-24 text-center" data-testid="about-story">
           <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6C2BD9]">About Omnivest</div>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">{story.heading || 'Our Story'}</h2>
+          <h2 className="mt-3 text-3xl md:text-4xl font-bold text-[#1A1030] font-[Inter]">{story.heading || 'Our Story'}</h2>
           {story.intro && <p className="mt-4 max-w-2xl mx-auto text-base text-[#6B6480] leading-relaxed">{story.intro}</p>}
           <div className="mt-10 max-w-4xl mx-auto">
             <StatStrip stats={story.stats} testid="about-story-stats" />
@@ -121,7 +121,7 @@ export default function AboutPage() {
       {vis.teamIntro !== false && (teamIntro.heading || (teamIntro.paragraphs || []).length > 0) && (
         <section className="bg-[#F7F4FB] border-y border-[#EEE9F6]" data-testid="about-team-intro">
           <div className="container-x py-16 md:py-20 max-w-3xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">{teamIntro.heading}</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Inter]">{teamIntro.heading}</h2>
             <div className="mt-5 space-y-4">
               {(teamIntro.paragraphs || []).map((p, i) => (
                 <p key={i} className="text-base text-[#475569] leading-relaxed">{p}</p>
@@ -134,7 +134,7 @@ export default function AboutPage() {
       {/* Section 4 — Founders */}
       {vis.founders !== false && founders.length > 0 && (
         <section className="container-x py-16 md:py-24" data-testid="about-founders">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">Our Founders</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Inter]">Our Founders</h2>
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {founders.map((f) => <PersonCard key={f.id} p={f} kind="founders" testid="founder-card" />)}
           </div>
@@ -145,7 +145,7 @@ export default function AboutPage() {
       {vis.team !== false && (team.length > 0 || teamStats.length > 0) && (
         <section className="bg-[#F7F4FB] border-y border-[#EEE9F6]" data-testid="about-team">
           <div className="container-x py-16 md:py-24">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">Our Team</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Inter]">Our Team</h2>
             {team.length > 0 && (
               <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {team.map((m) => <PersonCard key={m.id} p={m} kind="team" testid="team-card" />)}
@@ -163,7 +163,7 @@ export default function AboutPage() {
       {/* Section 6a — Investors */}
       {vis.investors === true && (
         <section className="container-x py-16 md:py-24 text-center" data-testid="about-investors">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk]">{investors.heading || 'Our Investors'}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Inter]">{investors.heading || 'Our Investors'}</h2>
           {investors.intro && <p className="mt-4 max-w-2xl mx-auto text-base text-[#6B6480]">{investors.intro}</p>}
           {(investors.logos || []).length > 0 && (
             <div className="mt-10 flex flex-wrap items-center justify-center gap-8">
@@ -190,7 +190,7 @@ export default function AboutPage() {
       {vis.contacts !== false && contacts.length > 0 && (
         <section className={`${vis.investors === true ? 'bg-[#F7F4FB] border-t border-[#EEE9F6]' : ''}`} data-testid="about-contacts">
           <div className="container-x py-16 md:py-24">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Space_Grotesk] text-center">Get in touch</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1A1030] font-[Inter] text-center">Get in touch</h2>
             <div className="mt-10 grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {contacts.map((c) => (
                 <div key={c.id} data-testid="contact-card" className="rounded-2xl border border-[#E8E1F0] bg-white p-6">

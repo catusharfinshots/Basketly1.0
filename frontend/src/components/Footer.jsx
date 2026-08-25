@@ -55,7 +55,7 @@ export default function Footer() {
               <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg grad-card text-white">
                 <img src={omniMark} alt="" className="h-5 w-5" />
               </span>
-              <span className="font-[Space_Grotesk] text-lg font-bold">Omnivest</span>
+              <span className="font-[Inter] text-lg font-bold">Omnivest</span>
             </Link>
             <p className="mt-4 text-sm text-[#64748B] max-w-xs">
               Money at work — expert-managed model portfolios, AIFs and advisory, invested from your own broker account. Demo build — simulated data, not financial advice.

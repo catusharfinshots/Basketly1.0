@@ -228,7 +228,7 @@ export default function BasketDetail() {
       <Dialog open={investOpen} onOpenChange={setInvestOpen}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-[Space_Grotesk]">Invest in {basket.name}</DialogTitle>
+            <DialogTitle className="font-[Inter]">Invest in {basket.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -255,7 +255,7 @@ export default function BasketDetail() {
       <Dialog open={sipOpen} onOpenChange={setSipOpen}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-[Space_Grotesk]">Start SIP in {basket.name}</DialogTitle>
+            <DialogTitle className="font-[Inter]">Start SIP in {basket.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>

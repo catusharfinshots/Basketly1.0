@@ -350,7 +350,7 @@ export default function AdminPage() {
           <div className="flex items-center gap-3">
             <span className="h-8 w-8 rounded-lg grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-5 w-5" /></span>
             <div>
-              <div className="font-[Space_Grotesk] text-sm font-bold">Omnivest</div>
+              <div className="font-[Inter] text-sm font-bold">Omnivest</div>
               <div className="text-[10px] uppercase tracking-widest text-[#6C2BD9] font-bold">Owner console</div>
             </div>
           </div>

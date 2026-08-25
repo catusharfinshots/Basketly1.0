@@ -23,7 +23,7 @@
 
 .bk-home .hero{background:radial-gradient(1000px 480px at 50% -160px,#EADCFB 0%,transparent 70%),linear-gradient(180deg,#FBF8FF,#fff);overflow:hidden}
 .bk-home .hero-inner{padding:72px 0 40px;text-align:left}
-.bk-home .hero h1{font-size:60px;line-height:1.02;letter-spacing:-.03em;margin:14px 0 16px;font-weight:800}
+.bk-home .hero h1{font-size:60px;line-height:1.02;letter-spacing:-.01em;margin:14px 0 16px;font-weight:700}
 .bk-home .hero .lead{font-size:20px;color:var(--muted);max-width:560px;margin:0}
 .bk-home .hero-cta{display:flex;gap:12px;justify-content:flex-start;margin:28px 0 18px;flex-wrap:wrap}
 .bk-home .ratings{display:flex;gap:22px;justify-content:flex-start;color:var(--muted);font-size:14px;flex-wrap:wrap}
@@ -69,12 +69,12 @@
 .bk-home .h-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2))}
 
 .bk-home .band{padding:64px 0 8px}
-.bk-home .band h2{font-size:40px;letter-spacing:-.02em;margin:0;font-weight:800;max-width:none}
+.bk-home .band h2{font-size:40px;letter-spacing:-.01em;margin:0;font-weight:700;max-width:none}
 @media(max-width:820px){.bk-home .band h2{font-size:28px}}
 
 .bk-home .hiw-head{text-align:center;padding:56px 0 22px}
 .bk-home .hiw-head .e{color:var(--brand);font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
-.bk-home .hiw-head h2{font-size:44px;line-height:1.05;letter-spacing:-.03em;margin:12px 0 0;font-weight:800}
+.bk-home .hiw-head h2{font-size:44px;line-height:1.05;letter-spacing:-.01em;margin:12px 0 0;font-weight:700}
 @media(max-width:640px){.bk-home .hiw-head h2{font-size:30px}}
 .bk-home .hiw-stack{--peek:56px;--pin-top:calc(var(--header-h) + 16px);max-width:1080px;margin:0 auto;padding:0 24px 22vh}
 .bk-home .hiw-card{
@@ -94,7 +94,7 @@
 .bk-home .hiw-body{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;padding:36px 40px 44px}
 .bk-home .hiw-copy .k{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 .bk-home .hiw-card.c0 .hiw-copy .k{color:var(--brand)} .bk-home .hiw-card.c1 .hiw-copy .k{color:var(--teal)} .bk-home .hiw-card.c2 .hiw-copy .k{color:var(--blue)}
-.bk-home .hiw-copy h3{font-size:32px;line-height:1.12;letter-spacing:-.02em;margin:10px 0 18px;font-weight:800}
+.bk-home .hiw-copy h3{font-size:32px;line-height:1.12;letter-spacing:-.01em;margin:10px 0 18px;font-weight:700}
 .bk-home .hiw-copy ul{list-style:none;padding:0;margin:0 0 22px}
 .bk-home .hiw-copy li{position:relative;padding-left:28px;margin-bottom:12px;color:var(--muted);font-size:15px}
 .bk-home .hiw-copy li::before{content:"\2713";position:absolute;left:0;top:0;font-weight:800}
@@ -133,7 +133,7 @@
 .bk-home .feat{padding:56px 0;border-top:1px solid var(--line-2)}
 .bk-home .feat-inner{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 .bk-home .feat.rev .feat-inner{direction:rtl}.bk-home .feat.rev .feat-copy,.bk-home .feat.rev .feat-visual{direction:ltr}
-.bk-home .feat h2{font-size:34px;line-height:1.12;letter-spacing:-.02em;margin:10px 0 18px;font-weight:800}
+.bk-home .feat h2{font-size:34px;line-height:1.12;letter-spacing:-.01em;margin:10px 0 18px;font-weight:700}
 .bk-home .feat ul{list-style:none;padding:0;margin:0 0 22px}
 .bk-home .feat li{position:relative;padding-left:28px;margin-bottom:12px;color:var(--muted);font-size:15px}
 .bk-home .feat li::before{content:"\2713";position:absolute;left:0;top:0;color:var(--brand);font-weight:800}
@@ -165,7 +165,7 @@
 .bk-home .trust{background:radial-gradient(800px 400px at 50% 0,#241452,transparent),var(--ink-dark);color:#fff;padding:64px 0;margin-top:24px}
 .bk-home .trust .head{text-align:center;margin-bottom:40px}
 .bk-home .trust .head .e{color:#B9A6E6;font-size:14px;font-weight:600}
-.bk-home .trust .head h2{font-size:34px;margin:6px 0 0;font-weight:800;letter-spacing:-.02em}
+.bk-home .trust .head h2{font-size:34px;margin:6px 0 0;font-weight:700;letter-spacing:-.01em}
 .bk-home .shield{height:96px;width:96px;margin:0 auto 36px;border-radius:20px;background:linear-gradient(135deg,#8A63E8,#B79BFF);display:grid;place-items:center;font-size:44px;box-shadow:0 16px 44px rgba(123,79,232,.5)}
 .bk-home .trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
 .bk-home .tc h4{margin:0 0 8px;font-size:16px;display:flex;align-items:center;gap:8px}
@@ -174,7 +174,7 @@
 
 .bk-home .love{padding:64px 0}
 .bk-home .love .eyebrow{margin-bottom:6px}
-.bk-home .love h2{font-size:34px;margin:0 0 28px;font-weight:800;letter-spacing:-.02em}
+.bk-home .love h2{font-size:34px;margin:0 0 28px;font-weight:700;letter-spacing:-.01em}
 .bk-home .tscroll{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
 .bk-home .tcard{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:210px}
 .bk-home .tcard p{font-size:14px;margin:0 0 16px;color:var(--ink)}
@@ -187,7 +187,7 @@
 /* FAQ section */
 .bk-home .faq-sec{padding:72px 0;background:#fff}
 .bk-home .faq-sec .eyebrow{color:#6C2BD9;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.08em}
-.bk-home .faq-sec h2{font-size:36px;font-weight:800;letter-spacing:-.02em;margin:8px 0 28px}
+.bk-home .faq-sec h2{font-size:36px;font-weight:700;letter-spacing:-.01em;margin:8px 0 28px}
 .bk-home .faq-list{max-width:820px;display:flex;flex-direction:column;gap:12px}
 .bk-home .faq-item{border:1px solid #E8E1F0;border-radius:16px;background:#FCFBFE;overflow:hidden;transition:border-color .2s}
 .bk-home .faq-item.open{border-color:#D8C7F1}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -19,6 +19,9 @@ html, body {
 body {
     margin: 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background: #ffffff;
@@ -71,10 +74,11 @@ code {
     }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: 'ss01', 'cv11';
+    font-feature-settings: 'liga' 1, 'calt' 1;
+    font-optical-sizing: auto;
     }
   h1, h2, h3, h4 {
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     letter-spacing: -0.01em;
   }
 }
@@ -120,7 +124,7 @@ code {
     background: linear-gradient(135deg, #F7F4FB 0%, #FFFFFF 100%);
   }
   .num {
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-variant-numeric: tabular-nums;
   }
   .noise-overlay {

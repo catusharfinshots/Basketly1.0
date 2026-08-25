@@ -37,7 +37,7 @@ export default function LoginPage() {
         <div>
           <Link to="/" className="flex items-center gap-2">
             <span className="h-10 w-10 rounded-xl grad-card text-white grid place-items-center"><img src={omniMark} alt="" className="h-6 w-6" /></span>
-            <span className="font-[Space_Grotesk] text-xl font-bold">Omnivest</span>
+            <span className="font-[Inter] text-xl font-bold">Omnivest</span>
           </Link>
           <h1 className="mt-8 text-4xl lg:text-5xl font-bold max-w-lg">Welcome back.</h1>
           <p className="mt-4 text-[#64748B] max-w-md">Sign in to see your model portfolios, SIPs, and holdings.</p>

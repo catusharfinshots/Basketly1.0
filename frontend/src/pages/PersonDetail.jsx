@@ -71,7 +71,7 @@ export default function PersonDetail({ kind = 'founders' }) {
         </div>
 
         <div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1A1030] font-[Space_Grotesk]">{person.name}</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1A1030] font-[Inter]">{person.name}</h1>
           <div className="mt-2 text-base md:text-lg font-semibold text-[#6C2BD9]">{person.role}</div>
 
           <div className="mt-6 space-y-4 text-[15px] md:text-base leading-relaxed text-[#475569]">

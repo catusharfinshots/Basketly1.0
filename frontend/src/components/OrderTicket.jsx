@@ -136,7 +136,7 @@ export default function OrderTicket({ open, onOpenChange, initialSymbol, initial
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[10px] uppercase tracking-widest font-bold opacity-90">{txn === 'BUY' ? 'BUY' : 'SELL'} \u00b7 {product} \u00b7 {exchange}</div>
-              <div className="font-[Space_Grotesk] text-2xl font-bold mt-1">{symbol ? symbol.toUpperCase() : 'Place order'}</div>
+              <div className="font-[Inter] text-2xl font-bold mt-1">{symbol ? symbol.toUpperCase() : 'Place order'}</div>
               <div className="text-xs mt-1 opacity-90">Zerodha \u00b7 Kite \u00b7 {kite.profile?.user_id_kite}</div>
             </div>
             <button onClick={() => setTxn(t => t === 'BUY' ? 'SELL' : 'BUY')} className="h-9 w-9 rounded-full bg-white/15 backdrop-blur grid place-items-center hover:bg-white/25" title="Toggle Buy/Sell">

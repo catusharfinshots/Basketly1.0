@@ -63,7 +63,7 @@ export default function KiteCallback() {
     <div className="min-h-screen grad-hero grid place-items-center px-6">
       <div className="surface p-8 max-w-md w-full text-center">
         <div className="h-12 w-12 rounded-2xl grad-card text-white grid place-items-center mx-auto"><img src={omniMark} alt="" className="h-7 w-7" /></div>
-        <div className="mt-4 font-[Space_Grotesk] text-xl font-bold">Omnivest · Kite Connect</div>
+        <div className="mt-4 font-[Inter] text-xl font-bold">Omnivest · Kite Connect</div>
 
         {state === 'processing' && (
           <div className="mt-6 flex flex-col items-center gap-3">
