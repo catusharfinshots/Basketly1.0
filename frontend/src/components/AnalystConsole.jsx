@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Plus, Trash2, Save, Send, ArrowLeft, Pencil, LogOut, Upload, FileText } from 'lucide-react';
+import { Plus, Trash2, Save, Send, ArrowLeft, Pencil, LogOut, Upload, FileText, Search, Loader2, TrendingUp } from 'lucide-react';
 import omniMark from '../assets/omnivest-mark-white.svg';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -13,10 +13,18 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const BLANK = {
   name: '', subtitle: '', strategy: 'thematic', risk: 'Medium', minAmount: 5000,
   subscription: 'Free', feeAmount: 0, feeCycle: 'monthly', methodology: '', rebalanceFreq: 'Quarterly',
-  constituents: [{ symbol: '', name: '', type: 'Stock', weight: 0 }],
+  constituents: [{ symbol: '', name: '', exchange: 'NSE', type: 'Stock', weight: 0 }],
   returns: { cagr: 0, y1: 0, y3: 0, y5: 0 },
   factsheet: { objective: '', whoShouldInvest: '', riskFactors: '', pdfName: '' },
   factsheet_pdf: null,
+};
+
+const OPTION_DEFAULTS = {
+  strategy: ['asset-allocation', 'sectoral', 'thematic', 'smart-beta', 'model-based'],
+  risk: ['Low', 'Medium', 'High'],
+  rebalanceFreq: ['Monthly', 'Quarterly', 'Half-yearly', 'Yearly'],
+  subscription: ['Free', 'Paid'],
+  constituentType: ['Stock', 'ETF'],
 };
 
 const STATUS_STYLES = {
@@ -25,6 +33,56 @@ const STATUS_STYLES = {
   approved: 'bg-[#DCFCE7] text-[#0E9F5E]',
   rejected: 'bg-[#FEE2E2] text-[#DC2626]',
 };
+
+function InstrumentPicker({ value, onType, onPick, token }) {
+  const [q, setQ] = useState(value || '');
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { setQ(value || ''); }, [value]);
+  useEffect(() => {
+    const term = (q || '').trim();
+    if (term.length < 1) { setResults([]); return; }
+    const t = setTimeout(async () => {
+      setBusy(true);
+      try {
+        const { data } = await axios.get(`${API}/market/instruments/search?q=${encodeURIComponent(term)}`, { headers: { Authorization: `Bearer ${token}` } });
+        setResults(data.results || []);
+      } catch { setResults([]); }
+      finally { setBusy(false); }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [q, token]);
+  return (
+    <div className="relative">
+      <div className="relative">
+        <Search className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-[#9A93AD]" />
+        <Input
+          data-testid="constituent-symbol-input"
+          value={q}
+          onChange={(e) => { const v = e.target.value.toUpperCase(); setQ(v); onType(v); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          className="h-9 pl-7" placeholder="Search symbol" />
+        {busy && <Loader2 className="h-3.5 w-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-[#9A93AD] animate-spin" />}
+      </div>
+      {open && results.length > 0 && (
+        <div data-testid="instrument-results" className="absolute z-40 mt-1 w-[280px] max-h-60 overflow-auto rounded-xl border border-[#E8E1F0] bg-white shadow-lg">
+          {results.map((r) => (
+            <button
+              key={`${r.exchange}:${r.tradingsymbol}`}
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); onPick(r); setOpen(false); }}
+              className="w-full text-left px-3 py-2 hover:bg-[#F7F4FB] border-b border-[#F1E7FE] last:border-0">
+              <div className="text-sm font-semibold text-[#1A1030]">{r.tradingsymbol} <span className="text-[10px] font-bold text-[#6C2BD9]">{r.exchange}</span></div>
+              <div className="text-xs text-[#6B6480] truncate">{r.name || r.instrument_type}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AnalystConsole() {
   const { user, token, logout } = useAuth();
@@ -38,6 +96,12 @@ export default function AnalystConsole() {
   const [busy, setBusy] = useState(false);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [errors, setErrors] = useState([]);
+  const [options, setOptions] = useState(OPTION_DEFAULTS);
+  const [prices, setPrices] = useState({});        // symbol -> {ltp, change_pct, available}
+  const [pricesBusy, setPricesBusy] = useState(false);
+  const [retPeriod, setRetPeriod] = useState('1Y');
+  const [retBusy, setRetBusy] = useState(false);
+  const [marketNote, setMarketNote] = useState('');
 
   const countWords = (s) => ((s || '').trim() ? s.trim().split(/\s+/).length : 0);
   const capWords = (s, max) => {
@@ -92,6 +156,11 @@ export default function AnalystConsole() {
   }, [token]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    axios.get(`${API}/listing-options`).then(({ data }) => {
+      if (data?.options) setOptions({ ...OPTION_DEFAULTS, ...data.options });
+    }).catch(() => {});
+  }, []);
 
   const saveProfile = async () => {
     setBusy(true);
@@ -102,11 +171,11 @@ export default function AnalystConsole() {
     } catch { toast.error('Could not save profile'); } finally { setBusy(false); }
   };
 
-  const startNew = () => { setForm(BLANK); setEditingId(null); setErrors([]); setView('form'); };
+  const startNew = () => { setForm(BLANK); setEditingId(null); setErrors([]); setPrices({}); setMarketNote(''); setView('form'); };
   const startEdit = (p) => {
-    setForm({ ...BLANK, ...p, returns: { ...BLANK.returns, ...(p.returns || {}) }, factsheet: { ...BLANK.factsheet, ...(p.factsheet || {}) }, constituents: p.constituents?.length ? p.constituents : BLANK.constituents });
+    setForm({ ...BLANK, ...p, returns: { ...BLANK.returns, ...(p.returns || {}) }, factsheet: { ...BLANK.factsheet, ...(p.factsheet || {}) }, constituents: p.constituents?.length ? p.constituents.map((c) => ({ exchange: 'NSE', ...c })) : BLANK.constituents });
     setEditingId(p.id);
-    setErrors([]);
+    setErrors([]); setPrices({}); setMarketNote('');
     setView('form');
   };
 
@@ -201,6 +270,56 @@ export default function AnalystConsole() {
   const setC = (i, key, val) => setForm((f) => { const a = [...f.constituents]; a[i] = { ...a[i], [key]: val }; return { ...f, constituents: a }; });
   const totalWeight = form.constituents.reduce((s, c) => s + (Number(c.weight) || 0), 0);
 
+  const sym = (c) => `${(c.exchange || 'NSE')}:${(c.symbol || '').trim().toUpperCase()}`;
+
+  const fetchLivePrices = async () => {
+    const list = form.constituents.filter((c) => (c.symbol || '').trim());
+    if (!list.length) { toast.error('Add at least one symbol first'); return; }
+    setPricesBusy(true); setMarketNote('');
+    try {
+      const { data } = await axios.post(`${API}/market/quote`, { symbols: list.map(sym) }, auth);
+      const map = {};
+      (data.quotes || []).forEach((q) => { map[q.symbol] = q; });
+      setPrices(map);
+      const missing = (data.quotes || []).filter((q) => !q.available).length;
+      if (missing) toast.info(`${missing} symbol(s) had no live data`);
+      else toast.success('Live prices updated');
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      if (e?.response?.status === 503) setMarketNote(d || 'Market data not connected. Ask an admin to connect Kite.');
+      toast.error(typeof d === 'string' ? d : 'Could not fetch live prices');
+    } finally { setPricesBusy(false); }
+  };
+
+  const computeLiveReturns = async () => {
+    const list = form.constituents.filter((c) => (c.symbol || '').trim() && Number(c.weight) > 0);
+    if (!list.length) { toast.error('Add symbols with weights first'); return; }
+    setRetBusy(true); setMarketNote('');
+    try {
+      const results = await Promise.all(list.map(async (c) => {
+        try {
+          const { data } = await axios.post(`${API}/market/period-return`, { symbol: sym(c), period: retPeriod }, auth);
+          return { weight: Number(c.weight) || 0, ...data };
+        } catch (e) {
+          if (e?.response?.status === 503) throw e;
+          return null;
+        }
+      }));
+      const ok = results.filter(Boolean);
+      if (!ok.length) { toast.error('No return data available for these symbols'); return; }
+      const wsum = ok.reduce((s, r) => s + r.weight, 0) || 1;
+      const wRet = ok.reduce((s, r) => s + r.weight * (r.return_pct || 0), 0) / wsum;
+      const wCagr = ok.reduce((s, r) => s + r.weight * (r.cagr_pct || 0), 0) / wsum;
+      const field = { '1Y': 'y1', '3Y': 'y3', '5Y': 'y5' }[retPeriod];
+      setForm((f) => ({ ...f, returns: { ...f.returns, cagr: Number(wCagr.toFixed(2)), ...(field ? { [field]: Number(wRet.toFixed(2)) } : {}) } }));
+      toast.success(`Filled returns from live data (${ok.length}/${list.length} holdings)`);
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      if (e?.response?.status === 503) setMarketNote(d || 'Market data not connected. Ask an admin to connect Kite.');
+      toast.error(typeof d === 'string' ? d : 'Could not compute returns');
+    } finally { setRetBusy(false); }
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F4FB]">
       <header className="sticky top-0 z-30 bg-white border-b border-[#E8E1F0]">
@@ -244,23 +363,45 @@ export default function AnalystConsole() {
             </div>
             <div className="mt-6 space-y-3">
               {portfolios.length === 0 && <div className="surface p-10 text-center text-[#6B6480]">No portfolios yet. Click “New portfolio” to create your first listing.</div>}
-              {portfolios.map((p) => (
-                <div key={p.id} className="surface p-4 flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-[#1A1030] truncate">{p.name}</span>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${STATUS_STYLES[p.status] || STATUS_STYLES.draft}`}>{p.status}</span>
+              {portfolios.map((p) => {
+                const missing = (p.status === 'draft' || p.status === 'rejected') ? validateForSubmit({ ...BLANK, ...p, returns: { ...BLANK.returns, ...(p.returns || {}) }, factsheet: { ...BLANK.factsheet, ...(p.factsheet || {}) } }) : [];
+                return (
+                <div key={p.id} data-testid="portfolio-row" className="surface p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-[#1A1030] truncate">{p.name}</span>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${STATUS_STYLES[p.status] || STATUS_STYLES.draft}`}>{p.status}</span>
+                      </div>
+                      <div className="text-xs text-[#6B6480] truncate">{p.subtitle || '—'} · {p.constituents?.length || 0} holdings · min ₹{Number(p.minAmount).toLocaleString('en-IN')}</div>
+                      {p.status === 'rejected' && p.review_note && <div className="text-xs text-[#DC2626] mt-1">Admin note: {p.review_note}</div>}
                     </div>
-                    <div className="text-xs text-[#6B6480] truncate">{p.subtitle || '—'} · {p.constituents?.length || 0} holdings · min ₹{Number(p.minAmount).toLocaleString('en-IN')}</div>
-                    {p.status === 'rejected' && p.review_note && <div className="text-xs text-[#DC2626] mt-1">Admin note: {p.review_note}</div>}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {(p.status === 'draft' || p.status === 'rejected') && <button onClick={() => submitForReview(p.id)} className="btn-outline text-xs"><Send className="h-3.5 w-3.5" /> Submit</button>}
+                      <button onClick={() => startEdit(p)} className="btn-ghost text-xs"><Pencil className="h-3.5 w-3.5" /> Edit</button>
+                      <button onClick={() => remove(p.id)} className="h-8 w-8 grid place-items-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2]"><Trash2 className="h-4 w-4" /></button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {(p.status === 'draft' || p.status === 'rejected') && <button onClick={() => submitForReview(p.id)} className="btn-outline text-xs"><Send className="h-3.5 w-3.5" /> Submit</button>}
-                    <button onClick={() => startEdit(p)} className="btn-ghost text-xs"><Pencil className="h-3.5 w-3.5" /> Edit</button>
-                    <button onClick={() => remove(p.id)} className="h-8 w-8 grid place-items-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2]"><Trash2 className="h-4 w-4" /></button>
-                  </div>
+                  {(p.status === 'draft' || p.status === 'rejected') && (
+                    <div data-testid="draft-checklist" className="mt-3 rounded-lg border border-[#E8E1F0] bg-[#FAFAFE] px-3 py-2.5">
+                      {missing.length === 0 ? (
+                        <div className="text-xs font-medium text-[#0E9F5E]">✓ Ready to submit — all fields complete.</div>
+                      ) : (
+                        <details>
+                          <summary className="cursor-pointer text-xs font-semibold text-[#B45309] list-none flex items-center gap-1">
+                            <span className="inline-grid place-items-center h-4 w-4 rounded-full bg-[#B45309] text-white text-[9px]">{missing.length}</span>
+                            {missing.length} item{missing.length > 1 ? 's' : ''} left before you can submit
+                          </summary>
+                          <ul className="mt-2 space-y-1 text-[11px] text-[#6B6480] list-disc pl-5">
+                            {missing.map((m, i) => <li key={i}>{m}</li>)}
+                          </ul>
+                        </details>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
@@ -284,23 +425,23 @@ export default function AnalystConsole() {
                 </div>
                 <div><Label>Strategy</Label>
                   <select value={form.strategy} onChange={(e) => setForm({ ...form, strategy: e.target.value })} className="mt-1.5 h-10 w-full rounded-lg border border-[#E8E1F0] px-3 text-sm">
-                    {['asset-allocation', 'sectoral', 'thematic', 'smart-beta', 'model-based'].map((s) => <option key={s} value={s}>{s}</option>)}
+                    {options.strategy.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div><Label>Risk / volatility</Label>
                   <select value={form.risk} onChange={(e) => setForm({ ...form, risk: e.target.value })} className="mt-1.5 h-10 w-full rounded-lg border border-[#E8E1F0] px-3 text-sm">
-                    {['Low', 'Medium', 'High'].map((s) => <option key={s} value={s}>{s}</option>)}
+                    {options.risk.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div><Label>Min. investment (₹)</Label><Input type="number" value={form.minAmount} onChange={(e) => setForm({ ...form, minAmount: e.target.value })} className="mt-1.5 h-10" /></div>
                 <div><Label>Rebalance frequency</Label>
                   <select value={form.rebalanceFreq} onChange={(e) => setForm({ ...form, rebalanceFreq: e.target.value })} className="mt-1.5 h-10 w-full rounded-lg border border-[#E8E1F0] px-3 text-sm">
-                    {['Monthly', 'Quarterly', 'Half-yearly', 'Yearly'].map((s) => <option key={s} value={s}>{s}</option>)}
+                    {options.rebalanceFreq.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div><Label>Subscription</Label>
                   <select value={form.subscription} onChange={(e) => setForm({ ...form, subscription: e.target.value })} className="mt-1.5 h-10 w-full rounded-lg border border-[#E8E1F0] px-3 text-sm">
-                    {['Free', 'Paid'].map((s) => <option key={s} value={s}>{s}</option>)}
+                    {options.subscription.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 {form.subscription === 'Paid' && <div><Label>Fee (₹ / {form.feeCycle})</Label><Input type="number" value={form.feeAmount} onChange={(e) => setForm({ ...form, feeAmount: e.target.value })} className="mt-1.5 h-10" /></div>}
@@ -308,31 +449,65 @@ export default function AnalystConsole() {
             </section>
 
             <section className="surface p-6 mt-4">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
                 <div className="text-sm font-semibold">Constituents & weights</div>
-                <span data-testid="weight-total" className={`text-xs font-semibold ${Math.round(totalWeight) === 100 ? 'text-[#0E9F5E]' : 'text-[#B45309]'}`}>Total: {totalWeight}% {Math.round(totalWeight) === 100 ? '✓' : '(must be 100%)'}</span>
+                <div className="flex items-center gap-3">
+                  <button type="button" data-testid="fetch-prices-btn" onClick={fetchLivePrices} disabled={pricesBusy} className="btn-outline text-xs">
+                    {pricesBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <TrendingUp className="h-3.5 w-3.5" />} Fetch live prices
+                  </button>
+                  <span data-testid="weight-total" className={`text-xs font-semibold ${Math.round(totalWeight) === 100 ? 'text-[#0E9F5E]' : 'text-[#B45309]'}`}>Total: {totalWeight}% {Math.round(totalWeight) === 100 ? '✓' : '(must be 100%)'}</span>
+                </div>
               </div>
+              {marketNote && <div data-testid="market-note" className="text-xs text-[#B45309] bg-[#FFFAEB] border border-[#FDE68A] rounded-lg px-3 py-1.5 mb-2">{marketNote}</div>}
               <div className="space-y-2 mt-2">
-                {form.constituents.map((c, i) => (
-                  <div key={i} className="grid grid-cols-2 md:grid-cols-[1fr_1.4fr_0.9fr_0.7fr_auto] gap-2 items-center">
-                    <Input value={c.symbol} onChange={(e) => setC(i, 'symbol', e.target.value)} className="h-9" placeholder="Symbol" />
+                {form.constituents.map((c, i) => {
+                  const pk = `${(c.exchange || 'NSE')}:${(c.symbol || '').trim().toUpperCase()}`;
+                  const price = prices[pk];
+                  return (
+                  <div key={i} className="grid grid-cols-2 md:grid-cols-[1.1fr_1.3fr_0.7fr_0.8fr_0.6fr_auto] gap-2 items-center">
+                    <InstrumentPicker
+                      value={c.symbol}
+                      token={token}
+                      onType={(v) => setC(i, 'symbol', v)}
+                      onPick={(r) => setForm((f) => { const a = [...f.constituents]; a[i] = { ...a[i], symbol: r.tradingsymbol, name: r.name || a[i].name, exchange: r.exchange }; return { ...f, constituents: a }; })}
+                    />
                     <Input value={c.name} onChange={(e) => setC(i, 'name', e.target.value)} className="h-9" placeholder="Name" />
-                    <select value={c.type} onChange={(e) => setC(i, 'type', e.target.value)} className="h-9 rounded-lg border border-[#E8E1F0] px-2 text-sm"><option>Stock</option><option>ETF</option></select>
+                    <select value={c.exchange || 'NSE'} onChange={(e) => setC(i, 'exchange', e.target.value)} className="h-9 rounded-lg border border-[#E8E1F0] px-2 text-sm"><option>NSE</option><option>BSE</option></select>
+                    <select value={c.type} onChange={(e) => setC(i, 'type', e.target.value)} className="h-9 rounded-lg border border-[#E8E1F0] px-2 text-sm">{options.constituentType.map((t) => <option key={t}>{t}</option>)}</select>
                     <Input type="number" value={c.weight} onChange={(e) => setC(i, 'weight', e.target.value)} className="h-9" placeholder="Wt%" />
                     <button onClick={() => setForm({ ...form, constituents: form.constituents.filter((_, j) => j !== i) })} className="h-8 w-8 grid place-items-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2]"><Trash2 className="h-4 w-4" /></button>
+                    {price && (
+                      <div data-testid="constituent-price" className="col-span-2 md:col-span-6 -mt-1 text-[11px] text-[#6B6480]">
+                        {price.available
+                          ? <span>LTP <span className="font-semibold text-[#1A1030]">₹{Number(price.ltp).toLocaleString('en-IN')}</span> {price.change_pct != null && <span className={price.change_pct >= 0 ? 'text-[#0E9F5E]' : 'text-[#DC2626]'}>({price.change_pct >= 0 ? '+' : ''}{price.change_pct.toFixed(2)}%)</span>}</span>
+                          : <span className="text-[#B45309]">No live data for {pk}</span>}
+                      </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
-              <button onClick={() => setForm({ ...form, constituents: [...form.constituents, { symbol: '', name: '', type: 'Stock', weight: 0 }] })} className="btn-outline text-xs mt-3"><Plus className="h-3.5 w-3.5" /> Add constituent</button>
+              <button onClick={() => setForm({ ...form, constituents: [...form.constituents, { symbol: '', name: '', exchange: 'NSE', type: 'Stock', weight: 0 }] })} className="btn-outline text-xs mt-3"><Plus className="h-3.5 w-3.5" /> Add constituent</button>
             </section>
 
             <section className="surface p-6 mt-4">
-              <div className="text-sm font-semibold mb-3">Returns (%)</div>
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div className="text-sm font-semibold">Returns (%)</div>
+                <div className="flex items-center gap-2">
+                  <select data-testid="return-period" value={retPeriod} onChange={(e) => setRetPeriod(e.target.value)} className="h-9 rounded-lg border border-[#E8E1F0] px-2 text-sm">
+                    {['1Y', '3Y', '5Y'].map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <button type="button" data-testid="compute-returns-btn" onClick={computeLiveReturns} disabled={retBusy} className="btn-outline text-xs">
+                    {retBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <TrendingUp className="h-3.5 w-3.5" />} Auto-fill from live data
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {['cagr', 'y1', 'y3', 'y5'].map((k) => (
                   <div key={k}><Label>{k === 'cagr' ? 'CAGR' : k.toUpperCase()}</Label><Input type="number" value={form.returns[k]} onChange={(e) => setForm({ ...form, returns: { ...form.returns, [k]: e.target.value } })} className="mt-1.5 h-10" /></div>
                 ))}
               </div>
+              <div className="mt-2 text-[11px] text-[#6B6480]">“Auto-fill” computes a weight-weighted return across your holdings over the selected period using live Kite market data, then fills CAGR and the matching year column.</div>
             </section>
 
             <section className="surface p-6 mt-4">

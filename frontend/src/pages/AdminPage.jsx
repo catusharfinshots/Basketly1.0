@@ -3,12 +3,14 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download, Pencil } from 'lucide-react';
+import { LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download, Pencil, TrendingUp, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '../components/ui/alert-dialog';
 import AboutAdmin from '../components/admin/AboutAdmin';
+import MarketDataAdmin from '../components/admin/MarketDataAdmin';
+import DropdownsAdmin from '../components/admin/DropdownsAdmin';
 import omniMark from '../assets/omnivest-mark-white.svg';
 import { toast } from 'sonner';
 
@@ -24,6 +26,8 @@ const NAV = [
   { key: 'leads', label: 'Leads', icon: Inbox },
   { key: 'listings', label: 'Listings (approve)', icon: ClipboardCheck },
   { key: 'partners', label: 'Partner applications', icon: UserPlus },
+  { key: 'market', label: 'Market data (Kite)', icon: TrendingUp },
+  { key: 'dropdowns', label: 'Form dropdowns', icon: SlidersHorizontal },
   { key: 'database', label: 'Database', icon: Database },
   { key: 'settings', label: 'Site settings', icon: Settings },
 ];
@@ -45,6 +49,8 @@ const HEADER = {
   listings: { title: 'Research-analyst listings', desc: 'Approve or reject analyst submissions to publish them live.' },
   invites: { title: 'Analyst invites', desc: 'Invite research analysts to onboard themselves.' },
   partners: { title: 'Partner applications', desc: 'Review research-analyst applications submitted from the website and approve them.' },
+  market: { title: 'Market data (Kite)', desc: 'Connect Zerodha Kite once each trading day to power analyst instrument search, live prices and returns.' },
+  dropdowns: { title: 'Form dropdowns', desc: 'Edit the options analysts pick from when creating a portfolio (strategy, risk, rebalance and more).' },
   database: { title: 'Database', desc: 'Read-only view of your live data. Sensitive fields (passwords, tokens) are redacted.' },
   settings: { title: 'Site settings', desc: 'Legal disclaimer and contact details.' },
 };
@@ -449,6 +455,10 @@ export default function AdminPage() {
               )}
 
               {tab === 'about' && <AboutAdmin token={token} />}
+
+              {tab === 'market' && <MarketDataAdmin token={token} />}
+
+              {tab === 'dropdowns' && <DropdownsAdmin token={token} />}
 
               {tab === 'leads' && (
                 <section className="surface p-6">

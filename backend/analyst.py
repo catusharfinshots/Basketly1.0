@@ -27,6 +27,7 @@ def _now() -> str:
 class Constituent(BaseModel):
     symbol: str = ""
     name: str = ""
+    exchange: str = "NSE"
     type: str = "Stock"
     weight: float = 0
 

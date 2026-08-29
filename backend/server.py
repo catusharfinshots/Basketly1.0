@@ -114,6 +114,14 @@ api_router.include_router(build_about_router(db))
 from managers import build_router as build_managers_router  # noqa: E402
 api_router.include_router(build_managers_router(db))
 
+# Kite market data (shared admin session → instrument search + quotes + returns)
+from market_data import build_router as build_market_router  # noqa: E402
+api_router.include_router(build_market_router(db))
+
+# Admin-editable listing-form dropdown options
+from listing_options import build_router as build_listing_options_router  # noqa: E402
+api_router.include_router(build_listing_options_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

@@ -38,6 +38,28 @@ export default function KiteCallback() {
       notifyParent({ status: 'error', detail: msg });
       return;
     }
+
+    // Market-data (admin) flow — a single shared session, not per-user
+    const flow = sessionStorage.getItem('kite_flow');
+    if (flow === 'market') {
+      sessionStorage.removeItem('kite_flow');
+      const adminToken = localStorage.getItem('basketly-token-v1');
+      axios
+        .post(`${API}/admin/kite/market/exchange`, { request_token: requestToken }, { headers: { Authorization: `Bearer ${adminToken}` } })
+        .then((res) => {
+          setState('success');
+          setDetail(res.data?.kite_user || 'Market data connected');
+          notifyParent({ status: 'success', kite_user: res.data?.kite_user });
+          setTimeout(() => window.close(), 1200);
+        })
+        .catch((err) => {
+          setState('error');
+          setDetail(err?.response?.data?.detail || err.message);
+          notifyParent({ status: 'error', detail: err?.response?.data?.detail });
+        });
+      return;
+    }
+
     if (!userId) {
       setState('error');
       setDetail('No Omnivest session found. Please open this from the Omnivest window.');
