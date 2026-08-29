@@ -85,6 +85,10 @@ publish model portfolios that admins approve to go live.
 - KITE_API_SECRET missing → real broker order placement not fully live.
 
 ## Backlog
-- P1: Factsheet PDF file upload (object storage) alongside structured fields.
+- **29-Aug brief Phase 3 — Analyst Console validations (Aug 2026, VERIFIED iteration_6):** F5.2 subtitle hard-capped at 30 words (live `subtitle-word-count`, `capWords()`); F6.2 total constituent weight must equal exactly 100% (live `weight-total`); F6.3 ALL fields mandatory on submit (name, subtitle, minAmount, methodology, factsheet objective/who/risk, factsheet PDF, returns cagr/y1/y3/y5, each constituent symbol+name+weight>0). Strict validation runs ONLY on "Save & submit" (`save-submit-btn`); "Save draft" (`save-draft-btn`) stays permissive. Errors listed in `submit-errors` panel. Backend gate: `analyst.py::_validate_complete()` + `submit_portfolio` returns 422 `{message, errors}` when incomplete, 200 when complete. Frontend `validateForSubmit()` mirrors it. Reusable pytest: `/app/backend/tests/test_analyst_submit_gate.py`.
+- P1: F5.1 — make ALL listing-form dropdown options admin-editable ("Manage dropdown options").
+- P1: F5.3 & F5.4 — remaining Analyst Console build-out parts from the 29-Aug brief.
+- P2: F6.1 — instrument search via Kite market data (auto NSE/BSE). NEEDS user's Kite API keys.
+- P2: F6.4 — auto-fetch latest close price + compute returns. NEEDS user's Kite API keys.
 - P1: Provide/restore KITE_API_SECRET for real broker order placement.
 - P2: Full functional AIF/Advisory flows beyond lead capture.

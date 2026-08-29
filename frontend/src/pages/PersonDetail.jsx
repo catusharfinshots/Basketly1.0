@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Linkedin, ArrowLeft } from 'lucide-react';
+import Seo from '../components/Seo';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
@@ -54,6 +55,7 @@ export default function PersonDetail({ kind = 'founders' }) {
 
   return (
     <div className="container-x py-12 md:py-16" data-testid="person-detail">
+      <Seo title={person.name} description={`${person.name}${person.role ? ', ' + person.role : ''} at Omnivest.`} />
       <Link to="/about" data-testid="person-back" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6C2BD9] hover:text-[#5320A8]">
         <ArrowLeft className="h-4 w-4" /> Back to About
       </Link>

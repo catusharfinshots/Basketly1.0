@@ -37,6 +37,46 @@ export default function AnalystConsole() {
   const [editingId, setEditingId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [errors, setErrors] = useState([]);
+
+  const countWords = (s) => ((s || '').trim() ? s.trim().split(/\s+/).length : 0);
+  const capWords = (s, max) => {
+    const parts = (s || '').split(/(\s+)/); // keep whitespace tokens for natural typing
+    let words = 0, out = '';
+    for (const t of parts) {
+      if (/\s+/.test(t)) { out += t; continue; }
+      if (t === '') continue;
+      if (words >= max) break;
+      out += t; words += 1;
+    }
+    return out;
+  };
+
+  const validateForSubmit = (f) => {
+    const e = [];
+    if (!f.name.trim()) e.push('Portfolio name is required.');
+    if (!f.subtitle.trim()) e.push('Subtitle is required.');
+    else if (countWords(f.subtitle) > 30) e.push('Subtitle must be 30 words or fewer.');
+    if (!(Number(f.minAmount) > 0)) e.push('Minimum investment must be greater than 0.');
+    if (f.subscription === 'Paid' && !(Number(f.feeAmount) > 0)) e.push('Fee amount is required for paid subscriptions.');
+    if (!f.methodology.trim()) e.push('Methodology is required.');
+    [['objective', 'objective'], ['whoShouldInvest', 'who should invest'], ['riskFactors', 'risk factors']].forEach(([k, label]) => {
+      if (!(f.factsheet?.[k] || '').trim()) e.push(`Factsheet ${label} is required.`);
+    });
+    ['cagr', 'y1', 'y3', 'y5'].forEach((k) => {
+      const v = f.returns?.[k];
+      if (v === '' || v === null || v === undefined || isNaN(Number(v))) e.push(`Returns: ${k === 'cagr' ? 'CAGR' : k.toUpperCase()} is required.`);
+    });
+    if (!f.factsheet_pdf) e.push('Factsheet PDF is required.');
+    if (!f.constituents.length) e.push('Add at least one constituent.');
+    f.constituents.forEach((c, i) => {
+      if (!(c.symbol || '').trim() || !(c.name || '').trim()) e.push(`Constituent ${i + 1}: symbol and name are required.`);
+      if (!(Number(c.weight) > 0)) e.push(`Constituent ${i + 1}: weight must be greater than 0.`);
+    });
+    const total = Math.round(f.constituents.reduce((s, c) => s + (Number(c.weight) || 0), 0));
+    if (f.constituents.length && total !== 100) e.push(`Total allocation must equal exactly 100% (currently ${total}%).`);
+    return e;
+  };
 
   const load = useCallback(async () => {
     try {
@@ -62,10 +102,11 @@ export default function AnalystConsole() {
     } catch { toast.error('Could not save profile'); } finally { setBusy(false); }
   };
 
-  const startNew = () => { setForm(BLANK); setEditingId(null); setView('form'); };
+  const startNew = () => { setForm(BLANK); setEditingId(null); setErrors([]); setView('form'); };
   const startEdit = (p) => {
     setForm({ ...BLANK, ...p, returns: { ...BLANK.returns, ...(p.returns || {}) }, factsheet: { ...BLANK.factsheet, ...(p.factsheet || {}) }, constituents: p.constituents?.length ? p.constituents : BLANK.constituents });
     setEditingId(p.id);
+    setErrors([]);
     setView('form');
   };
 
@@ -97,10 +138,25 @@ export default function AnalystConsole() {
       await axios.post(`${API}/analyst/portfolios/${id}/submit`, {}, auth);
       toast.success('Submitted for admin approval');
       await load();
-    } catch { toast.error('Could not submit'); }
+    } catch (e) {
+      const detail = e?.response?.data?.detail;
+      if (detail && typeof detail === 'object' && Array.isArray(detail.errors)) {
+        toast.error(detail.message || 'Portfolio is incomplete');
+        setErrors(detail.errors);
+      } else {
+        toast.error(typeof detail === 'string' ? detail : 'Could not submit');
+      }
+    }
   };
 
   const saveAndSubmit = async () => {
+    const errs = validateForSubmit(form);
+    setErrors(errs);
+    if (errs.length) {
+      toast.error(`Please fix ${errs.length} issue${errs.length > 1 ? 's' : ''} before submitting`);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      return;
+    }
     const saved = await saveForm();
     const id = editingId || saved?.id;
     if (id) { await submitForReview(id); setView('list'); }
@@ -219,7 +275,13 @@ export default function AnalystConsole() {
               <div className="text-sm font-semibold mb-3">Basics</div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1.5 h-10" /></div>
-                <div><Label>One-line subtitle</Label><Input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} className="mt-1.5 h-10" /></div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label>One-line subtitle</Label>
+                    <span data-testid="subtitle-word-count" className={`text-[11px] font-medium ${countWords(form.subtitle) > 30 ? 'text-[#DC2626]' : 'text-[#6B6480]'}`}>{countWords(form.subtitle)}/30 words</span>
+                  </div>
+                  <Input data-testid="portfolio-subtitle-input" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: capWords(e.target.value, 30) })} className="mt-1.5 h-10" placeholder="Max 30 words" />
+                </div>
                 <div><Label>Strategy</Label>
                   <select value={form.strategy} onChange={(e) => setForm({ ...form, strategy: e.target.value })} className="mt-1.5 h-10 w-full rounded-lg border border-[#E8E1F0] px-3 text-sm">
                     {['asset-allocation', 'sectoral', 'thematic', 'smart-beta', 'model-based'].map((s) => <option key={s} value={s}>{s}</option>)}
@@ -248,7 +310,7 @@ export default function AnalystConsole() {
             <section className="surface p-6 mt-4">
               <div className="flex items-center justify-between mb-1">
                 <div className="text-sm font-semibold">Constituents & weights</div>
-                <span className={`text-xs font-semibold ${Math.round(totalWeight) === 100 ? 'text-[#0E9F5E]' : 'text-[#B45309]'}`}>Total: {totalWeight}%</span>
+                <span data-testid="weight-total" className={`text-xs font-semibold ${Math.round(totalWeight) === 100 ? 'text-[#0E9F5E]' : 'text-[#B45309]'}`}>Total: {totalWeight}% {Math.round(totalWeight) === 100 ? '✓' : '(must be 100%)'}</span>
               </div>
               <div className="space-y-2 mt-2">
                 {form.constituents.map((c, i) => (
@@ -302,9 +364,18 @@ export default function AnalystConsole() {
               </div>
             </section>
 
+            {errors.length > 0 && (
+              <div data-testid="submit-errors" className="surface p-4 mt-4 border border-[#FECACA] bg-[#FEF2F2]">
+                <div className="text-sm font-semibold text-[#DC2626]">Please fix the following before submitting:</div>
+                <ul className="mt-2 space-y-1 text-xs text-[#B91C1C] list-disc pl-5">
+                  {errors.map((msg, i) => <li key={i}>{msg}</li>)}
+                </ul>
+              </div>
+            )}
+
             <div className="sticky bottom-0 bg-[#F7F4FB] py-4 mt-2 flex items-center gap-3">
-              <button onClick={saveForm} disabled={busy} className="btn-outline"><Save className="h-4 w-4" /> Save draft</button>
-              <button onClick={saveAndSubmit} disabled={busy} className="btn-primary"><Send className="h-4 w-4" /> Save & submit for approval</button>
+              <button data-testid="save-draft-btn" onClick={saveForm} disabled={busy} className="btn-outline"><Save className="h-4 w-4" /> Save draft</button>
+              <button data-testid="save-submit-btn" onClick={saveAndSubmit} disabled={busy} className="btn-primary"><Send className="h-4 w-4" /> Save & submit for approval</button>
             </div>
           </div>
         )}

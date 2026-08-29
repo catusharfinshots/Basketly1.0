@@ -110,6 +110,10 @@ api_router.include_router(build_faq_router(db))
 from about import build_router as build_about_router  # noqa: E402
 api_router.include_router(build_about_router(db))
 
+# Basket Managers directory (public + admin), driven by approved partners
+from managers import build_router as build_managers_router  # noqa: E402
+api_router.include_router(build_managers_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

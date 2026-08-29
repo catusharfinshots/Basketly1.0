@@ -17,6 +17,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from auth import build_current_user_dep
 from phone_auth import to_e164
+from managers import upsert_manager_from_partner, deactivate_manager
 
 
 def _now() -> str:
@@ -94,6 +95,7 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
             raise HTTPException(status_code=404, detail="Application not found")
         if payload.action == "reject":
             await col.update_one({"id": app_id}, {"$set": {"status": "rejected", "review_note": payload.note, "reviewed_at": _now()}})
+            await deactivate_manager(db, app_id)
             return {"ok": True, "status": "rejected"}
 
         # approve -> provision analyst tied to the phone number
@@ -124,6 +126,8 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
             else:
                 user_id = user["id"]
         await col.update_one({"id": app_id}, {"$set": {"status": "approved", "review_note": payload.note, "reviewed_at": _now(), "linked_user_id": user_id}})
+        approved_doc = await col.find_one({"id": app_id}, {"_id": 0})
+        await upsert_manager_from_partner(db, approved_doc, user_id)
         return {"ok": True, "status": "approved"}
 
     return router

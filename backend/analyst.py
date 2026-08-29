@@ -66,6 +66,43 @@ def _public_view(doc: dict) -> dict:
     return doc
 
 
+def _validate_complete(doc: dict) -> List[str]:
+    """Strict completeness check enforced when an analyst submits for approval.
+    Drafts are allowed to be incomplete; this only gates the submit step."""
+    e: List[str] = []
+    if not (doc.get("name") or "").strip():
+        e.append("Portfolio name is required.")
+    sub = (doc.get("subtitle") or "").strip()
+    if not sub:
+        e.append("Subtitle is required.")
+    elif len(sub.split()) > 30:
+        e.append("Subtitle must be 30 words or fewer.")
+    if not (doc.get("minAmount") or 0) > 0:
+        e.append("Minimum investment must be greater than 0.")
+    if doc.get("subscription") == "Paid" and not (doc.get("feeAmount") or 0) > 0:
+        e.append("Fee amount is required for paid subscriptions.")
+    if not (doc.get("methodology") or "").strip():
+        e.append("Methodology is required.")
+    fs = doc.get("factsheet") or {}
+    for k, label in (("objective", "objective"), ("whoShouldInvest", "who should invest"), ("riskFactors", "risk factors")):
+        if not (fs.get(k) or "").strip():
+            e.append(f"Factsheet {label} is required.")
+    if not doc.get("factsheet_pdf"):
+        e.append("Factsheet PDF is required.")
+    cons = doc.get("constituents") or []
+    if not cons:
+        e.append("Add at least one constituent.")
+    for i, c in enumerate(cons, 1):
+        if not (c.get("symbol") or "").strip() or not (c.get("name") or "").strip():
+            e.append(f"Constituent {i}: symbol and name are required.")
+        if not (c.get("weight") or 0) > 0:
+            e.append(f"Constituent {i}: weight must be greater than 0.")
+    total = round(sum((c.get("weight") or 0) for c in cons))
+    if cons and total != 100:
+        e.append(f"Total allocation must equal exactly 100% (currently {total}%).")
+    return e
+
+
 def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
     router = APIRouter(tags=["analyst"])
     require_analyst = build_current_user_dep(db, ["analyst"])
@@ -131,6 +168,9 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
         existing = await col.find_one({"id": pid, "owner_id": user["id"]})
         if not existing:
             raise HTTPException(status_code=404, detail="Portfolio not found")
+        problems = _validate_complete(existing)
+        if problems:
+            raise HTTPException(status_code=422, detail={"message": "Portfolio is incomplete", "errors": problems})
         await col.update_one({"id": pid}, {"$set": {"status": "pending", "review_note": "", "updated_at": _now()}})
         return {"ok": True, "status": "pending"}
 

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getBasket, getManager } from '../mock';
 import { getPrice } from '../lib/prices';
 import PerformanceChart from '../components/PerformanceChart';
+import Seo from '../components/Seo';
 import InvestFlow from '../components/InvestFlow';
 import { useAuth } from '../context/AuthContext';
 import { usePortfolio } from '../context/PortfolioContext';
@@ -87,6 +88,7 @@ export default function ModelPortfolioDetail() {
 
   return (
     <div>
+      <Seo title={basket.name} description={basket.subtitle || `${basket.name} — an expert-managed model portfolio on Omnivest.`} />
       {/* Header band */}
       <section className="grad-hero border-b border-[#E6E8F0]">
         <div className="container-x pt-6 pb-8">
