@@ -22,7 +22,6 @@ import LearnPost from './pages/LearnPost';
 import DashboardPage from './pages/DashboardPage';
 import BusinessPage from './pages/BusinessPage';
 import AdminPage from './pages/AdminPage';
-import AnalystPage from './pages/AnalystPage';
 import BecomePartner from './pages/BecomePartner';
 import FAQPage from './pages/FAQPage';
 import LoginPage from './pages/LoginPage';
@@ -99,7 +98,6 @@ function App() {
               <Route path="/learn/:slug" element={<LearnPost />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/business" element={<BusinessPage />} />
-              <Route path="/partner" element={<BecomePartner />} />
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
@@ -107,7 +105,8 @@ function App() {
             </Route>
             <Route path="/broker/kite/callback" element={<KiteCallback />} />
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="/analyst" element={<AnalystPage />} />
+            <Route path="/partner" element={<BecomePartner />} />
+            <Route path="/analyst" element={<Navigate to="/partner" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

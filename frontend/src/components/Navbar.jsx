@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, Link2, CheckCircle2, LineChart, LayoutDashboard, LogOut, User } from 'lucide-react';
+import { Menu, X, Link2, CheckCircle2, LineChart, LayoutDashboard, LogOut, User, ShieldCheck } from 'lucide-react';
 import omniMark from '../assets/omnivest-mark-white.svg';
 import { useBroker } from '../context/BrokerContext';
 import { useAuth } from '../context/AuthContext';
@@ -75,6 +75,12 @@ export default function Navbar() {
                   <div className="text-xs text-[#64748B] truncate">{user?.email}</div>
                 </div>
                 <div className="h-px bg-[#E6E8F0] my-1" />
+                {user?.role === 'admin' && (
+                  <Link to="/admin" data-testid="nav-admin-console" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#F5F7FB]"><ShieldCheck className="h-4 w-4" /> Admin console</Link>
+                )}
+                {user?.role === 'analyst' && (
+                  <Link to="/partner" data-testid="nav-analyst-console" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#F5F7FB]"><LineChart className="h-4 w-4" /> Analyst console</Link>
+                )}
                 <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#F5F7FB]"><LayoutDashboard className="h-4 w-4" /> Dashboard</Link>
                 <Link to="/brokers/connect" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#F5F7FB]"><Link2 className="h-4 w-4" /> Connect broker</Link>
                 <button onClick={doLogout} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#DC2626] hover:bg-[#FEF2F2]"><LogOut className="h-4 w-4" /> Log out</button>
@@ -106,6 +112,8 @@ export default function Navbar() {
                   </button>
                 )}
                 <Link to="/dashboard" onClick={() => setOpen(false)} className="btn-outline"><LayoutDashboard className="h-4 w-4" /> Dashboard</Link>
+                {user?.role === 'admin' && <Link to="/admin" onClick={() => setOpen(false)} data-testid="nav-admin-console-mobile" className="btn-ghost justify-start"><ShieldCheck className="h-4 w-4" /> Admin console</Link>}
+                {user?.role === 'analyst' && <Link to="/partner" onClick={() => setOpen(false)} data-testid="nav-analyst-console-mobile" className="btn-ghost justify-start"><LineChart className="h-4 w-4" /> Analyst console</Link>}
                 <Link to="/brokers/connect" onClick={() => setOpen(false)} className="btn-ghost justify-start"><Link2 className="h-4 w-4" /> Connect broker</Link>
                 <button onClick={() => { setOpen(false); doLogout(); }} className="btn-ghost justify-start"><LogOut className="h-4 w-4" /> Log out</button>
               </div>

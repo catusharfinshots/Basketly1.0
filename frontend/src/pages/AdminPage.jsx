@@ -3,7 +3,7 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { baskets as seedBaskets, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
-import { LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download, Pencil, TrendingUp, SlidersHorizontal } from 'lucide-react';
+import { LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, ChevronDown, Download, Pencil, TrendingUp, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -32,6 +32,18 @@ const NAV = [
   { key: 'database', label: 'Database', icon: Database },
   { key: 'settings', label: 'Site settings', icon: Settings },
 ];
+
+const NAV_BY_KEY = NAV.reduce((m, n) => { m[n.key] = n; return m; }, {});
+
+// Sidebar groups (exact order + membership per spec).
+const NAV_GROUPS = [
+  { label: 'Partners & Listings', keys: ['partners', 'managers', 'listings', 'dropdowns'] },
+  { label: 'Site content', keys: ['home', 'about', 'testimonials', 'faqs'] },
+  { label: 'Investment catalog', keys: ['collections', 'mutual-funds', 'fds'] },
+  { label: 'Operations', keys: ['leads', 'market'] },
+  { label: 'System', keys: ['database', 'settings'] },
+];
+const NAV_STATE_KEY = 'omni-admin-nav-groups-v1';
 
 const LEADS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -113,6 +125,19 @@ function EmptyState({ title, desc, onAdd }) {
 export default function AdminPage() {
   const [tab, setTab] = useState('home');
   const [dirty, setDirty] = useState(false);
+  const [pendingPartners, setPendingPartners] = useState(0);
+  const [pendingListings, setPendingListings] = useState(0);
+  const [openGroups, setOpenGroups] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(NAV_STATE_KEY) || 'null') || {}; } catch { return {}; }
+  });
+  const toggleGroup = (label) => setOpenGroups((s) => {
+    const currentlyOpen = s[label] !== undefined ? s[label] : true;
+    const next = { ...s, [label]: !currentlyOpen };
+    try { localStorage.setItem(NAV_STATE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    return next;
+  });
+  // A group is expanded if it holds the active item (forced) or per saved/default state.
+  const isGroupOpen = (g) => g.keys.includes(tab) || (openGroups[g.label] !== undefined ? openGroups[g.label] : true);
 
   const { user, token, isAuthed, loading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
@@ -142,6 +167,14 @@ export default function AdminPage() {
     if (tab === 'leads') fetchLeads();
   }, [tab]);
 
+  const refreshCounts = async () => {
+    if (!token) return;
+    const h = { headers: { Authorization: `Bearer ${token}` } };
+    try { const { data } = await axios.get(`${LEADS_API}/admin/partners`, h); setPendingPartners((data.applications || []).filter((a) => a.status === 'pending').length); } catch { /* ignore */ }
+    try { const { data } = await axios.get(`${LEADS_API}/admin/portfolios`, h); setPendingListings((data.portfolios || []).filter((p) => p.status === 'pending').length); } catch { /* ignore */ }
+  };
+  useEffect(() => { refreshCounts(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [token]);
+
   const [listings, setListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(false);
   const fetchListings = async () => {
@@ -160,6 +193,7 @@ export default function AdminPage() {
       await axios.post(`${LEADS_API}/admin/portfolios/${id}/review`, { action, note: '' }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success(action === 'approve' ? 'Approved — now live on the site' : 'Rejected');
       fetchListings();
+      refreshCounts();
     } catch (e) { toast.error(e?.response?.data?.detail || 'Could not update'); }
   };
 
@@ -214,6 +248,7 @@ export default function AdminPage() {
       await axios.post(`${LEADS_API}/admin/partners/${id}/review`, { action, note: '' }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success(action === 'approve' ? 'Approved — analyst can now log in via their mobile' : 'Rejected');
       fetchPartners();
+      refreshCounts();
     } catch (e) { toast.error(e?.response?.data?.detail || 'Could not update'); }
   };
 
@@ -394,13 +429,38 @@ export default function AdminPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] min-h-[calc(100vh-3.5rem)]">
         <aside className="bg-white border-b lg:border-b-0 lg:border-r border-[#E8E1F0] p-3 lg:p-4">
-          <nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible">
-            {NAV.map(n => (
-              <button key={n.key} onClick={()=>setTab(n.key)}
-                className={`shrink-0 lg:w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${tab===n.key ? 'bg-[#F1E7FE] text-[#5320A8]' : 'text-[#1A1030] hover:bg-[#F7F4FB]'}`}>
-                <n.icon className="h-4 w-4" /> {n.label}
-              </button>
-            ))}
+          <nav className="flex flex-col gap-1">
+            {NAV_GROUPS.map((g) => {
+              const open = isGroupOpen(g);
+              const isSystem = g.label === 'System';
+              return (
+                <div key={g.label} className={isSystem ? 'mt-3 pt-3 border-t border-[#E8E1F0]' : ''}>
+                  <button data-testid={`admin-group-${g.label}`} onClick={() => toggleGroup(g.label)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#94A3B8] hover:text-[#5320A8] transition-colors">
+                    <span>{g.label}</span>
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? '' : '-rotate-90'}`} />
+                  </button>
+                  {open && (
+                    <div className="flex flex-col gap-1 mt-0.5">
+                      {g.keys.map((key) => {
+                        const n = NAV_BY_KEY[key];
+                        if (!n) return null;
+                        const badge = key === 'partners' ? pendingPartners : key === 'listings' ? pendingListings : 0;
+                        return (
+                          <button key={key} data-testid={`admin-nav-${key}`} onClick={() => setTab(key)}
+                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${tab === key ? 'bg-[#F1E7FE] text-[#5320A8]' : 'text-[#1A1030] hover:bg-[#F7F4FB]'}`}>
+                            <n.icon className="h-4 w-4" /> <span className="flex-1 text-left">{n.label}</span>
+                            {badge > 0 && (
+                              <span data-testid={`admin-badge-${key}`} className="ml-auto min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full bg-[#DC2626] text-white text-[10px] font-bold leading-none">{badge}</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
         </aside>
 
