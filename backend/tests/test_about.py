@@ -12,7 +12,7 @@ import requests
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://ui-redesign-130.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@basketly.in"
+ADMIN_EMAIL = "admin@omnivest.in"
 ADMIN_PASSWORD = "Admin@123"
 INVESTOR_EMAIL = "demo@basketly.in"
 INVESTOR_PASSWORD = "Password123"

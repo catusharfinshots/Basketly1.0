@@ -17,6 +17,7 @@ import jwt
 from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel, EmailStr, Field
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.errors import DuplicateKeyError
 
 logger = logging.getLogger(__name__)
 
@@ -107,9 +108,25 @@ async def seed_users(db: AsyncIOMotorDatabase) -> None:
         pass
     await db.users.create_index("email", unique=True, partialFilterExpression={"email": {"$type": "string"}})
     await db.users.create_index("phone", unique=True, partialFilterExpression={"phone": {"$type": "string"}})
+
+    # Migrate the previously-seeded admin email to the new Omnivest address in place.
+    # Preserves the existing password hash, id and role (no duplicate, no lockout).
+    OLD_ADMIN_EMAIL = "admin@basketly.in"
+    NEW_ADMIN_EMAIL = "admin@omnivest.in"
+    if not await db.users.find_one({"email": NEW_ADMIN_EMAIL}):
+        try:
+            r = await db.users.update_one(
+                {"email": OLD_ADMIN_EMAIL, "role": "admin"},
+                {"$set": {"email": NEW_ADMIN_EMAIL}},
+            )
+            if r.matched_count:
+                logger.info("Migrated admin email %s -> %s", OLD_ADMIN_EMAIL, NEW_ADMIN_EMAIL)
+        except DuplicateKeyError:
+            pass  # a concurrent worker won the rename; leave that record intact
+
     seeds = [
         {"name": "Demo Investor", "email": "demo@basketly.in", "password": "Password123", "role": "investor"},
-        {"name": "Omnivest Admin", "email": "admin@basketly.in", "password": "Admin@123", "role": "admin"},
+        {"name": "Omnivest Admin", "email": "admin@omnivest.in", "password": "Admin@123", "role": "admin"},
     ]
     for s in seeds:
         existing = await db.users.find_one({"email": s["email"].lower()})

@@ -4,7 +4,7 @@ Validates that:
 - GET /api/about returns Tushar Sukhija as sole founder with role 'Founder & CEO'
   and all contacts use @omnivest.in emails.
 - GET /api/content footer.contactEmail is support@omnivest.in.
-- Admin login still works with existing admin@basketly.in credentials.
+- Admin login still works with existing admin@omnivest.in credentials.
 """
 import os
 import requests
@@ -12,7 +12,7 @@ import requests
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://ui-redesign-130.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@basketly.in"
+ADMIN_EMAIL = "admin@omnivest.in"
 ADMIN_PASSWORD = "Admin@123"
 
 

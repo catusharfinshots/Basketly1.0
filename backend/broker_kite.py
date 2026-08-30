@@ -54,7 +54,7 @@ class PlaceOrderRequest(BaseModel):
     price: Optional[float] = None
     trigger_price: Optional[float] = None
     disclosed_quantity: Optional[int] = None
-    tag: Optional[str] = "basketly"
+    tag: Optional[str] = "omnivest"
 
 
 class CancelOrderRequest(BaseModel):
@@ -240,7 +240,7 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
             order_type=order_type,
             product=payload.product.upper(),
             validity=payload.validity.upper(),
-            tag=(payload.tag or "basketly")[:20],
+            tag=(payload.tag or "omnivest")[:20],
         )
         if payload.price is not None:
             kwargs["price"] = float(payload.price)

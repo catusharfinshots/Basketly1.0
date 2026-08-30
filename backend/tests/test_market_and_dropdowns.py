@@ -17,7 +17,7 @@ BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 if not BASE_URL:
     BASE_URL = "http://localhost:8001"
 
-ADMIN_EMAIL = "admin@basketly.in"
+ADMIN_EMAIL = "admin@omnivest.in"
 ADMIN_PASSWORD = "Admin@123"
 
 DEFAULTS = {
