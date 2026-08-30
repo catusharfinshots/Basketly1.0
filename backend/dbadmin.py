@@ -11,17 +11,35 @@ import io
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import Response
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from auth import build_current_user_dep
 
-# Collections that are safe to browse from the admin console.
-ALLOWED = ["users", "leads", "analyst_portfolios", "analyst_invites", "content", "status_checks"]
+# Collections are auto-discovered from the database. Only Mongo/internal system
+# collections are excluded (never the app's own data).
+EXCLUDED = {"system.indexes", "system.views", "system.profile", "system.js"}
 
-# Field names (case-insensitive substring match) whose values are redacted.
-SENSITIVE = ("password", "hash", "secret", "token", "code_hash")
+# Clearing this collection from the UI is blocked entirely.
+CLEAR_BLOCKED = {"broker_orders"}
+
+# Clearing these requires the admin to type the collection name to confirm.
+CLEAR_REQUIRE_CONFIRM = {"users", "partner_applications", "managers", "analyst_portfolios"}
+
+# Field names (case-insensitive substring match) whose values are redacted:
+# password hashes, api secrets, access/request tokens (kite_sessions,
+# broker_connections) and OTP codes.
+SENSITIVE = ("password", "hash", "secret", "token", "code", "otp")
+
+
+def _is_excluded(name: str) -> bool:
+    return name in EXCLUDED or name.startswith("system.")
+
+
+async def _list_allowed(db) -> list:
+    names = await db.list_collection_names()
+    return [n for n in names if not _is_excluded(n)]
 
 
 def _redact(value):
@@ -38,11 +56,9 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
 
     @router.get("/collections")
     async def collections(_: dict = Depends(require_admin)):
-        existing = await db.list_collection_names()
         out = []
-        for name in ALLOWED:
-            if name in existing:
-                out.append({"name": name, "count": await db[name].count_documents({})})
+        for name in sorted(await _list_allowed(db)):
+            out.append({"name": name, "count": await db[name].estimated_document_count()})
         return {"collections": out}
 
     @router.get("/{collection}")
@@ -53,12 +69,12 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
         q: Optional[str] = Query(None),
         _: dict = Depends(require_admin),
     ):
-        if collection not in ALLOWED:
+        if collection not in await _list_allowed(db):
             raise HTTPException(status_code=404, detail="Collection not available")
         query = {}
         if q:
             rx = {"$regex": re.escape(q), "$options": "i"}
-            query = {"$or": [{f: rx} for f in ("email", "name", "type", "status", "id", "owner_name")]}
+            query = {"$or": [{f: rx} for f in ("email", "name", "type", "status", "id", "owner_name", "tradingsymbol", "symbol", "firm", "question")]}
         total = await db[collection].count_documents(query)
         cursor = db[collection].find(query, {"_id": 0})
         try:
@@ -70,7 +86,7 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
 
     @router.get("/{collection}/export")
     async def export_csv(collection: str, _: dict = Depends(require_admin)):
-        if collection not in ALLOWED:
+        if collection not in await _list_allowed(db):
             raise HTTPException(status_code=404, detail="Collection not available")
         docs = await db[collection].find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
         docs = [_redact(d) for d in docs]
@@ -97,7 +113,7 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
 
     @router.delete("/{collection}/{doc_id}")
     async def delete_document(collection: str, doc_id: str, _: dict = Depends(require_admin)):
-        if collection not in ALLOWED:
+        if collection not in await _list_allowed(db):
             raise HTTPException(status_code=404, detail="Collection not available")
         doc = await db[collection].find_one({"id": doc_id})
         if not doc:
@@ -108,9 +124,13 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
         return {"ok": True}
 
     @router.post("/{collection}/clear")
-    async def clear_collection(collection: str, _: dict = Depends(require_admin)):
-        if collection not in ALLOWED:
+    async def clear_collection(collection: str, payload: dict = Body(default={}), _: dict = Depends(require_admin)):
+        if collection not in await _list_allowed(db):
             raise HTTPException(status_code=404, detail="Collection not available")
+        if collection in CLEAR_BLOCKED:
+            raise HTTPException(status_code=403, detail="This collection cannot be cleared from the admin console.")
+        if collection in CLEAR_REQUIRE_CONFIRM and (payload or {}).get("confirm") != collection:
+            raise HTTPException(status_code=400, detail=f'Type "{collection}" to confirm clearing this collection.')
         if collection == "users":
             # never wipe admin accounts
             res = await db.users.delete_many({"role": {"$ne": "admin"}})

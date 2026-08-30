@@ -56,6 +56,17 @@ const HEADER = {
   settings: { title: 'Site settings', desc: 'Legal disclaimer and contact details.' },
 };
 
+const DB_GROUPS = [
+  { label: 'People', keys: ['users', 'partner_applications', 'managers'] },
+  { label: 'Analyst', keys: ['analyst_portfolios', 'analyst_invites'] },
+  { label: 'Broker & market', keys: ['broker_connections', 'broker_orders', 'kite_sessions', 'instruments'] },
+  { label: 'Site content', keys: ['site_content', 'faqs', 'leads'] },
+  { label: 'Settings & system', keys: ['app_settings', 'status_checks'] },
+];
+const DB_CLEAR_BLOCKED = ['broker_orders'];            // never clearable from the UI
+const DB_CLEAR_CONFIRM = ['users', 'partner_applications', 'managers', 'analyst_portfolios']; // require typed confirm
+const DB_SEARCH_FIRST = ['instruments'];               // large — don't auto-list, search first
+
 const CONTENT_DEFAULTS = {
   hero: { headline: 'Challenging', highlight: 'volatility', sub: 'Money at work — expert-managed model portfolios, alternative investment funds and SEBI-registered advisory, all in one place.', primaryCta: 'Get started', secondaryCta: 'Explore portfolios' },
   stats: { rating: '4.6/5', investors: '1 lakh+', managed: '₹100 Cr+' },
@@ -210,6 +221,8 @@ export default function AdminPage() {
   const [dbSkip, setDbSkip] = useState(0);
   const [dbQuery, setDbQuery] = useState('');
   const [dbLoading, setDbLoading] = useState(false);
+  const [dbNeedsSearch, setDbNeedsSearch] = useState(false);
+  const [clearConfirmText, setClearConfirmText] = useState('');
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
   const fetchDbCollections = async () => {
     try {
@@ -225,10 +238,16 @@ export default function AdminPage() {
       setDbDocs(data.documents || []);
       setDbTotal(data.total || 0);
       setDbSkip(skip);
+      setDbNeedsSearch(false);
     } catch { toast.error('Could not load records'); }
     finally { setDbLoading(false); }
   };
-  const selectCollection = (name) => { setDbActive(name); setDbQuery(''); setConfirmDeleteId(null); fetchDbDocs(name, 0, ''); };
+  const selectCollection = (name) => {
+    setDbActive(name); setDbQuery(''); setConfirmDeleteId(null);
+    if (DB_SEARCH_FIRST.includes(name)) { setDbNeedsSearch(true); setDbDocs([]); setDbTotal(0); setDbSkip(0); return; }
+    setDbNeedsSearch(false);
+    fetchDbDocs(name, 0, '');
+  };
   useEffect(() => {
     if (tab === 'database') fetchDbCollections();
   }, [tab]);
@@ -255,9 +274,11 @@ export default function AdminPage() {
   };
   const clearCollection = async (name) => {
     try {
-      const { data } = await axios.post(`${LEADS_API}/admin/db/${name}/clear`, {}, authHeader);
+      const body = DB_CLEAR_CONFIRM.includes(name) ? { confirm: name } : {};
+      const { data } = await axios.post(`${LEADS_API}/admin/db/${name}/clear`, body, authHeader);
       toast.success(`Cleared ${data.deleted} record${data.deleted !== 1 ? 's' : ''}${name === 'users' ? ' (admins kept)' : ''}`);
       setClearOpen(false);
+      setClearConfirmText('');
       fetchDbDocs(name, 0, '');
       fetchDbCollections();
     } catch (e) { toast.error(e?.response?.data?.detail || 'Could not clear'); }
@@ -578,16 +599,28 @@ export default function AdminPage() {
 
               {tab === 'database' && (
                 <section className="surface p-6" data-testid="db-viewer">
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div className="flex flex-wrap gap-2">
-                      {dbCollections.map((col) => (
-                        <button key={col.name} data-testid={`db-col-${col.name}`} onClick={() => selectCollection(col.name)}
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${dbActive === col.name ? 'bg-[#6C2BD9] text-white' : 'bg-[#F7F4FB] text-[#1A1030] hover:bg-[#F1E7FE]'}`}>
-                          {col.name}<span className={`rounded-full px-1.5 ${dbActive === col.name ? 'bg-white/20' : 'bg-[#E8E1F0]'}`}>{col.count}</span>
-                        </button>
-                      ))}
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex flex-col gap-3 flex-1 min-w-0">
+                      {(() => {
+                        const sections = DB_GROUPS.map((g) => ({ label: g.label, cols: dbCollections.filter((c) => g.keys.includes(c.name)) }));
+                        const others = dbCollections.filter((c) => !DB_GROUPS.some((g) => g.keys.includes(c.name)));
+                        if (others.length) sections.push({ label: 'Other', cols: others });
+                        return sections.filter((s) => s.cols.length).map((s) => (
+                          <div key={s.label} data-testid={`db-group-${s.label}`}>
+                            <div className="text-[11px] uppercase tracking-wider text-[#94A3B8] font-semibold mb-1.5">{s.label}</div>
+                            <div className="flex flex-wrap gap-2">
+                              {s.cols.map((col) => (
+                                <button key={col.name} data-testid={`db-col-${col.name}`} onClick={() => selectCollection(col.name)}
+                                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${dbActive === col.name ? 'bg-[#6C2BD9] text-white' : 'bg-[#F7F4FB] text-[#1A1030] hover:bg-[#F1E7FE]'}`}>
+                                  {col.name}<span className={`rounded-full px-1.5 ${dbActive === col.name ? 'bg-white/20' : 'bg-[#E8E1F0]'}`}>{col.count}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ));
+                      })()}
                     </div>
-                    <button onClick={() => dbActive && fetchDbDocs(dbActive, dbSkip, dbQuery)} className="btn-outline text-xs">Refresh</button>
+                    <button onClick={() => dbActive && !DB_SEARCH_FIRST.includes(dbActive) && fetchDbDocs(dbActive, dbSkip, dbQuery)} className="btn-outline text-xs">Refresh</button>
                   </div>
 
                   {dbActive && (
@@ -598,11 +631,15 @@ export default function AdminPage() {
                       <button onClick={() => fetchDbDocs(dbActive, 0, dbQuery)} className="btn-outline text-xs">Search</button>
                       <div className="flex-1" />
                       <button data-testid="db-export-btn" onClick={() => exportCsv(dbActive)} className="btn-outline text-xs inline-flex items-center gap-1"><Download className="h-3.5 w-3.5" /> Export CSV</button>
-                      <button data-testid="db-clear-btn" onClick={() => setClearOpen(true)} disabled={dbTotal === 0} className={`inline-flex items-center gap-1 rounded-lg border border-[#FECACA] text-[#DC2626] text-xs font-semibold px-3 py-2 hover:bg-[#FEF2F2] ${dbTotal === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}><Trash2 className="h-3.5 w-3.5" /> Clear collection</button>
+                      {!DB_CLEAR_BLOCKED.includes(dbActive) && (
+                        <button data-testid="db-clear-btn" onClick={() => { setClearConfirmText(''); setClearOpen(true); }} disabled={dbTotal === 0} className={`inline-flex items-center gap-1 rounded-lg border border-[#FECACA] text-[#DC2626] text-xs font-semibold px-3 py-2 hover:bg-[#FEF2F2] ${dbTotal === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}><Trash2 className="h-3.5 w-3.5" /> Clear collection</button>
+                      )}
                     </div>
                   )}
 
-                  {dbLoading ? (
+                  {dbActive && dbNeedsSearch ? (
+                    <div className="mt-6 text-sm text-[#6B6480]" data-testid="db-search-first">This is a large collection. Search by symbol or name above, then press Enter to view records.</div>
+                  ) : dbLoading ? (
                     <div className="mt-6 text-sm text-[#6B6480]">Loading records…</div>
                   ) : dbDocs.length === 0 ? (
                     <div className="mt-6 text-sm text-[#6B6480]">No records in this collection.</div>
@@ -642,7 +679,7 @@ export default function AdminPage() {
                     </>
                   )}
 
-                  <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
+                  <AlertDialog open={clearOpen} onOpenChange={(o) => { setClearOpen(o); if (!o) setClearConfirmText(''); }}>
                     <AlertDialogContent data-testid="db-clear-dialog">
                       <AlertDialogHeader>
                         <AlertDialogTitle>Clear “{dbActive}” collection?</AlertDialogTitle>
@@ -650,9 +687,18 @@ export default function AdminPage() {
                           This permanently deletes {dbActive === 'users' ? 'all customer & analyst accounts (your admin accounts are kept)' : `all ${dbTotal} record${dbTotal !== 1 ? 's' : ''} in this collection`}. This cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
+                      {DB_CLEAR_CONFIRM.includes(dbActive) && (
+                        <div className="py-1">
+                          <label className="text-xs text-[#6B6480]">Type <span className="font-semibold text-[#1A1030]">{dbActive}</span> to confirm:</label>
+                          <Input data-testid="db-clear-confirm-input" value={clearConfirmText} onChange={(e) => setClearConfirmText(e.target.value)} className="h-9 mt-1.5" placeholder={dbActive} />
+                        </div>
+                      )}
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction data-testid="db-clear-confirm" onClick={() => clearCollection(dbActive)} className="bg-[#DC2626] hover:bg-[#B91C1C]">Yes, clear it</AlertDialogAction>
+                        <AlertDialogAction data-testid="db-clear-confirm"
+                          disabled={DB_CLEAR_CONFIRM.includes(dbActive) && clearConfirmText !== dbActive}
+                          onClick={() => clearCollection(dbActive)}
+                          className={`bg-[#DC2626] hover:bg-[#B91C1C] ${DB_CLEAR_CONFIRM.includes(dbActive) && clearConfirmText !== dbActive ? 'opacity-40 cursor-not-allowed' : ''}`}>Yes, clear it</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
