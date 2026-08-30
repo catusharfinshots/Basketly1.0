@@ -74,6 +74,7 @@ export default function ApprovedPartnersAdmin({ token }) {
               <div>
                 <div className="flex items-center gap-1.5 text-sm font-semibold text-[#1A1030]">
                   {r.name} <BadgeCheck className="h-4 w-4 text-[#12B76A]" />
+                  {r.applicantType && <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#EDE9FE] text-[#5320A8]">{r.applicantType}</span>}
                 </div>
                 <div className="text-xs text-[#6B6480]">{r.baskets} live {r.baskets === 1 ? 'basket' : 'baskets'}</div>
               </div>

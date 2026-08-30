@@ -83,8 +83,11 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
         except Exception as e:  # noqa: BLE001
             logger.warning("OTP send failed: %s", e)
             detail = "Couldn't send the code. Please check the mobile number is correct and try again."
-            if getattr(e, "code", None) == 21608:
+            code = getattr(e, "code", None)
+            if code == 21608:
                 detail = "This number isn't verified on our SMS trial account yet. Please verify it in Twilio, or use a verified number."
+            elif code in (60078, 60083, 21408, 21211):
+                detail = "We can't send an OTP to this country yet. Please use a supported country's mobile number."
             raise HTTPException(status_code=400, detail=detail)
         return {"ok": True, "demo": False, "status": v.status}
 

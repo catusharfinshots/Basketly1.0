@@ -27,10 +27,12 @@ def _now() -> str:
 class ApplyIn(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     phone: str = Field(..., min_length=3, max_length=40)
-    email: Optional[EmailStr] = None
-    firm: str = Field(default="", max_length=160)
-    sebi_reg: str = Field(default="", max_length=80)
-    note: str = Field(default="", max_length=600)
+    email: EmailStr
+    firm: str = Field(..., min_length=1, max_length=160)
+    sebi_reg: str = Field(..., pattern=r"^IN[A-Z][0-9]{9}$")
+    applicant_type: str = Field(..., pattern="^(Individual|LLP|Company)$")
+    note: str = Field(..., min_length=1, max_length=600)
+    accepted_terms: bool = Field(...)
 
 
 class ReviewIn(BaseModel):
@@ -46,9 +48,12 @@ def _public(doc: dict) -> dict:
         "email": doc.get("email"),
         "firm": doc.get("firm", ""),
         "sebi_reg": doc.get("sebi_reg", ""),
+        "applicant_type": doc.get("applicant_type", ""),
         "note": doc.get("note", ""),
         "status": doc.get("status"),
         "review_note": doc.get("review_note", ""),
+        "accepted_terms": doc.get("accepted_terms", False),
+        "accepted_terms_at": doc.get("accepted_terms_at"),
         "created_at": doc.get("created_at"),
         "reviewed_at": doc.get("reviewed_at"),
     }
@@ -61,7 +66,9 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
 
     @router.post("/partners/apply")
     async def apply(payload: ApplyIn):
-        phone = to_e164(payload.phone)
+        if not payload.accepted_terms:
+            raise HTTPException(status_code=400, detail="Please accept the Partner Terms & Conditions to apply.")
+        phone = to_e164(payload.phone)  # server-side E.164 validation; rejects invalid numbers
         # avoid stacking duplicate pending applications for the same phone
         if await col.find_one({"phone": phone, "status": "pending"}):
             raise HTTPException(status_code=409, detail="You already have an application under review. We'll be in touch soon.")
@@ -69,10 +76,13 @@ def build_router(db: AsyncIOMotorDatabase) -> APIRouter:
             "id": str(uuid.uuid4()),
             "name": payload.name.strip(),
             "phone": phone,
-            "email": (payload.email or None),
+            "email": str(payload.email),
             "firm": payload.firm.strip(),
             "sebi_reg": payload.sebi_reg.strip(),
+            "applicant_type": payload.applicant_type,
             "note": payload.note.strip(),
+            "accepted_terms": True,
+            "accepted_terms_at": _now(),
             "status": "pending",
             "review_note": "",
             "created_at": _now(),

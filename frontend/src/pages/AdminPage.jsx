@@ -89,6 +89,10 @@ const CONTENT_DEFAULTS = {
     subscribeHeading: 'Get market insights & product updates in your inbox',
     socials: { facebook: '', x: '', youtube: '', linkedin: '', instagram: '' },
   },
+  partnerTerms: {
+    title: 'Partner Terms & Conditions',
+    body: '',
+  },
 };
 
 function Row({ children }) {
@@ -321,7 +325,7 @@ export default function AdminPage() {
 
   const publish = async () => {
     try {
-      const payload = { hero: content.hero, stats: content.stats, trust: content.trust, testimonials: content.testimonials, footer: content.footer };
+      const payload = { hero: content.hero, stats: content.stats, trust: content.trust, testimonials: content.testimonials, footer: content.footer, partnerTerms: content.partnerTerms };
       await axios.put(`${LEADS_API}/content`, payload, { headers: { Authorization: `Bearer ${token}` } });
       try { localStorage.setItem('bk_home_content_v1', JSON.stringify(payload)); } catch (e) {}
       toast.success('Published', { description: 'Home page content is now live on the site.' });
@@ -577,6 +581,7 @@ export default function AdminPage() {
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-semibold text-[#1A1030]">{a.name}</span>
+                                {a.applicant_type && <span data-testid="partner-applicant-type" className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#EDE9FE] text-[#5320A8]">{a.applicant_type}</span>}
                                 <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${a.status === 'pending' ? 'bg-[#FEF3C7] text-[#B45309]' : a.status === 'approved' ? 'bg-[#DCFCE7] text-[#0E9F5E]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}>{a.status}</span>
                               </div>
                               <div className="mt-1 text-xs text-[#64748B]">{a.phone}{a.email ? ` · ${a.email}` : ''}{a.firm ? ` · ${a.firm}` : ''}{a.sebi_reg ? ` · SEBI ${a.sebi_reg}` : ''}</div>
@@ -870,6 +875,12 @@ export default function AdminPage() {
                       ))}
                     </div>
                     <p className="mt-2 text-xs text-[#94A3B8]">Leave blank to keep an icon as a placeholder. Click “Publish changes” to go live.</p>
+                  </div>
+                  <div className="pt-4 border-t border-[#EEE8F6]">
+                    <Label>Partner Terms &amp; Conditions</Label>
+                    <p className="text-xs text-[#94A3B8] mt-0.5">Shown to research analysts in a modal when they apply on the “Become a partner” page.</p>
+                    <Input data-testid="settings-terms-title" value={content.partnerTerms?.title || ''} onChange={(e) => patchContent('partnerTerms', { ...content.partnerTerms, title: e.target.value })} className="mt-2 h-10" placeholder="Partner Terms & Conditions" />
+                    <Textarea data-testid="settings-terms-body" value={content.partnerTerms?.body || ''} onChange={(e) => patchContent('partnerTerms', { ...content.partnerTerms, body: e.target.value })} className="mt-2 min-h-[160px]" placeholder="Write the partner terms & conditions here…" />
                   </div>
                 </section>
               )}

@@ -5,12 +5,13 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dial
 import { Input } from './ui/input';
 import { Loader2, Phone, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import PhoneField from './PhoneField';
 
 export default function PhoneAuthModal() {
   const { authOpen, authInvite, authNext, closeAuth, requestOtp, verifyOtp } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState('phone');
-  const [phone, setPhone] = useState('+91');
+  const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -86,12 +87,11 @@ export default function PhoneAuthModal() {
             <form onSubmit={sendCode} className="space-y-4">
               <div>
                 <label className="text-xs uppercase tracking-wider text-[#64748B]">Mobile number</label>
-                <Input data-testid="phone-input" value={phone} onChange={(e) => setPhone(e.target.value)} required
-                  placeholder="+91 98765 43210" className="h-11 mt-1.5" inputMode="tel" autoFocus />
-                <p className="mt-1.5 text-xs text-[#94A3B8]">Include your country code (e.g. +91 for India).</p>
+                <PhoneField testid="phone-input" value={phone} onChange={setPhone} autoFocus />
+                <p className="mt-1.5 text-xs text-[#94A3B8]">Pick your country and enter your mobile number.</p>
               </div>
               {error && <div data-testid="phone-auth-error" className="text-sm text-[#DC2626]">{error}</div>}
-              <button data-testid="send-otp-btn" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">
+              <button data-testid="send-otp-btn" disabled={busy || !phone} className="btn-primary w-full py-3 disabled:opacity-60">
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />} Send OTP
               </button>
             </form>

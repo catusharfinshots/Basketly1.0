@@ -41,9 +41,24 @@ DEFAULT_CONTENT = {
         "subscribeHeading": "Get market insights & product updates in your inbox",
         "socials": {"facebook": "", "x": "", "youtube": "", "linkedin": "", "instagram": ""},
     },
+    "partnerTerms": {
+        "title": "Partner Terms & Conditions",
+        "body": (
+            "These Partner Terms & Conditions govern your application to become a research "
+            "analyst partner on Omnivest.\n\n"
+            "1. Eligibility — You must be a SEBI-registered research analyst and provide a valid "
+            "registration number.\n"
+            "2. Accuracy — All information you submit must be true and current.\n"
+            "3. Review — Omnivest reviews every application and may approve or reject at its discretion.\n"
+            "4. Conduct — Once approved, you agree to publish only compliant, good-faith model portfolios.\n"
+            "5. Data — We process your details per our Privacy Policy solely to evaluate and manage your partnership.\n\n"
+            "By submitting the application you confirm you have read and agree to these terms. "
+            "(This is placeholder content — edit it from the admin console.)"
+        ),
+    },
 }
 
-ALLOWED_KEYS = ("hero", "stats", "trust", "testimonials", "footer")
+ALLOWED_KEYS = ("hero", "stats", "trust", "testimonials", "footer", "partnerTerms")
 
 
 def build_router(db: AsyncIOMotorDatabase) -> APIRouter:

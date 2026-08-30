@@ -1,25 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { isValidPhoneNumber } from 'react-phone-number-input';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import PhoneField from '../components/PhoneField';
 import { Loader2, LineChart, CheckCircle2, ShieldCheck, Users, TrendingUp } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const SEBI_RE = /^IN[A-Z][0-9]{9}$/;
+const APPLICANT_TYPES = ['Individual', 'LLP', 'Company'];
 
 export default function BecomePartner() {
-  const [form, setForm] = useState({ name: '', phone: '+91', email: '', firm: '', sebi_reg: '', note: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', firm: '', sebi_reg: '', applicant_type: '', note: '', accepted_terms: false });
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [terms, setTerms] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/content`).then(({ data }) => setTerms(data?.partnerTerms || null)).catch(() => setTerms(null));
+  }, []);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+  const phoneOk = !!form.phone && isValidPhoneNumber(form.phone);
+  const sebiOk = SEBI_RE.test(form.sebi_reg.trim());
+  const valid = form.name.trim() && phoneOk && emailOk && form.firm.trim() && sebiOk
+    && APPLICANT_TYPES.includes(form.applicant_type) && form.note.trim() && form.accepted_terms;
+
   const submit = async (e) => {
     e.preventDefault();
+    if (!valid) return;
     setBusy(true);
     try {
-      await axios.post(`${API}/partners/apply`, { ...form, email: form.email || undefined });
+      await axios.post(`${API}/partners/apply`, {
+        name: form.name.trim(),
+        phone: form.phone,
+        email: form.email.trim(),
+        firm: form.firm.trim(),
+        sebi_reg: form.sebi_reg.trim().toUpperCase(),
+        applicant_type: form.applicant_type,
+        note: form.note.trim(),
+        accepted_terms: true,
+      });
       setDone(true);
     } catch (err) {
       toast.error(err?.response?.data?.detail || 'Could not submit your application');
@@ -69,34 +96,66 @@ export default function BecomePartner() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <Label>Mobile number *</Label>
-                <Input data-testid="partner-phone" required value={form.phone} onChange={set('phone')} className="h-11 mt-1.5" placeholder="+91 98765 43210" />
+                <PhoneField testid="partner-phone" value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} />
+                {form.phone && !phoneOk && <p className="mt-1 text-xs text-[#DC2626]">Enter a valid mobile number.</p>}
               </div>
               <div>
-                <Label>Email</Label>
-                <Input data-testid="partner-email" type="email" value={form.email} onChange={set('email')} className="h-11 mt-1.5" placeholder="you@firm.com" />
+                <Label>Email *</Label>
+                <Input data-testid="partner-email" type="email" required value={form.email} onChange={set('email')} className="h-11 mt-1.5" placeholder="you@firm.com" />
               </div>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <Label>Firm / experience</Label>
-                <Input data-testid="partner-firm" value={form.firm} onChange={set('firm')} className="h-11 mt-1.5" placeholder="e.g. 8 yrs, XYZ Capital" />
+                <Label>Firm / experience *</Label>
+                <Input data-testid="partner-firm" required value={form.firm} onChange={set('firm')} className="h-11 mt-1.5" placeholder="e.g. 8 yrs, XYZ Capital" />
               </div>
               <div>
-                <Label>SEBI reg. no. (optional)</Label>
-                <Input data-testid="partner-sebi" value={form.sebi_reg} onChange={set('sebi_reg')} className="h-11 mt-1.5" placeholder="INHXXXXXXXXX" />
+                <Label>SEBI reg. no. *</Label>
+                <Input data-testid="partner-sebi" required value={form.sebi_reg} onChange={(e) => setForm((f) => ({ ...f, sebi_reg: e.target.value.toUpperCase() }))} className="h-11 mt-1.5" placeholder="INH000012345" />
+                {form.sebi_reg && !sebiOk && <p className="mt-1 text-xs text-[#DC2626]">Format: IN, a letter, then 9 digits (e.g. INH000012345).</p>}
               </div>
             </div>
             <div>
-              <Label>Tell us about your strategy</Label>
-              <Textarea data-testid="partner-note" value={form.note} onChange={set('note')} rows={4} className="mt-1.5" placeholder="What kind of portfolios do you want to publish?" />
+              <Label>Applying as *</Label>
+              <div className="mt-2 grid grid-cols-3 gap-2" data-testid="partner-applicant-type" role="radiogroup">
+                {APPLICANT_TYPES.map((t) => (
+                  <button key={t} type="button" role="radio" aria-checked={form.applicant_type === t}
+                    data-testid={`applicant-type-${t.toLowerCase()}`}
+                    onClick={() => setForm((f) => ({ ...f, applicant_type: t }))}
+                    className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${form.applicant_type === t ? 'border-[#6C2BD9] bg-[#F1E7FE] text-[#5320A8]' : 'border-[#E2E8F0] bg-white text-[#475569] hover:border-[#D8C7F1]'}`}>
+                    {t}
+                  </button>
+                ))}
+              </div>
             </div>
-            <button data-testid="partner-submit" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">
+            <div>
+              <Label>Tell us about your strategy *</Label>
+              <Textarea data-testid="partner-note" required value={form.note} onChange={set('note')} rows={4} className="mt-1.5" placeholder="What kind of portfolios do you want to publish?" />
+            </div>
+            <label className="flex items-start gap-2.5 text-sm cursor-pointer" data-testid="partner-terms-consent">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#6C2BD9]" checked={form.accepted_terms} onChange={(e) => setForm((f) => ({ ...f, accepted_terms: e.target.checked }))} />
+              <span className="text-[#475569]">I agree to the{' '}
+                <button type="button" data-testid="open-partner-terms" onClick={() => setTermsOpen(true)} className="font-semibold text-[#6C2BD9] underline">Partner Terms &amp; Conditions</button>
+              </span>
+            </label>
+            <button data-testid="partner-submit" disabled={busy || !valid} className="btn-primary w-full py-3 disabled:opacity-60 disabled:cursor-not-allowed">
               {busy && <Loader2 className="h-4 w-4 animate-spin" />} Submit application
             </button>
             <p className="text-xs text-center text-[#94A3B8]">We'll review and get back to you. Approval unlocks your analyst console.</p>
           </div>
         </form>
       </div>
+
+      <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
+        <DialogContent className="sm:max-w-[560px]" data-testid="partner-terms-modal">
+          <DialogHeader>
+            <DialogTitle>{terms?.title || 'Partner Terms & Conditions'}</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap text-sm text-[#475569] leading-relaxed">
+            {terms?.body || 'Terms & Conditions will be published here soon. By applying you agree to be contacted for review of your partner application.'}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
