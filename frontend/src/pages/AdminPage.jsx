@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { baskets as seedBaskets, managers as seedManagers, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
+import { baskets as seedBaskets, collections as seedCollections, mutualFunds as seedMF, testimonials as seedT, faqs as seedFaqs } from '../mock';
 import { LayoutGrid, Users, Package, LineChart, Landmark, MessageSquare, HelpCircle, Settings, Plus, Trash2, ExternalLink, LogOut, Inbox, ClipboardCheck, UserPlus, Copy, Database, ChevronLeft, ChevronRight, Download, Pencil, TrendingUp, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -11,13 +11,14 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, 
 import AboutAdmin from '../components/admin/AboutAdmin';
 import MarketDataAdmin from '../components/admin/MarketDataAdmin';
 import DropdownsAdmin from '../components/admin/DropdownsAdmin';
+import ApprovedPartnersAdmin from '../components/admin/ApprovedPartnersAdmin';
 import omniMark from '../assets/omnivest-mark-white.svg';
 import { toast } from 'sonner';
 
 const NAV = [
   { key: 'home', label: 'Home content', icon: LayoutGrid },
   { key: 'about', label: 'About Us', icon: Users },
-  { key: 'managers', label: 'Managers', icon: Users },
+  { key: 'managers', label: 'Approved Partners', icon: Users },
   { key: 'collections', label: 'Collections', icon: LineChart },
   { key: 'mutual-funds', label: 'Mutual funds', icon: LineChart },
   { key: 'fds', label: 'Fixed deposits', icon: Landmark },
@@ -34,12 +35,12 @@ const NAV = [
 
 const LEADS_API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CONTENT_TABS = ['home', 'baskets', 'managers', 'collections', 'mutual-funds', 'fds', 'testimonials', 'faqs', 'settings'];
+const CONTENT_TABS = ['home', 'baskets', 'collections', 'mutual-funds', 'fds', 'testimonials', 'faqs', 'settings'];
 const HEADER = {
   home: { title: 'Content manager', desc: 'Edit what investors see on the homepage, then hit Publish changes to push it live.' },
   about: { title: 'About Us page', desc: 'Manage every section of the public /about page. Changes go live when you click Save About page.' },
   baskets: { title: 'Baskets', desc: 'Manage the baskets shown across the site.' },
-  managers: { title: 'Managers', desc: 'Manage SEBI-registered basket managers.' },
+  managers: { title: 'Approved Partners', desc: 'SEBI-registered partners appear here automatically once you approve their application.' },
   collections: { title: 'Collections', desc: 'Manage the themed collection tiles.' },
   'mutual-funds': { title: 'Mutual funds', desc: 'Manage the mutual funds catalogue.' },
   fds: { title: 'Fixed deposits', desc: 'Manage fixed-deposit providers and rates.' },
@@ -104,7 +105,6 @@ export default function AdminPage() {
 
   const [content, setContent] = useState(CONTENT_DEFAULTS);
   const [baskets, setBaskets] = useState(seedBaskets);
-  const [managers, setManagers] = useState(seedManagers);
   const [collections, setCollections] = useState(seedCollections);
   const [funds, setFunds] = useState(seedMF);
   const [testimonials, setTestimonials] = useState(seedT);
@@ -667,30 +667,7 @@ export default function AdminPage() {
                 </section>
               )}
 
-              {tab === 'managers' && (
-                <section className="surface p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-semibold">Managers</div>
-                      <div className="text-xs text-[#6B6480]">SEBI-registered basket managers.</div>
-                    </div>
-                    <button onClick={()=>{setManagers([{id:`m_${Date.now()}`, name:'New manager', logo:'NM', sebiReg:'', philosophy:'', description:'', subscribers:'0', baskets:0}, ...managers]); markDirty();}} className="btn-outline"><Plus className="h-4 w-4" /> Add manager</button>
-                  </div>
-                  <div className="mt-4">
-                    {managers.map((m, i) => (
-                      <Row key={m.id}>
-                        <div className="h-9 w-9 rounded-lg grad-card text-white grid place-items-center text-xs font-bold">{m.logo}</div>
-                        <div className="flex-1 grid md:grid-cols-3 gap-3">
-                          <Input value={m.name} onChange={(e)=>{const c=[...managers]; c[i]={...c[i], name: e.target.value}; setManagers(c); markDirty();}} className="h-9" />
-                          <Input value={m.sebiReg} onChange={(e)=>{const c=[...managers]; c[i]={...c[i], sebiReg: e.target.value}; setManagers(c); markDirty();}} className="h-9" placeholder="SEBI Reg" />
-                          <Input value={m.philosophy} onChange={(e)=>{const c=[...managers]; c[i]={...c[i], philosophy: e.target.value}; setManagers(c); markDirty();}} className="h-9" placeholder="Philosophy" />
-                        </div>
-                        <button onClick={()=>{setManagers(managers.filter((_,j)=>j!==i)); markDirty();}} className="h-8 w-8 grid place-items-center rounded-lg text-[#F04438] hover:bg-[#FEF3F2]"><Trash2 className="h-4 w-4" /></button>
-                      </Row>
-                    ))}
-                  </div>
-                </section>
-              )}
+              {tab === 'managers' && <ApprovedPartnersAdmin token={token} />}
 
               {tab === 'collections' && (
                 <section className="surface p-6">
