@@ -122,6 +122,10 @@ api_router.include_router(build_market_router(db))
 from listing_options import build_router as build_listing_options_router  # noqa: E402
 api_router.include_router(build_listing_options_router(db))
 
+# Server-side share previews for social crawlers (Feature 1)
+from og import build_router as build_og_router  # noqa: E402
+api_router.include_router(build_og_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 

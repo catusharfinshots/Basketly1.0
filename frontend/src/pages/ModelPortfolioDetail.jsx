@@ -6,6 +6,7 @@ import { getPrice } from '../lib/prices';
 import PerformanceChart from '../components/PerformanceChart';
 import Seo from '../components/Seo';
 import InvestFlow from '../components/InvestFlow';
+import ShareButton from '../components/ShareButton';
 import { useAuth } from '../context/AuthContext';
 import { usePortfolio } from '../context/PortfolioContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
@@ -92,9 +93,12 @@ export default function ModelPortfolioDetail() {
       {/* Header band */}
       <section className="grad-hero border-b border-[#E6E8F0]">
         <div className="container-x pt-6 pb-8">
-          <button onClick={() => navigate('/model-portfolios')} className="inline-flex items-center gap-1.5 text-sm text-[#64748B] hover:text-[#6C2BD9]">
-            <ArrowLeft className="h-4 w-4" /> All model portfolios
-          </button>
+          <div className="flex items-center justify-between gap-4">
+            <button onClick={() => navigate('/model-portfolios')} className="inline-flex items-center gap-1.5 text-sm text-[#64748B] hover:text-[#6C2BD9]">
+              <ArrowLeft className="h-4 w-4" /> All model portfolios
+            </button>
+            <ShareButton path={`/model-portfolios/${basket.id}`} title={`${basket.name} | Omnivest`} text={basket.subtitle || ''} />
+          </div>
 
           <div className="mt-5 flex items-start justify-between gap-6 flex-wrap">
             <div className="flex items-start gap-4">
